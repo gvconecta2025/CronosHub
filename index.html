@@ -64,7 +64,7 @@
         .widget-card { background: rgba(25, 25, 25, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
         .widget-card:hover { transform: translateY(-4px); border-color: rgba(212, 175, 55, 0.3); box-shadow: 0 15px 40px rgba(212, 175, 55, 0.1); background: rgba(30, 30, 30, 0.6); }
 
-        /* Calendário dos Hábitos */
+        /* Calendário */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
 
         /* Input Premium */
@@ -80,7 +80,7 @@
         <h1 class="text-3xl font-bold tracking-[0.3em] text-gold animate-pulse">CHRONOS<span class="text-white font-light">HUB</span></h1>
     </div>
 
-    <!-- HEADER GLOBAL (Glassmorphism) -->
+    <!-- HEADER GLOBAL -->
     <header class="w-full py-5 px-8 flex justify-between items-center bg-black/40 backdrop-blur-xl border-b border-white/5 z-20">
         <h1 class="text-2xl font-bold tracking-[0.2em] text-transparent bg-clip-text bg-gold-metallic cursor-pointer" onclick="App.Router.closeDesktop(null, true)">CHRONOS<span class="text-white font-light">HUB</span></h1>
         <button onclick="App.Settings.openModal()" class="text-gray-400 hover:text-gold transition-colors p-2 active:scale-95">
@@ -91,9 +91,9 @@
     <!-- ========================================== -->
     <!-- DASHBOARD DESKTOP (WIDGETS PREMIUM) -->
     <!-- ========================================== -->
-    <div class="hidden lg:grid grid-cols-3 gap-8 p-12 h-full w-full content-start max-w-7xl mx-auto" id="desktop-dashboard">
+    <div class="hidden lg:grid lg:grid-cols-3 xl:grid-cols-4 gap-6 p-10 h-full w-full content-start max-w-[1400px] mx-auto" id="desktop-dashboard">
         
-        <!-- WIDGET CALENDÁRIO -->
+        <!-- NOVO: Widget Calendário -->
         <div onclick="App.Router.go('calendario')" class="widget-card rounded-[2rem] p-8 cursor-pointer flex flex-col justify-between h-44 group">
             <div class="flex justify-between items-start text-textMuted group-hover:text-gold transition-colors"><i class="fa-solid fa-calendar-days text-2xl"></i><span class="text-[10px] uppercase tracking-[0.2em] font-bold">Calendário</span></div>
             <div class="flex items-baseline gap-2 text-white">
@@ -101,6 +101,7 @@
                 <span class="text-sm font-bold uppercase tracking-widest text-gray-500 group-hover:text-white transition-colors" id="widget-calendar-month">---</span>
             </div>
         </div>
+
         <div onclick="App.Router.go('alarme')" class="widget-card rounded-[2rem] p-8 cursor-pointer flex flex-col justify-between h-44 group">
             <div class="flex justify-between items-start text-textMuted group-hover:text-gold transition-colors"><i class="fa-solid fa-bell text-2xl"></i><span class="text-[10px] uppercase tracking-[0.2em] font-bold">Despertador</span></div>
             <div class="text-3xl font-light text-white" id="widget-alarm-status">Ativo</div>
@@ -132,7 +133,6 @@
         </div>
 
     </div>
-
     <!-- ========================================== -->
     <!-- CONTAINER PRINCIPAL (MODAL DESKTOP / ABAS MOBILE) -->
     <!-- ========================================== -->
@@ -148,7 +148,7 @@
                 <div class="grid grid-cols-2 gap-5" id="hub-grid"></div>
             </section>
 
-           <!-- [BLOCO NOVO] CALENDÁRIO PREMIUM -->
+            <!-- [NOVO BLOCO] CALENDÁRIO PREMIUM -->
             <section id="view-calendario" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar">
                 <div class="flex justify-between items-center mb-8 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">
                     <div>
@@ -162,33 +162,32 @@
                 </div>
                 
                 <div class="flex-1 flex flex-col w-full max-w-2xl mx-auto gap-8 pb-24 lg:pb-0">
-                    <!-- Estatísticas do Mês integradas -->
+                    <!-- Estatísticas do Mês -->
                     <div class="grid grid-cols-2 gap-4 w-full flex-shrink-0">
                         <div class="bg-button-dark border border-white/5 p-6 rounded-[2rem] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex flex-col justify-center items-center">
                             <span class="text-gray-500 text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Maior Streak</span>
-                            <span class="text-3xl font-light text-white"><i class="fa-solid fa-fire text-gold text-lg mr-2"></i><span id="cal-stat-streak">0</span></span>
+                            <span class="text-3xl font-light text-white"><i class="fa-solid fa-fire text-gold text-lg mr-2 drop-shadow-md"></i><span id="cal-stat-streak">0</span></span>
                         </div>
                         <div class="bg-button-dark border border-white/5 p-6 rounded-[2rem] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex flex-col justify-center items-center">
                             <span class="text-gray-500 text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Tarefas Feitas</span>
-                            <span class="text-3xl font-light text-gold" id="cal-stat-tasks">0</span>
+                            <span class="text-3xl font-light text-transparent bg-clip-text bg-gold-metallic" id="cal-stat-tasks">0</span>
                         </div>
                     </div>
 
                     <!-- Grelha Metálica do Calendário -->
-                    <div class="bg-black/30 border border-white/10 rounded-[2.5rem] p-6 lg:p-8 shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)] flex-1 min-h-0">
-                        <div class="grid grid-cols-7 gap-2 mb-6 text-center text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500">
+                    <div class="bg-black/30 border border-white/10 rounded-[2.5rem] p-6 lg:p-8 shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)] flex-1 min-h-0 flex flex-col">
+                        <div class="grid grid-cols-7 gap-2 mb-4 text-center text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500 flex-shrink-0">
                             <div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div>
                         </div>
-                        <div id="calendar-grid" class="grid grid-cols-7 gap-3 lg:gap-4 text-center">
+                        <div id="calendar-grid" class="grid grid-cols-7 gap-3 lg:gap-4 text-center flex-1">
                             <!-- Injetado pelo JavaScript -->
                         </div>
                     </div>
                 </div>
-            </section> 
-            
-            
-            <!-- [BLOCO 1] DESPERTADOR -->
-                        <section id="view-alarme" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar relative">
+            </section>
+
+            <!-- [BLOCO] DESPERTADOR -->
+            <section id="view-alarme" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar relative">
                 <div class="flex justify-between items-end mb-10 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">
                     <div>
                         <h2 class="text-4xl lg:text-5xl font-light text-white">Despertador</h2>
@@ -200,8 +199,7 @@
                 </div>
                 <div id="alarm-list" class="space-y-5 flex-1 pb-24 lg:pb-10"></div>
             </section>
-
-            <!-- [BLOCO 2] TIMER -->
+            <!-- [BLOCO 3] TIMER -->
             <section id="view-timer" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 items-center justify-center">
                 <h2 class="text-3xl lg:text-4xl font-light mb-8 text-transparent bg-clip-text bg-gold-metallic w-full text-left lg:absolute lg:top-12 lg:left-12">Temporizador</h2>
                 <div class="flex-1 flex flex-col w-full h-full items-center justify-center relative mt-10 lg:mt-0 max-w-lg mx-auto">
@@ -245,7 +243,7 @@
                 </div>
             </section>
 
-            <!-- [BLOCO 3] CRONÔMETRO -->
+            <!-- [BLOCO 4] CRONÔMETRO -->
             <section id="view-cronometro" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 items-center">
                 <h2 class="text-3xl lg:text-4xl font-light mb-10 lg:mb-12 self-start w-full text-left text-transparent bg-clip-text bg-gold-metallic">Cronômetro</h2>
                 <div class="w-72 h-72 lg:w-80 lg:h-80 rounded-full border border-white/5 flex items-center justify-center relative mb-12 flex-shrink-0 bg-button-dark shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)]">
@@ -259,7 +257,7 @@
                 <div class="w-full flex-1 overflow-y-auto hide-scrollbar max-w-lg pb-24 lg:pb-0"><div id="stopwatch-laps" class="w-full flex flex-col gap-3"></div></div>
             </section>
 
-            <!-- [BLOCO 4] CALCULADORA PREMIUM -->
+            <!-- [BLOCO 5] CALCULADORA PREMIUM -->
             <section id="view-calculadora" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12">
                 <div class="flex justify-between items-center w-full max-w-md mx-auto mb-8 flex-shrink-0">
                     <h2 class="text-3xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic">Calculadora</h2>
@@ -304,7 +302,7 @@
                 </div>
             </section>
 
-            <!-- [BLOCO 5] TAREFAS -->
+            <!-- [BLOCO 6] TAREFAS -->
             <section id="view-tarefas" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar">
                 <div class="flex justify-between items-center mb-8 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">
                     <h2 class="text-3xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic">Tarefas Diárias</h2>
@@ -317,7 +315,7 @@
                 <div id="task-list" class="space-y-4 flex-1 pb-24 lg:pb-10"></div>
             </section>
 
-            <!-- [BLOCO 6] HÁBITOS -->
+            <!-- [BLOCO 7] HÁBITOS -->
             <section id="view-habitos" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar">
                 <h2 class="text-3xl lg:text-4xl font-light mb-8 text-transparent bg-clip-text bg-gold-metallic w-full text-left sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">Rastreador de Hábitos</h2>
                 <div class="flex gap-4 mb-8 flex-shrink-0">
@@ -442,10 +440,9 @@
             </div>
         </div>
     </div>
-
     <script>
         // ==========================================
-        // ARQUITETURA MODULAR
+        // ARQUITETURA MODULAR (SPA HÍBRIDA 2.0)
         // ==========================================
         
         const SafeStorage = {
@@ -597,7 +594,7 @@
         };
 
         App.Router = {
-            modules: { alarme: { icon: 'fa-bell', n: 'Alarme' }, cronometro: { icon: 'fa-stopwatch', n: 'Cronômetro' }, timer: { icon: 'fa-hourglass-half', n: 'Timer' }, calculadora: { icon: 'fa-calculator', n: 'Calc' }, tarefas: { icon: 'fa-calendar-check', n: 'Tarefas' }, habitos: { icon: 'fa-fire', n: 'Hábitos' } },
+            modules: { calendario: { icon: 'fa-calendar-days', n: 'Calendário' }, alarme: { icon: 'fa-bell', n: 'Alarme' }, cronometro: { icon: 'fa-stopwatch', n: 'Cronômetro' }, timer: { icon: 'fa-hourglass-half', n: 'Timer' }, calculadora: { icon: 'fa-calculator', n: 'Calc' }, tarefas: { icon: 'fa-calendar-check', n: 'Tarefas' }, habitos: { icon: 'fa-fire', n: 'Hábitos' } },
             recent: SafeStorage.parse('chronos_recent') || ['alarme', 'cronometro', 'timer'],
             go: (id) => {
                 App.System.initInteraction();
@@ -619,6 +616,10 @@
                 }
 
                 if (id === 'timer' && !App.Timer.isInit) App.Timer.init();
+                
+                // Forçar re-renderização do calendário se aberto
+                if (id === 'calendario') App.Calendar.render();
+                
                 App.Router.render();
             },
             closeDesktop: (e = null, force = false) => {
@@ -890,6 +891,53 @@
             delete: (i) => { App.Habits.data.splice(i, 1); App.Habits.save(); }, save: () => { SafeStorage.set('chronos_habits', JSON.stringify(App.Habits.data)); App.Habits.render(); }
         };
 
+        // [NOVO] Módulo Calendário Premium
+        App.Calendar = {
+            currentDate: new Date(),
+            init: () => { App.Calendar.render(); },
+            render: () => {
+                const year = App.Calendar.currentDate.getFullYear();
+                const month = App.Calendar.currentDate.getMonth();
+                const now = new Date();
+                
+                const monthNames = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+                document.getElementById('calendar-header-month').innerText = `${monthNames[month]} ${year}`;
+                
+                if (App.State.isDesktop) {
+                    const elM = document.getElementById('widget-calendar-month'); if(elM) elM.innerText = monthNames[now.getMonth()].substring(0,3);
+                    const elD = document.getElementById('widget-calendar-day'); if(elD) elD.innerText = String(now.getDate()).padStart(2, '0');
+                }
+
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                
+                let html = '';
+                for(let i = 0; i < firstDay; i++) { html += `<div class="aspect-square"></div>`; }
+                
+                for(let i = 1; i <= daysInMonth; i++) {
+                    const isToday = (i === now.getDate() && month === now.getMonth() && year === now.getFullYear());
+                    let classes = "aspect-square flex items-center justify-center rounded-2xl text-base lg:text-lg font-light transition-all cursor-pointer ";
+                    
+                    if(isToday) {
+                        classes += "bg-gold-metallic text-black shadow-[0_5px_15px_rgba(212,175,55,0.4)] font-bold scale-110";
+                    } else {
+                        classes += "bg-[#181818] border border-white/5 text-gray-300 hover:border-gold/50 hover:text-gold shadow-sm hover:scale-105 active:scale-95";
+                    }
+                    html += `<div class="${classes}" onclick="App.Audio.vibrate(5)">${i}</div>`;
+                }
+                document.getElementById('calendar-grid').innerHTML = html;
+                
+                const tasksDone = App.Tasks.data.filter(t => t.done).length;
+                let maxStreak = 0;
+                App.Habits.data.forEach(h => { const s = App.Habits.getStreak(h.hist); if(s > maxStreak) maxStreak = s; });
+                
+                document.getElementById('cal-stat-streak').innerText = maxStreak;
+                document.getElementById('cal-stat-tasks').innerText = tasksDone;
+            },
+            prevMonth: () => { App.Calendar.currentDate.setMonth(App.Calendar.currentDate.getMonth() - 1); App.Audio.vibrate(10); App.Calendar.render(); },
+            nextMonth: () => { App.Calendar.currentDate.setMonth(App.Calendar.currentDate.getMonth() + 1); App.Audio.vibrate(10); App.Calendar.render(); }
+        };
+
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 const splash = document.getElementById('splash-screen');
@@ -903,7 +951,11 @@
                 App.Router.go(App.Router.recent[0] || 'alarme'); 
             }
 
-            App.Router.render(); App.Alarms.init(); App.Tasks.render(); App.Habits.render();
+            App.Router.render(); 
+            App.Alarms.init(); 
+            App.Tasks.render(); 
+            App.Habits.render();
+            App.Calendar.init(); // Inicializa o Calendário
             
             if(App.State.isDesktop) { App.Timer.updateDisplay(); App.Stopwatch.update(); }
 
