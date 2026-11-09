@@ -9,7 +9,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.svg">
     
-    <!-- Google Fonts: Outfit (Tipografia Premium) -->
+    <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;700&display=swap" rel="stylesheet">
@@ -64,8 +64,9 @@
         .widget-card { background: rgba(25, 25, 25, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
         .widget-card:hover { transform: translateY(-4px); border-color: rgba(212, 175, 55, 0.3); box-shadow: 0 15px 40px rgba(212, 175, 55, 0.1); background: rgba(30, 30, 30, 0.6); }
 
-        /* Calendário */
+        /* Calendário e Lembretes */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .heatmap-dot { width: 4px; height: 4px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
 
         /* Input Premium */
         .input-premium { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); transition: all 0.3s ease; }
@@ -89,17 +90,24 @@
     </header>
 
     <!-- ========================================== -->
-    <!-- DASHBOARD DESKTOP (WIDGETS PREMIUM) -->
+    <!-- DASHBOARD DESKTOP (8 WIDGETS PREMIUM) -->
     <!-- ========================================== -->
-    <div class="hidden lg:grid lg:grid-cols-3 xl:grid-cols-4 gap-6 p-10 h-full w-full content-start max-w-[1400px] mx-auto" id="desktop-dashboard">
+    <!-- Atualizado para grid-cols-4 para abrigar as 8 ferramentas em simetria perfeita -->
+    <div class="hidden lg:grid lg:grid-cols-4 gap-6 p-10 h-full w-full content-start max-w-[1500px] mx-auto" id="desktop-dashboard">
         
-        <!-- NOVO: Widget Calendário -->
         <div onclick="App.Router.go('calendario')" class="widget-card rounded-[2rem] p-8 cursor-pointer flex flex-col justify-between h-44 group">
             <div class="flex justify-between items-start text-textMuted group-hover:text-gold transition-colors"><i class="fa-solid fa-calendar-days text-2xl"></i><span class="text-[10px] uppercase tracking-[0.2em] font-bold">Calendário</span></div>
             <div class="flex items-baseline gap-2 text-white">
                 <span class="text-5xl font-extralight tabular-nums text-transparent bg-clip-text bg-gold-metallic drop-shadow-md" id="widget-calendar-day">--</span>
                 <span class="text-sm font-bold uppercase tracking-widest text-gray-500 group-hover:text-white transition-colors" id="widget-calendar-month">---</span>
             </div>
+        </div>
+
+        <!-- WIDGET LEMBRETES -->
+        <div onclick="App.Router.go('lembretes')" class="widget-card rounded-[2rem] p-8 cursor-pointer flex flex-col justify-between h-44 group relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition-all"></div>
+            <div class="flex justify-between items-start text-textMuted group-hover:text-blue-400 transition-colors"><i class="fa-solid fa-note-sticky text-2xl relative z-10"></i><span class="text-[10px] uppercase tracking-[0.2em] font-bold relative z-10">Lembretes</span></div>
+            <div class="text-2xl font-light text-white relative z-10" id="widget-reminders-status">0 p/ hoje</div>
         </div>
 
         <div onclick="App.Router.go('alarme')" class="widget-card rounded-[2rem] p-8 cursor-pointer flex flex-col justify-between h-44 group">
@@ -129,7 +137,7 @@
 
         <div onclick="App.Router.go('habitos')" class="widget-card rounded-[2rem] p-8 cursor-pointer flex flex-col justify-between h-44 group">
             <div class="flex justify-between items-start text-textMuted group-hover:text-gold transition-colors"><i class="fa-solid fa-fire text-2xl"></i><span class="text-[10px] uppercase tracking-[0.2em] font-bold">Hábitos</span></div>
-            <div class="text-2xl font-light text-white" id="widget-habits-status">Acompanhamento</div>
+            <div class="text-2xl font-light text-white" id="widget-habits-status">Monitorar</div>
         </div>
 
     </div>
@@ -138,21 +146,21 @@
     <!-- ========================================== -->
     <main id="app-overlay" class="flex flex-col flex-1 w-full h-full lg:hidden lg:fixed lg:inset-0 lg:bg-black/60 lg:backdrop-blur-md lg:z-40 lg:items-center lg:justify-center transition-opacity duration-400 lg:opacity-0" onclick="App.Router.closeDesktop(event)">
         
-        <div id="app-window" class="w-full h-full lg:w-[65vw] lg:h-[75vh] bg-darkBg lg:bg-glass-dark lg:backdrop-blur-2xl lg:rounded-[2.5rem] lg:shadow-[0_20px_60px_rgba(0,0,0,0.8)] lg:border lg:border-white/10 relative flex flex-col overflow-hidden" onclick="event.stopPropagation()">
+        <div id="app-window" class="w-full h-full lg:w-[65vw] lg:h-[80vh] bg-darkBg lg:bg-glass-dark lg:backdrop-blur-2xl lg:rounded-[2.5rem] lg:shadow-[0_20px_60px_rgba(0,0,0,0.8)] lg:border lg:border-white/10 relative flex flex-col overflow-hidden" onclick="event.stopPropagation()">
             
             <button onclick="App.Router.closeDesktop(event, true)" class="hidden lg:flex absolute top-6 right-6 w-12 h-12 bg-white/5 border border-white/10 rounded-full items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/20 hover:border-red-500/50 transition-all z-50"><i class="fa-solid fa-xmark"></i></button>
 
-            <!-- HUB (Mobile Only) -->
+            <!-- [HUB MOBILE] -->
             <section id="view-hub" class="tab-content hidden flex-col w-full h-full p-8 lg:hidden overflow-y-auto hide-scrollbar">
                 <h2 class="text-4xl font-light mb-8 text-white">Módulos <span class="text-transparent bg-clip-text bg-gold-metallic font-medium">Premium</span></h2>
                 <div class="grid grid-cols-2 gap-5" id="hub-grid"></div>
             </section>
 
-            <!-- [NOVO BLOCO] CALENDÁRIO PREMIUM -->
-            <section id="view-calendario" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar">
+            <!-- [BLOCO 1] CALENDÁRIO PREMIUM (HEATMAP E VIAGEM NO TEMPO) -->
+            <section id="view-calendario" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar relative">
                 <div class="flex justify-between items-center mb-8 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">
                     <div>
-                        <h2 class="text-3xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic">Calendário</h2>
+                        <h2 class="text-3xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic">O Meu Mês</h2>
                         <p class="text-gray-400 text-sm mt-1 uppercase tracking-widest font-bold" id="calendar-header-month">CARREGANDO...</p>
                     </div>
                     <div class="flex gap-3">
@@ -161,32 +169,77 @@
                     </div>
                 </div>
                 
-                <div class="flex-1 flex flex-col w-full max-w-2xl mx-auto gap-8 pb-24 lg:pb-0">
-                    <!-- Estatísticas do Mês -->
-                    <div class="grid grid-cols-2 gap-4 w-full flex-shrink-0">
-                        <div class="bg-button-dark border border-white/5 p-6 rounded-[2rem] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex flex-col justify-center items-center">
-                            <span class="text-gray-500 text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Maior Streak</span>
-                            <span class="text-3xl font-light text-white"><i class="fa-solid fa-fire text-gold text-lg mr-2 drop-shadow-md"></i><span id="cal-stat-streak">0</span></span>
-                        </div>
-                        <div class="bg-button-dark border border-white/5 p-6 rounded-[2rem] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex flex-col justify-center items-center">
-                            <span class="text-gray-500 text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Tarefas Feitas</span>
-                            <span class="text-3xl font-light text-transparent bg-clip-text bg-gold-metallic" id="cal-stat-tasks">0</span>
-                        </div>
-                    </div>
-
-                    <!-- Grelha Metálica do Calendário -->
-                    <div class="bg-black/30 border border-white/10 rounded-[2.5rem] p-6 lg:p-8 shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)] flex-1 min-h-0 flex flex-col">
+                <div class="flex-1 flex flex-col xl:flex-row w-full max-w-5xl mx-auto gap-8 pb-24 lg:pb-0 min-h-0">
+                    
+                    <!-- Lado Esquerdo: Grelha do Calendário -->
+                    <div class="flex-1 flex flex-col bg-black/30 border border-white/10 rounded-[2.5rem] p-6 lg:p-8 shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)] min-h-0">
                         <div class="grid grid-cols-7 gap-2 mb-4 text-center text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500 flex-shrink-0">
                             <div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div>
                         </div>
-                        <div id="calendar-grid" class="grid grid-cols-7 gap-3 lg:gap-4 text-center flex-1">
+                        <div id="calendar-grid" class="grid grid-cols-7 gap-3 lg:gap-4 text-center flex-1 min-h-0 overflow-y-auto hide-scrollbar content-start">
                             <!-- Injetado pelo JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Lado Direito: Estatísticas Dinâmicas e Viagem no Tempo -->
+                    <div class="w-full xl:w-72 flex flex-col gap-6 flex-shrink-0">
+                        <!-- Stats do Mês Visualizado -->
+                        <div class="grid grid-cols-2 xl:grid-cols-1 gap-4">
+                            <div class="bg-button-dark border border-white/5 p-6 rounded-[2rem] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex flex-col justify-center items-center xl:items-start text-center xl:text-left">
+                                <span class="text-gray-500 text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Maior Streak (Mês)</span>
+                                <span class="text-3xl font-light text-white"><i class="fa-solid fa-fire text-gold text-lg mr-2 drop-shadow-md"></i><span id="cal-stat-streak">0</span></span>
+                            </div>
+                            <div class="bg-button-dark border border-white/5 p-6 rounded-[2rem] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex flex-col justify-center items-center xl:items-start text-center xl:text-left">
+                                <span class="text-gray-500 text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Tarefas Concluídas</span>
+                                <span class="text-3xl font-light text-transparent bg-clip-text bg-gold-metallic" id="cal-stat-tasks">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Painel Viagem no Tempo (Resumo do Dia) -->
+                        <div id="calendar-day-summary" class="hidden flex-col bg-[#151515] border border-white/5 rounded-[2rem] p-6 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex-1 min-h-[200px]">
+                            <h3 class="text-gold text-lg font-light mb-4 border-b border-white/5 pb-3" id="summary-date-title">Selecione um dia</h3>
+                            <div class="space-y-4 overflow-y-auto hide-scrollbar flex-1" id="summary-content">
+                                <!-- Preenchido via JS ao clicar num dia -->
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- [BLOCO] DESPERTADOR -->
+            <!-- [BLOCO 2] LEMBRETES (NOVA FERRAMENTA) -->
+            <section id="view-lembretes" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar relative">
+                <div class="flex flex-col mb-8 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-6 z-10 border-b border-transparent lg:border-white/5 gap-6">
+                    <div class="flex justify-between items-center w-full">
+                        <div>
+                            <h2 class="text-3xl lg:text-4xl font-light text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-blue-500">Lembretes</h2>
+                            <p class="text-gray-400 text-sm mt-1 uppercase tracking-widest font-bold">AGENDA PESSOAL</p>
+                        </div>
+                        <button onclick="App.Reminders.goToToday()" class="bg-button-dark border border-white/10 text-blue-400 px-4 py-2 rounded-xl text-xs uppercase tracking-widest font-bold hover:bg-white/5 transition-all shadow-lg active:scale-95">Hoje</button>
+                    </div>
+
+                    <!-- Mini Calendário Horizontal Exclusivo -->
+                    <div class="flex items-center gap-2 w-full">
+                        <button onclick="App.Reminders.prevWeek()" class="text-gray-500 hover:text-blue-400 p-2 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
+                        <div id="reminders-week-strip" class="flex-1 flex justify-between gap-2 overflow-x-auto hide-scrollbar px-1">
+                            <!-- Injetado via JS -->
+                        </div>
+                        <button onclick="App.Reminders.nextWeek()" class="text-gray-500 hover:text-blue-400 p-2 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 mb-8 flex-shrink-0 max-w-3xl mx-auto w-full">
+                    <input type="text" id="reminder-input" placeholder="Novo lembrete para a data selecionada..." class="flex-1 input-premium rounded-2xl px-6 py-4 text-white font-light text-lg tracking-wide focus:border-blue-400">
+                    <button onclick="App.Reminders.add()" class="bg-gradient-to-br from-blue-400 to-blue-600 text-white px-6 rounded-2xl font-bold shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:scale-105 transition active:scale-95"><i class="fa-solid fa-paper-plane text-xl"></i></button>
+                </div>
+                
+                <div class="flex-1 flex flex-col w-full max-w-3xl mx-auto min-h-0">
+                    <h3 class="text-white text-xl font-light mb-4 flex items-center gap-3"><i class="fa-regular fa-calendar text-blue-400"></i> <span id="reminders-list-title">Para Hoje</span></h3>
+                    <div id="reminders-list" class="space-y-3 overflow-y-auto hide-scrollbar flex-1 pb-24 lg:pb-10">
+                        <!-- Injetado via JS -->
+                    </div>
+                </div>
+            </section>
+            <!-- [BLOCO 3] DESPERTADOR -->
             <section id="view-alarme" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar relative">
                 <div class="flex justify-between items-end mb-10 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">
                     <div>
@@ -199,7 +252,8 @@
                 </div>
                 <div id="alarm-list" class="space-y-5 flex-1 pb-24 lg:pb-10"></div>
             </section>
-            <!-- [BLOCO 3] TIMER -->
+
+            <!-- [BLOCO 4] TIMER -->
             <section id="view-timer" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 items-center justify-center">
                 <h2 class="text-3xl lg:text-4xl font-light mb-8 text-transparent bg-clip-text bg-gold-metallic w-full text-left lg:absolute lg:top-12 lg:left-12">Temporizador</h2>
                 <div class="flex-1 flex flex-col w-full h-full items-center justify-center relative mt-10 lg:mt-0 max-w-lg mx-auto">
@@ -243,7 +297,7 @@
                 </div>
             </section>
 
-            <!-- [BLOCO 4] CRONÔMETRO -->
+            <!-- [BLOCO 5] CRONÔMETRO -->
             <section id="view-cronometro" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 items-center">
                 <h2 class="text-3xl lg:text-4xl font-light mb-10 lg:mb-12 self-start w-full text-left text-transparent bg-clip-text bg-gold-metallic">Cronômetro</h2>
                 <div class="w-72 h-72 lg:w-80 lg:h-80 rounded-full border border-white/5 flex items-center justify-center relative mb-12 flex-shrink-0 bg-button-dark shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)]">
@@ -257,7 +311,7 @@
                 <div class="w-full flex-1 overflow-y-auto hide-scrollbar max-w-lg pb-24 lg:pb-0"><div id="stopwatch-laps" class="w-full flex flex-col gap-3"></div></div>
             </section>
 
-            <!-- [BLOCO 5] CALCULADORA PREMIUM -->
+            <!-- [BLOCO 6] CALCULADORA PREMIUM -->
             <section id="view-calculadora" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12">
                 <div class="flex justify-between items-center w-full max-w-md mx-auto mb-8 flex-shrink-0">
                     <h2 class="text-3xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic">Calculadora</h2>
@@ -302,7 +356,7 @@
                 </div>
             </section>
 
-            <!-- [BLOCO 6] TAREFAS -->
+            <!-- [BLOCO 7] TAREFAS -->
             <section id="view-tarefas" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar">
                 <div class="flex justify-between items-center mb-8 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">
                     <h2 class="text-3xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic">Tarefas Diárias</h2>
@@ -315,7 +369,7 @@
                 <div id="task-list" class="space-y-4 flex-1 pb-24 lg:pb-10"></div>
             </section>
 
-            <!-- [BLOCO 7] HÁBITOS -->
+            <!-- [BLOCO 8] HÁBITOS -->
             <section id="view-habitos" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar">
                 <h2 class="text-3xl lg:text-4xl font-light mb-8 text-transparent bg-clip-text bg-gold-metallic w-full text-left sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">Rastreador de Hábitos</h2>
                 <div class="flex gap-4 mb-8 flex-shrink-0">
@@ -440,9 +494,10 @@
             </div>
         </div>
     </div>
+
     <script>
         // ==========================================
-        // ARQUITETURA MODULAR (SPA HÍBRIDA 2.0)
+        // O CÉREBRO JAVASCRIPT (COM HEATMAP, VIAGEM NO TEMPO E LEMBRETES)
         // ==========================================
         
         const SafeStorage = {
@@ -594,13 +649,22 @@
         };
 
         App.Router = {
-            modules: { calendario: { icon: 'fa-calendar-days', n: 'Calendário' }, alarme: { icon: 'fa-bell', n: 'Alarme' }, cronometro: { icon: 'fa-stopwatch', n: 'Cronômetro' }, timer: { icon: 'fa-hourglass-half', n: 'Timer' }, calculadora: { icon: 'fa-calculator', n: 'Calc' }, tarefas: { icon: 'fa-calendar-check', n: 'Tarefas' }, habitos: { icon: 'fa-fire', n: 'Hábitos' } },
-            recent: SafeStorage.parse('chronos_recent') || ['alarme', 'cronometro', 'timer'],
+            modules: { 
+                calendario: { icon: 'fa-calendar-days', n: 'Calendário' }, 
+                lembretes: { icon: 'fa-note-sticky', n: 'Lembretes' }, // Nova Ferramenta Registrada!
+                alarme: { icon: 'fa-bell', n: 'Alarme' }, 
+                cronometro: { icon: 'fa-stopwatch', n: 'Cronômetro' }, 
+                timer: { icon: 'fa-hourglass-half', n: 'Timer' }, 
+                calculadora: { icon: 'fa-calculator', n: 'Calc' }, 
+                tarefas: { icon: 'fa-calendar-check', n: 'Tarefas' }, 
+                habitos: { icon: 'fa-fire', n: 'Hábitos' } 
+            },
+            recent: SafeStorage.parse('chronos_recent') || ['calendario', 'lembretes', 'alarme', 'timer'],
             go: (id) => {
                 App.System.initInteraction();
                 if (id !== 'hub' && App.Router.modules[id]) {
                     App.Router.recent = App.Router.recent.filter(m => m !== id); App.Router.recent.unshift(id);
-                    if (App.Router.recent.length > 3) App.Router.recent.pop(); SafeStorage.set('chronos_recent', JSON.stringify(App.Router.recent));
+                    if (App.Router.recent.length > 4) App.Router.recent.pop(); SafeStorage.set('chronos_recent', JSON.stringify(App.Router.recent));
                 }
                 App.State.currentView = id; 
                 
@@ -616,9 +680,8 @@
                 }
 
                 if (id === 'timer' && !App.Timer.isInit) App.Timer.init();
-                
-                // Forçar re-renderização do calendário se aberto
                 if (id === 'calendario') App.Calendar.render();
+                if (id === 'lembretes') App.Reminders.render();
                 
                 App.Router.render();
             },
@@ -847,9 +910,28 @@
                 
                 if(App.Tasks.data.length===0){ list.innerHTML = '<p class="text-center mt-10 text-sm text-gray-500 tracking-wide">Nenhuma tarefa adicionada.</p>'; return; }
                 list.innerHTML = App.Tasks.data.map((t, i) => `<div class="bg-button-dark p-5 rounded-2xl flex justify-between items-center border ${t.done?'border-white/5 opacity-50 shadow-none':'border-gold/20 shadow-[0_4px_15px_rgba(212,175,55,0.05)]'} transition-all hover:border-gold/50 group"><div class="flex items-center gap-5 overflow-hidden cursor-pointer flex-1" onclick="App.Tasks.toggle(${i})"><div class="w-8 h-8 rounded-full border border-white/20 flex-shrink-0 ${t.done?'bg-gold-metallic border-gold text-black shadow-[inset_0_2px_5px_rgba(0,0,0,0.3)]':'bg-[#0a0a0a] text-transparent shadow-inner'} flex items-center justify-center transition-all"><i class="fa-solid fa-check text-sm"></i></div><span class="text-white truncate uppercase tracking-[0.1em] text-lg font-light ${t.done?'line-through text-gray-500':''}">${t.text}</span></div><div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity lg:opacity-100"><button onclick="App.System.openEdit('Editar Tarefa', '${t.text}', (v)=>{App.Tasks.data[${i}].text=v; App.Tasks.save();})" class="text-gold p-3 hover:scale-110 transition"><i class="fa-solid fa-pen"></i></button><button onclick="App.Tasks.delete(${i})" class="text-red-900 hover:text-red-500 p-3 transition"><i class="fa-solid fa-trash"></i></button></div></div>`).join(''); 
+                
+                // Força re-render do calendário para atualizar heatmaps das tarefas
+                if (App.State.currentView === 'calendario') App.Calendar.render();
             },
-            add: () => { const inp = document.getElementById('task-input'); if(inp.value.trim()){ App.Tasks.data.push({ text: inp.value.trim().toUpperCase(), done: false }); App.Tasks.save(); inp.value=''; } },
-            toggle: (i) => { App.Tasks.data[i].done = !App.Tasks.data[i].done; App.Tasks.save(); }, 
+            add: () => { 
+                const inp = document.getElementById('task-input'); 
+                if(inp.value.trim()){ 
+                    App.Tasks.data.push({ 
+                        text: inp.value.trim().toUpperCase(), 
+                        done: false, 
+                        createdAt: new Date().toISOString().split('T')[0] // Guarda o dia em que foi criada (para o histórico)
+                    }); 
+                    App.Tasks.save(); inp.value=''; 
+                } 
+            },
+            toggle: (i) => { 
+                App.Tasks.data[i].done = !App.Tasks.data[i].done; 
+                // Se concluída agora, regista a data de conclusão para o calendário
+                if(App.Tasks.data[i].done) App.Tasks.data[i].completedAt = new Date().toISOString().split('T')[0];
+                else delete App.Tasks.data[i].completedAt;
+                App.Tasks.save(); 
+            }, 
             delete: (i) => { App.Tasks.data.splice(i, 1); App.Tasks.save(); }, 
             clearCompleted: () => { App.Tasks.data = App.Tasks.data.filter(t => !t.done); App.Tasks.save(); },
             save: () => { SafeStorage.set('chronos_tasks', JSON.stringify(App.Tasks.data)); App.Tasks.render(); }
@@ -858,43 +940,177 @@
         App.Habits = {
             data: SafeStorage.parse('chronos_habits') || [],
             getStreak: (hist) => { if(!hist || !hist.length) return 0; let s = 0, d = new Date(), check = d.toISOString().split('T')[0]; if(!hist.includes(check)){ d.setDate(d.getDate()-1); check = d.toISOString().split('T')[0]; if(!hist.includes(check)) return 0; } while(hist.includes(check)){ s++; d.setDate(d.getDate()-1); check = d.toISOString().split('T')[0]; } return s; },
-            generateCalendar: (hist) => {
-                const now = new Date(); const year = now.getFullYear(); const month = now.getMonth();
-                const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
-                const days = ['D','S','T','Q','Q','S','S'];
-                let html = '<div class="calendar-grid">';
-                days.forEach(d => html += `<div class="text-center text-[10px] text-gray-500 font-bold">${d}</div>`);
-                for(let i=0; i<firstDay; i++) html += `<div></div>`;
-                for(let i=1; i<=daysInMonth; i++) {
-                    const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-                    const done = hist.includes(dStr); const isToday = (i === now.getDate());
-                    let classes = "w-6 h-6 mx-auto rounded-full flex items-center justify-center text-[10px] transition-all ";
-                    if(done) classes += "bg-gold-metallic text-black font-bold shadow-[0_2px_5px_rgba(212,175,55,0.4)]"; else if(isToday) classes += "border border-gold text-gold"; else classes += "text-gray-600";
-                    html += `<div class="${classes}">${i}</div>`;
-                }
-                html += '</div>'; return html;
-            },
-            toggleExpand: (id) => { App.State.expandedHabit = App.State.expandedHabit === id ? null : id; App.Habits.render(); },
             render: () => { 
                 const list = document.getElementById('habit-list'); 
                 if(App.State.isDesktop) document.getElementById('widget-habits-status').innerText = `${App.Habits.data.length} monitorados`;
                 if(App.Habits.data.length===0){ list.innerHTML = '<p class="text-center mt-10 text-sm text-gray-500 tracking-wide">Nenhum hábito rastreado.</p>'; return; } 
                 const today = new Date().toISOString().split('T')[0];
                 list.innerHTML = App.Habits.data.map((h, i) => { 
-                    const done = h.hist.includes(today); const stk = App.Habits.getStreak(h.hist); const expanded = App.State.expandedHabit === h.id;
-                    const calHtml = expanded ? App.Habits.generateCalendar(h.hist) : '';
-                    return `<div class="bg-button-dark p-6 rounded-[1.5rem] border ${done?'border-gold/20 shadow-[0_4px_15px_rgba(212,175,55,0.05)]':'border-white/5'} transition-all hover:border-gold/40 flex flex-col group"><div class="flex justify-between items-center w-full"><div class="flex flex-col flex-1 pr-4" onclick="App.Habits.toggleExpand('${h.id}')"><span class="text-white font-light truncate mb-2 uppercase tracking-[0.1em] cursor-pointer hover:text-gold transition-colors text-xl">${h.name} <i class="fa-solid fa-chevron-${expanded?'up':'down'} text-[10px] text-gray-500 ml-3"></i></span><div class="text-xs font-bold tracking-widest uppercase ${stk>0?'text-gold':'text-gray-600'}"><i class="fa-solid fa-fire mr-1"></i> ${stk} dias seguidos</div></div><div class="flex items-center gap-2"><button onclick="App.System.openEdit('Editar Hábito', '${h.name}', (v)=>{App.Habits.data[${i}].name=v; App.Habits.save();})" class="text-gold p-3 hover:scale-110 transition hidden lg:block opacity-0 group-hover:opacity-100"><i class="fa-solid fa-pen"></i></button><button onclick="App.Habits.toggle(${i})" class="w-14 h-14 rounded-full border border-white/20 flex-shrink-0 transition-all flex items-center justify-center ${done?'bg-gold-metallic text-black shadow-[0_0_15px_rgba(212,175,55,0.4)] border-transparent':'bg-[#0a0a0a] text-transparent hover:border-gold shadow-inner'}"><i class="fa-solid fa-check text-xl"></i></button><button onclick="App.Habits.delete(${i})" class="text-gray-700 hover:text-red-500 p-3 transition opacity-0 group-hover:opacity-100 lg:opacity-100"><i class="fa-solid fa-trash"></i></button></div></div>${calHtml}</div>`; 
+                    const done = h.hist.includes(today); const stk = App.Habits.getStreak(h.hist);
+                    return `<div class="bg-button-dark p-6 rounded-[1.5rem] border ${done?'border-gold/20 shadow-[0_4px_15px_rgba(212,175,55,0.05)]':'border-white/5'} transition-all hover:border-gold/40 flex flex-col group"><div class="flex justify-between items-center w-full"><div class="flex flex-col flex-1 pr-4"><span class="text-white font-light truncate mb-2 uppercase tracking-[0.1em] text-xl">${h.name}</span><div class="text-xs font-bold tracking-widest uppercase ${stk>0?'text-gold':'text-gray-600'}"><i class="fa-solid fa-fire mr-1"></i> ${stk} dias seguidos</div></div><div class="flex items-center gap-2"><button onclick="App.System.openEdit('Editar Hábito', '${h.name}', (v)=>{App.Habits.data[${i}].name=v; App.Habits.save();})" class="text-gold p-3 hover:scale-110 transition hidden lg:block opacity-0 group-hover:opacity-100"><i class="fa-solid fa-pen"></i></button><button onclick="App.Habits.toggle(${i})" class="w-14 h-14 rounded-full border border-white/20 flex-shrink-0 transition-all flex items-center justify-center ${done?'bg-gold-metallic text-black shadow-[0_0_15px_rgba(212,175,55,0.4)] border-transparent':'bg-[#0a0a0a] text-transparent hover:border-gold shadow-inner'}"><i class="fa-solid fa-check text-xl"></i></button><button onclick="App.Habits.delete(${i})" class="text-gray-700 hover:text-red-500 p-3 transition opacity-0 group-hover:opacity-100 lg:opacity-100"><i class="fa-solid fa-trash"></i></button></div></div></div>`; 
                 }).join(''); 
+                
+                // Força re-render do calendário para heatmaps
+                if (App.State.currentView === 'calendario') App.Calendar.render();
             },
             add: () => { const inp = document.getElementById('habit-input'); if(inp.value.trim()){ App.Habits.data.push({ id: Date.now().toString(), name: inp.value.trim().toUpperCase(), hist: [] }); App.Habits.save(); inp.value=''; } },
             toggle: (i) => { const t = new Date().toISOString().split('T')[0]; if(App.Habits.data[i].hist.includes(t)) App.Habits.data[i].hist = App.Habits.data[i].hist.filter(x => x !== t); else { App.Habits.data[i].hist.push(t); App.Audio.vibrate(20); } App.Habits.save(); },
             delete: (i) => { App.Habits.data.splice(i, 1); App.Habits.save(); }, save: () => { SafeStorage.set('chronos_habits', JSON.stringify(App.Habits.data)); App.Habits.render(); }
         };
 
-        // [NOVO] Módulo Calendário Premium
+        // [NOVA FERRAMENTA] Lembretes
+        App.Reminders = {
+            data: SafeStorage.parse('chronos_reminders') || [],
+            currentDate: new Date(), // Controla o mini-calendário semanal
+            
+            init: () => { App.Reminders.render(); },
+            
+            formatDateYMD: (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,
+            
+            goToToday: () => { App.Reminders.currentDate = new Date(); App.Reminders.render(); },
+            prevWeek: () => { App.Reminders.currentDate.setDate(App.Reminders.currentDate.getDate() - 7); App.Reminders.render(); },
+            nextWeek: () => { App.Reminders.currentDate.setDate(App.Reminders.currentDate.getDate() + 7); App.Reminders.render(); },
+            
+            selectDay: (y, m, d) => { App.Reminders.currentDate = new Date(y, m, d); App.Reminders.render(); },
+
+            render: () => {
+                const now = new Date();
+                const selDateStr = App.Reminders.formatDateYMD(App.Reminders.currentDate);
+                const todayStr = App.Reminders.formatDateYMD(now);
+                
+                // 1. Renderiza o Título (Hoje, Amanhã ou Data Específica)
+                const titleEl = document.getElementById('reminders-list-title');
+                if(selDateStr === todayStr) titleEl.innerHTML = `Para Hoje`;
+                else {
+                    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+                    if(selDateStr === App.Reminders.formatDateYMD(tomorrow)) titleEl.innerHTML = `Para Amanhã`;
+                    else titleEl.innerHTML = `Dia ${String(App.Reminders.currentDate.getDate()).padStart(2,'0')}/${String(App.Reminders.currentDate.getMonth()+1).padStart(2,'0')}`;
+                }
+
+                // Atualiza Widget Desktop
+                if (App.State.isDesktop) {
+                    const todaysReminders = App.Reminders.data.filter(r => r.date === todayStr && !r.done).length;
+                    document.getElementById('widget-reminders-status').innerText = `${todaysReminders} p/ hoje`;
+                }
+
+                // 2. Renderiza a Tira Semanal (7 dias baseados na currentDate)
+                const stripEl = document.getElementById('reminders-week-strip');
+                let stripHtml = '';
+                
+                // Encontrar o Domingo desta semana selecionada
+                let currDayOfWeek = App.Reminders.currentDate.getDay();
+                let startOfWeek = new Date(App.Reminders.currentDate);
+                startOfWeek.setDate(startOfWeek.getDate() - currDayOfWeek);
+                
+                const dayLetters = ['D','S','T','Q','Q','S','S'];
+                
+                for(let i=0; i<7; i++) {
+                    const d = new Date(startOfWeek); d.setDate(d.getDate() + i);
+                    const dStr = App.Reminders.formatDateYMD(d);
+                    const isSelected = (dStr === selDateStr);
+                    const isToday = (dStr === todayStr);
+                    
+                    // Conta se tem lembretes não feitos nesse dia
+                    const hasReminders = App.Reminders.data.some(r => r.date === dStr && !r.done);
+                    
+                    let bg = isSelected ? "bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)] scale-110" : 
+                             isToday ? "border border-blue-500 text-blue-400" : "bg-button-dark border border-white/5 text-gray-400 hover:text-white hover:bg-white/5";
+                    
+                    stripHtml += `
+                        <div onclick="App.Reminders.selectDay(${d.getFullYear()}, ${d.getMonth()}, ${d.getDate()})" 
+                             class="flex flex-col items-center justify-center w-12 h-16 rounded-[1rem] cursor-pointer transition-all flex-shrink-0 ${bg}">
+                            <span class="text-[9px] font-bold tracking-widest">${dayLetters[i]}</span>
+                            <span class="text-lg font-light mt-1">${d.getDate()}</span>
+                            ${hasReminders && !isSelected ? '<div class="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1 shadow-[0_0_5px_rgba(59,130,246,0.8)]"></div>' : '<div class="w-1.5 h-1.5 mt-1"></div>'}
+                        </div>
+                    `;
+                }
+                stripEl.innerHTML = stripHtml;
+
+                // 3. Renderiza a Lista de Lembretes do Dia Selecionado
+                const list = document.getElementById('reminders-list');
+                const dayReminders = App.Reminders.data.filter(r => r.date === selDateStr);
+                
+                if(dayReminders.length === 0){ 
+                    list.innerHTML = '<div class="flex flex-col items-center justify-center h-32 opacity-50"><i class="fa-solid fa-mug-hot text-3xl mb-3 text-blue-400"></i><p class="text-sm font-light tracking-wide">Dia livre.</p></div>'; 
+                    return; 
+                }
+                
+                list.innerHTML = dayReminders.map(r => `
+                    <div class="bg-button-dark p-4 rounded-2xl flex justify-between items-center border ${r.done?'border-white/5 opacity-50':'border-blue-500/20 shadow-[0_4px_15px_rgba(59,130,246,0.05)]'} transition-all group">
+                        <div class="flex items-center gap-4 overflow-hidden cursor-pointer flex-1" onclick="App.Reminders.toggle('${r.id}')">
+                            <div class="w-6 h-6 rounded-full border border-white/20 flex-shrink-0 ${r.done?'bg-blue-500 border-blue-500 text-white shadow-[inset_0_2px_5px_rgba(0,0,0,0.3)]':'bg-black text-transparent shadow-inner'} flex items-center justify-center transition-all"><i class="fa-solid fa-check text-xs"></i></div>
+                            <span class="text-white truncate uppercase tracking-[0.1em] font-light ${r.done?'line-through text-gray-500':''}">${r.text}</span>
+                        </div>
+                        <button onclick="App.Reminders.delete('${r.id}')" class="text-gray-600 hover:text-red-500 p-2 transition"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `).join('');
+            },
+            
+            add: () => { 
+                const inp = document.getElementById('reminder-input'); 
+                if(inp.value.trim()){ 
+                    App.Reminders.data.push({ 
+                        id: Date.now().toString(),
+                        text: inp.value.trim().toUpperCase(), 
+                        done: false, 
+                        date: App.Reminders.formatDateYMD(App.Reminders.currentDate) 
+                    }); 
+                    App.Reminders.save(); inp.value=''; 
+                } 
+            },
+            toggle: (id) => { const r = App.Reminders.data.find(x => x.id === id); if(r) { r.done = !r.done; App.Reminders.save(); } }, 
+            delete: (id) => { App.Reminders.data = App.Reminders.data.filter(x => x.id !== id); App.Reminders.save(); }, 
+            save: () => { SafeStorage.set('chronos_reminders', JSON.stringify(App.Reminders.data)); App.Reminders.render(); }
+        };
+
+        // Calendário Premium (Com Heatmap e Viagem no Tempo)
         App.Calendar = {
             currentDate: new Date(),
+            
             init: () => { App.Calendar.render(); },
+            
+            formatDateYMD: (y, m, d) => `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,
+            
+            showSummary: (y, m, d) => {
+                const dateStr = App.Calendar.formatDateYMD(y, m, d);
+                const title = document.getElementById('summary-date-title');
+                const content = document.getElementById('summary-content');
+                const panel = document.getElementById('calendar-day-summary');
+                
+                title.innerText = `${String(d).padStart(2,'0')}/${String(m+1).padStart(2,'0')}/${y}`;
+                
+                // Procurar atividades neste dia exato
+                const tasksDone = App.Tasks.data.filter(t => t.completedAt === dateStr);
+                const habitsDone = App.Habits.data.filter(h => h.hist.includes(dateStr));
+                const remindersDone = App.Reminders.data.filter(r => r.date === dateStr && r.done);
+                
+                let html = '';
+                
+                if (tasksDone.length === 0 && habitsDone.length === 0 && remindersDone.length === 0) {
+                    html = '<div class="text-gray-500 text-sm italic h-full flex items-center justify-center">Nenhum registo neste dia.</div>';
+                } else {
+                    if(habitsDone.length > 0) {
+                        html += `<div class="mb-4"><h4 class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2">Hábitos</h4>`;
+                        habitsDone.forEach(h => html += `<div class="flex items-center gap-2 mb-1 text-sm font-light"><div class="w-1.5 h-1.5 rounded-full bg-gold"></div>${h.name}</div>`);
+                        html += `</div>`;
+                    }
+                    if(tasksDone.length > 0) {
+                        html += `<div class="mb-4"><h4 class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2">Tarefas</h4>`;
+                        tasksDone.forEach(t => html += `<div class="flex items-center gap-2 mb-1 text-sm font-light"><div class="w-1.5 h-1.5 rounded-full bg-white"></div>${t.text}</div>`);
+                        html += `</div>`;
+                    }
+                    if(remindersDone.length > 0) {
+                        html += `<div class="mb-4"><h4 class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2">Lembretes</h4>`;
+                        remindersDone.forEach(r => html += `<div class="flex items-center gap-2 mb-1 text-sm font-light text-blue-300"><div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>${r.text}</div>`);
+                        html += `</div>`;
+                    }
+                }
+                
+                content.innerHTML = html;
+                panel.classList.remove('hidden'); panel.classList.add('flex');
+            },
+
             render: () => {
                 const year = App.Calendar.currentDate.getFullYear();
                 const month = App.Calendar.currentDate.getMonth();
@@ -902,6 +1118,9 @@
                 
                 const monthNames = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
                 document.getElementById('calendar-header-month').innerText = `${monthNames[month]} ${year}`;
+                
+                // Esconde resumo ao mudar de mês
+                document.getElementById('calendar-day-summary').classList.replace('flex', 'hidden');
                 
                 if (App.State.isDesktop) {
                     const elM = document.getElementById('widget-calendar-month'); if(elM) elM.innerText = monthNames[now.getMonth()].substring(0,3);
@@ -911,28 +1130,61 @@
                 const firstDay = new Date(year, month, 1).getDay();
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
                 
+                let monthlyTasks = 0; // Para as estatísticas
                 let html = '';
+                
+                // Espaços vazios
                 for(let i = 0; i < firstDay; i++) { html += `<div class="aspect-square"></div>`; }
                 
+                // Dias do mês (Renderizando Heatmap)
                 for(let i = 1; i <= daysInMonth; i++) {
+                    const dStr = App.Calendar.formatDateYMD(year, month, i);
                     const isToday = (i === now.getDate() && month === now.getMonth() && year === now.getFullYear());
-                    let classes = "aspect-square flex items-center justify-center rounded-2xl text-base lg:text-lg font-light transition-all cursor-pointer ";
+                    
+                    // Cálculo do Heatmap
+                    const hasTask = App.Tasks.data.some(t => t.completedAt === dStr);
+                    const hasHabit = App.Habits.data.some(h => h.hist.includes(dStr));
+                    const hasReminder = App.Reminders.data.some(r => r.date === dStr && r.done);
+                    
+                    if (hasTask) monthlyTasks++;
+                    
+                    let classes = "relative aspect-square flex flex-col items-center justify-center rounded-2xl text-base lg:text-lg font-light transition-all cursor-pointer ";
                     
                     if(isToday) {
-                        classes += "bg-gold-metallic text-black shadow-[0_5px_15px_rgba(212,175,55,0.4)] font-bold scale-110";
+                        classes += "bg-gold-metallic text-black shadow-[0_5px_15px_rgba(212,175,55,0.4)] font-bold scale-110 z-10";
                     } else {
-                        classes += "bg-[#181818] border border-white/5 text-gray-300 hover:border-gold/50 hover:text-gold shadow-sm hover:scale-105 active:scale-95";
+                        classes += "bg-[#181818] border border-white/5 text-gray-300 hover:border-gold/50 hover:text-gold shadow-[inset_0_2px_5px_rgba(0,0,0,0.5)] hover:scale-105 active:scale-95";
                     }
-                    html += `<div class="${classes}" onclick="App.Audio.vibrate(5)">${i}</div>`;
+                    
+                    // Geração dos pontinhos neon (Heatmap)
+                    let dots = '<div class="absolute bottom-1.5 flex gap-1">';
+                    if (hasTask) dots += `<div class="heatmap-dot bg-white text-white/50"></div>`;
+                    if (hasHabit) dots += `<div class="heatmap-dot bg-gold text-gold/50"></div>`;
+                    if (hasReminder) dots += `<div class="heatmap-dot bg-blue-500 text-blue-500/50"></div>`;
+                    dots += '</div>';
+
+                    html += `<div class="${classes}" onclick="App.Calendar.showSummary(${year}, ${month}, ${i}); App.Audio.vibrate(10)">
+                                <span>${i}</span>
+                                ${(!isToday && (hasTask || hasHabit || hasReminder)) ? dots : ''}
+                             </div>`;
                 }
+                
                 document.getElementById('calendar-grid').innerHTML = html;
                 
-                const tasksDone = App.Tasks.data.filter(t => t.done).length;
-                let maxStreak = 0;
-                App.Habits.data.forEach(h => { const s = App.Habits.getStreak(h.hist); if(s > maxStreak) maxStreak = s; });
+                // Estatísticas do Mês Visualizado
+                let monthMaxStreak = 0;
+                App.Habits.data.forEach(h => { 
+                    // Uma versão super simples de streak no mês visualizado
+                    let cur = 0, mMax = 0;
+                    for(let i=1; i<=daysInMonth; i++) {
+                        if(h.hist.includes(App.Calendar.formatDateYMD(year, month, i))) { cur++; if(cur>mMax) mMax = cur; }
+                        else cur = 0;
+                    }
+                    if(mMax > monthMaxStreak) monthMaxStreak = mMax;
+                });
                 
-                document.getElementById('cal-stat-streak').innerText = maxStreak;
-                document.getElementById('cal-stat-tasks').innerText = tasksDone;
+                document.getElementById('cal-stat-streak').innerText = monthMaxStreak;
+                document.getElementById('cal-stat-tasks').innerText = monthlyTasks;
             },
             prevMonth: () => { App.Calendar.currentDate.setMonth(App.Calendar.currentDate.getMonth() - 1); App.Audio.vibrate(10); App.Calendar.render(); },
             nextMonth: () => { App.Calendar.currentDate.setMonth(App.Calendar.currentDate.getMonth() + 1); App.Audio.vibrate(10); App.Calendar.render(); }
@@ -955,12 +1207,14 @@
             App.Alarms.init(); 
             App.Tasks.render(); 
             App.Habits.render();
-            App.Calendar.init(); // Inicializa o Calendário
+            App.Calendar.init(); 
+            App.Reminders.init(); // Inicia Módulo de Lembretes
             
             if(App.State.isDesktop) { App.Timer.updateDisplay(); App.Stopwatch.update(); }
 
             document.getElementById('task-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') App.Tasks.add(); }); 
             document.getElementById('habit-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') App.Habits.add(); });
+            document.getElementById('reminder-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') App.Reminders.add(); });
             
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('PWA Bypass:', err)); });
