@@ -50,9 +50,12 @@
         /* Widget Hover */
         .widget-card { transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.05); }
         .widget-card:hover { transform: translateY(-3px); border-color: rgba(212, 175, 55, 0.4); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+
+        /* Calendário dos Hábitos */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
-<body class="bg-darkBg text-white h-screen w-full flex flex-col overflow-hidden" onclick="App.Audio.init()">
+<body class="bg-darkBg text-white h-screen w-full flex flex-col overflow-hidden" onclick="App.System.initInteraction()">
 
     <!-- SPLASH SCREEN -->
     <div id="splash-screen" class="fixed inset-0 bg-[#050505] z-[100] flex flex-col items-center justify-center transition-opacity duration-700 ease-out">
@@ -108,16 +111,13 @@
     <!-- ========================================== -->
     <!-- CONTAINER PRINCIPAL (ABAS NO MOBILE / MODAL NO DESKTOP) -->
     <!-- ========================================== -->
-    <!-- Removido o lg:hidden direto que travava o JS. Adicionado flex flex-col inicial. -->
     <main id="app-overlay" class="flex flex-col flex-1 w-full h-full lg:hidden lg:fixed lg:inset-0 lg:bg-black/70 lg:backdrop-blur-sm lg:z-40 lg:items-center lg:justify-center transition-opacity duration-300 lg:opacity-0" onclick="App.Router.closeDesktop(event)">
         
-        <!-- A Janela de 65% no Desktop (Ocupa 100% no Mobile) -->
         <div id="app-window" class="w-full h-full lg:w-[65vw] lg:h-[75vh] lg:bg-[#0c0c0c] lg:rounded-[2.5rem] lg:shadow-[0_0_80px_rgba(0,0,0,0.9)] lg:border lg:border-gray-800/60 relative flex flex-col overflow-hidden" onclick="event.stopPropagation()">
             
-            <!-- Botão Fechar Desktop -->
             <button onclick="App.Router.closeDesktop(event, true)" class="hidden lg:flex absolute top-6 right-6 w-10 h-10 bg-darkSurface rounded-full items-center justify-center text-gray-400 hover:text-white hover:bg-red-900/50 transition z-50"><i class="fa-solid fa-xmark"></i></button>
 
-            <!-- [BLOCO 1] HUB (Mobile Only) -->
+            <!-- [BLOCO 1] HUB -->
             <section id="view-hub" class="tab-content hidden flex-col w-full h-full p-6 lg:hidden overflow-y-auto hide-scrollbar">
                 <h2 class="text-3xl font-light mb-6">Central de <span class="text-gold font-bold">Módulos</span></h2>
                 <div class="grid grid-cols-2 gap-4" id="hub-grid"></div>
@@ -189,7 +189,7 @@
                 <div class="w-full flex-1 overflow-y-auto hide-scrollbar max-w-lg pb-20 lg:pb-0"><div id="stopwatch-laps" class="w-full flex flex-col gap-2"></div></div>
             </section>
 
-            <!-- [BLOCO 5] CALCULADORA (RESOLVIDO VAZAMENTO) -->
+            <!-- [BLOCO 5] CALCULADORA UPGRADE (+/-, %, Backspace Integrado) -->
             <section id="view-calculadora" class="tab-content hidden tab-anim flex-col w-full h-full p-6 lg:p-10">
                 <div class="flex justify-between items-center w-full max-w-md mx-auto mb-6 flex-shrink-0">
                     <h2 class="text-2xl lg:text-4xl font-light text-gold">Calculadora</h2>
@@ -197,16 +197,24 @@
                 </div>
                 
                 <div class="w-full flex-1 min-h-0 flex flex-col max-w-md mx-auto pb-20 lg:pb-0 gap-6">
-                    <div class="w-full bg-darkSurface lg:bg-[#111] rounded-[2rem] p-8 flex flex-col justify-end items-end h-32 lg:h-40 shadow-[inset_0_2px_15px_rgba(0,0,0,0.6)] lg:border lg:border-gray-800/50 flex-shrink-0">
+                    
+                    <div class="w-full bg-darkSurface lg:bg-[#111] rounded-[2rem] p-8 flex flex-col justify-end items-end h-36 lg:h-44 shadow-[inset_0_2px_15px_rgba(0,0,0,0.6)] lg:border lg:border-gray-800/50 flex-shrink-0 relative">
                         <div id="calc-prev" class="text-textMuted text-sm lg:text-base h-6 font-light tracking-wider mb-2"></div>
-                        <div id="calc-display" class="text-6xl lg:text-7xl font-thin text-white tracking-wider truncate w-full text-right">0</div>
+                        <div class="flex justify-between w-full items-end">
+                            <button onclick="App.Calc.input('backspace')" class="text-gray-500 hover:text-white text-3xl pb-2 active:scale-95 transition"><i class="fa-solid fa-delete-left"></i></button>
+                            <div id="calc-display" class="text-6xl lg:text-7xl font-thin text-white tracking-wider truncate w-full text-right ml-4">0</div>
+                        </div>
                     </div>
                     
+                    <!-- Grid 4x5 Completo -->
                     <div class="grid grid-cols-4 gap-3 lg:gap-4 w-full flex-1 min-h-0">
-                        <button onclick="App.Calc.input('clear')" class="col-span-2 bg-red-900/30 text-red-400 rounded-3xl font-bold text-2xl active:scale-95 transition hover:bg-red-900/50">C</button>
-                        <button onclick="App.Calc.input('backspace')" class="bg-darkSurface lg:bg-[#1a1a1a] text-white rounded-3xl font-bold text-2xl active:scale-95 transition hover:bg-gray-800"><i class="fa-solid fa-delete-left"></i></button>
+                        <!-- Linha 1: Ações Secundárias -->
+                        <button onclick="App.Calc.input('clear')" class="bg-red-900/30 text-red-400 rounded-3xl font-bold text-3xl active:scale-95 transition hover:bg-red-900/50">C</button>
+                        <button onclick="App.Calc.input('+/-')" class="bg-darkSurface lg:bg-[#1a1a1a] text-white rounded-3xl font-bold text-2xl active:scale-95 transition hover:bg-gray-800">+/-</button>
+                        <button onclick="App.Calc.input('%')" class="bg-darkSurface lg:bg-[#1a1a1a] text-white rounded-3xl font-bold text-2xl active:scale-95 transition hover:bg-gray-800">%</button>
                         <button onclick="App.Calc.input('/')" class="bg-gold text-darkBg rounded-3xl font-bold text-3xl active:scale-95 transition hover:scale-105">÷</button>
                         
+                        <!-- Linhas 2, 3 e 4: Números e Operadores -->
                         <button onclick="App.Calc.input('7')" class="bg-darkSurface lg:bg-[#1a1a1a] text-white rounded-3xl text-3xl font-light active:scale-95 transition hover:bg-gray-800">7</button>
                         <button onclick="App.Calc.input('8')" class="bg-darkSurface lg:bg-[#1a1a1a] text-white rounded-3xl text-3xl font-light active:scale-95 transition hover:bg-gray-800">8</button>
                         <button onclick="App.Calc.input('9')" class="bg-darkSurface lg:bg-[#1a1a1a] text-white rounded-3xl text-3xl font-light active:scale-95 transition hover:bg-gray-800">9</button>
@@ -222,6 +230,7 @@
                         <button onclick="App.Calc.input('3')" class="bg-darkSurface lg:bg-[#1a1a1a] text-white rounded-3xl text-3xl font-light active:scale-95 transition hover:bg-gray-800">3</button>
                         <button onclick="App.Calc.input('+')" class="bg-gold text-darkBg rounded-3xl font-bold text-4xl active:scale-95 transition hover:scale-105">+</button>
                         
+                        <!-- Linha 5 -->
                         <button onclick="App.Calc.input('0')" class="col-span-2 bg-darkSurface lg:bg-[#1a1a1a] text-white rounded-3xl text-3xl font-light active:scale-95 transition hover:bg-gray-800">0</button>
                         <button onclick="App.Calc.input('.')" class="bg-darkSurface lg:bg-[#1a1a1a] text-white rounded-3xl text-3xl font-light active:scale-95 transition hover:bg-gray-800">.</button>
                         <button onclick="App.Calc.input('=')" class="bg-gold text-darkBg rounded-3xl font-bold text-4xl active:scale-95 transition shadow-[0_0_15px_rgba(212,175,55,0.4)] hover:scale-105">=</button>
@@ -229,9 +238,12 @@
                 </div>
             </section>
 
-            <!-- [BLOCO 6] TAREFAS -->
+            <!-- [BLOCO 6] TAREFAS (Com Vassoura de Limpeza) -->
             <section id="view-tarefas" class="tab-content hidden tab-anim flex-col w-full h-full p-6 lg:p-10 overflow-y-auto hide-scrollbar">
-                <h2 class="text-2xl lg:text-4xl font-light mb-8 text-gold w-full text-left sticky top-0 bg-darkBg lg:bg-[#0c0c0c] pt-2 z-10">Tarefas Diárias</h2>
+                <div class="flex justify-between items-center mb-8 sticky top-0 bg-darkBg lg:bg-[#0c0c0c] pt-2 z-10">
+                    <h2 class="text-2xl lg:text-4xl font-light text-gold">Tarefas Diárias</h2>
+                    <button onclick="App.Tasks.clearCompleted()" class="text-gray-500 hover:text-red-400 text-xl transition bg-darkSurface p-3 rounded-xl"><i class="fa-solid fa-broom"></i></button>
+                </div>
                 <div class="flex gap-3 mb-8 flex-shrink-0">
                     <input type="text" id="task-input" placeholder="NOVA TAREFA..." class="flex-1 bg-darkSurface lg:bg-[#111] border border-gray-700 rounded-2xl px-6 py-4 text-white focus:border-gold uppercase transition font-light text-lg" oninput="this.value = this.value.toUpperCase()">
                     <button onclick="App.Tasks.add()" class="bg-gold text-darkBg px-6 rounded-2xl font-bold shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:scale-105 transition active:scale-95"><i class="fa-solid fa-plus text-xl"></i></button>
@@ -239,7 +251,7 @@
                 <div id="task-list" class="space-y-4 flex-1 pb-24 lg:pb-10"></div>
             </section>
 
-            <!-- [BLOCO 7] HÁBITOS -->
+            <!-- [BLOCO 7] HÁBITOS (Com Calendário) -->
             <section id="view-habitos" class="tab-content hidden tab-anim flex-col w-full h-full p-6 lg:p-10 overflow-y-auto hide-scrollbar">
                 <h2 class="text-2xl lg:text-4xl font-light mb-8 text-gold w-full text-left sticky top-0 bg-darkBg lg:bg-[#0c0c0c] pt-2 z-10">Rastreador de Hábitos</h2>
                 <div class="flex gap-3 mb-8 flex-shrink-0">
@@ -261,7 +273,7 @@
     <!-- MODAIS DO SISTEMA -->
     <!-- ========================================== -->
     
-    <!-- Configurações -->
+    <!-- Configurações Premium (Toque e Notificação) -->
     <div id="settings-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[60] opacity-0 transition-opacity duration-300 backdrop-blur-sm">
         <div id="settings-content" class="bg-darkSurface p-8 rounded-[2.5rem] border border-gray-800 w-11/12 max-w-md transform scale-95 transition-transform duration-300 shadow-2xl">
             <h3 class="text-2xl font-light text-gold mb-8">Configurações</h3>
@@ -269,6 +281,15 @@
                 <div class="flex justify-between items-center p-4 bg-darkBg rounded-2xl border border-gray-800">
                     <span class="text-white">Sons de Alerta</span>
                     <input type="checkbox" id="set-sound" onchange="App.Settings.toggle('sound')" class="accent-gold w-6 h-6 cursor-pointer">
+                </div>
+                <!-- NOVO: Seletor de Toque -->
+                <div class="flex justify-between items-center p-4 bg-darkBg rounded-2xl border border-gray-800">
+                    <span class="text-white">Toque</span>
+                    <select id="set-tone" onchange="App.Settings.changeTone(this.value)" class="bg-darkSurface text-gold font-bold border border-gray-700 outline-none rounded-xl p-2 cursor-pointer">
+                        <option value="classic">Clássico</option>
+                        <option value="zen">Zen Chime</option>
+                        <option value="digital">Digital Pulse</option>
+                    </select>
                 </div>
                 <div class="flex justify-between items-center p-4 bg-darkBg rounded-2xl border border-gray-800">
                     <span class="text-white">Vibração (Haptic)</span>
@@ -358,7 +379,7 @@
 
     <script>
         // ==========================================
-        // ARQUITETURA MODULAR (SPA HÍBRIDA)
+        // ARQUITETURA MODULAR (SPA HÍBRIDA 2.0)
         // ==========================================
         
         const SafeStorage = {
@@ -370,8 +391,8 @@
         };
 
         const App = {
-            State: { currentView: 'hub', isDesktop: window.innerWidth >= 1024, isModalOpen: false },
-            Config: SafeStorage.parse('chronos_config') || { sound: true, haptic: true },
+            State: { currentView: 'hub', isDesktop: window.innerWidth >= 1024, isModalOpen: false, expandedHabit: null },
+            Config: SafeStorage.parse('chronos_config') || { sound: true, haptic: true, tone: 'classic' },
             SaveConfig: () => SafeStorage.set('chronos_config', JSON.stringify(App.Config))
         };
 
@@ -437,6 +458,7 @@
             }
         };
 
+        // Áudio Premium com Sintetizador Triplo
         App.Audio = {
             ctx: null, interval: null, hasInteracted: false,
             init: () => { 
@@ -444,27 +466,54 @@
                 try { if (!App.Audio.ctx) App.Audio.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (App.Audio.ctx.state === 'suspended') App.Audio.ctx.resume(); } catch(e){} 
             },
             vibrate: (pattern) => { if (App.Config.haptic && navigator.vibrate) navigator.vibrate(pattern); },
-            playBeep: (freq, dur) => {
+            playTone: (freq, type, dur, vol, delay) => {
                 if (!App.Config.sound || !App.Audio.ctx) return;
                 try {
                     const osc = App.Audio.ctx.createOscillator(); const gain = App.Audio.ctx.createGain();
                     osc.connect(gain); gain.connect(App.Audio.ctx.destination);
-                    osc.type = 'sine'; osc.frequency.value = freq;
-                    gain.gain.setValueAtTime(0, App.Audio.ctx.currentTime); gain.gain.linearRampToValueAtTime(0.5, App.Audio.ctx.currentTime + 0.05); gain.gain.linearRampToValueAtTime(0, App.Audio.ctx.currentTime + dur);
-                    osc.start(); osc.stop(App.Audio.ctx.currentTime + dur);
+                    osc.type = type; osc.frequency.value = freq;
+                    const startTime = App.Audio.ctx.currentTime + delay;
+                    gain.gain.setValueAtTime(0, startTime); 
+                    gain.gain.linearRampToValueAtTime(vol, startTime + 0.05); 
+                    
+                    if (App.Config.tone === 'zen') {
+                        gain.gain.exponentialRampToValueAtTime(0.01, startTime + dur + 0.5); // Decay suave
+                        osc.start(startTime); osc.stop(startTime + dur + 0.5);
+                    } else {
+                        gain.gain.linearRampToValueAtTime(0, startTime + dur);
+                        osc.start(startTime); osc.stop(startTime + dur);
+                    }
                 } catch(e){}
             },
-            startAlert: () => { App.Audio.init(); App.Audio.interval = setInterval(() => { App.Audio.playBeep(880, 0.15); setTimeout(() => App.Audio.playBeep(1046.50, 0.25), 200); App.Audio.vibrate([200, 100, 300]); }, 1200); },
+            startAlert: () => { 
+                App.Audio.init(); 
+                App.Audio.interval = setInterval(() => { 
+                    if(App.Config.tone === 'zen') {
+                        App.Audio.playTone(523.25, 'sine', 0.8, 0.5, 0); // C5 Longo
+                    } else if(App.Config.tone === 'digital') {
+                        App.Audio.playTone(1046.5, 'square', 0.1, 0.2, 0); // Beep duplo rápido
+                        App.Audio.playTone(1046.5, 'square', 0.1, 0.2, 0.15);
+                    } else {
+                        App.Audio.playTone(880, 'sine', 0.15, 0.5, 0);     // Clássico Duplo
+                        App.Audio.playTone(1046.50, 'sine', 0.25, 0.5, 0.2);
+                    }
+                    App.Audio.vibrate([200, 100, 300]); 
+                }, 1200); 
+            },
             stopAlert: () => { clearInterval(App.Audio.interval); App.Audio.vibrate(0); }
         };
 
         App.Settings = {
             openModal: () => {
-                document.getElementById('set-sound').checked = App.Config.sound; document.getElementById('set-haptic').checked = App.Config.haptic;
+                document.getElementById('set-sound').checked = App.Config.sound; 
+                document.getElementById('set-haptic').checked = App.Config.haptic;
+                document.getElementById('set-tone').value = App.Config.tone || 'classic';
+                
                 document.getElementById('settings-modal').classList.replace('hidden', 'flex'); setTimeout(() => { document.getElementById('settings-modal').classList.remove('opacity-0'); document.getElementById('settings-content').classList.replace('scale-95', 'scale-100'); }, 10);
             },
             closeModal: () => { document.getElementById('settings-modal').classList.add('opacity-0'); document.getElementById('settings-content').classList.replace('scale-100', 'scale-95'); setTimeout(() => document.getElementById('settings-modal').classList.replace('flex', 'hidden'), 300); },
             toggle: (key) => { App.Config[key] = !App.Config[key]; App.SaveConfig(); },
+            changeTone: (val) => { App.Config.tone = val; App.SaveConfig(); App.Audio.startAlert(); setTimeout(App.Audio.stopAlert, 1200); }, // Preview do som
             exportBackup: () => {
                 const data = {}; SafeStorage.keys().forEach(k => { if(k.startsWith('chronos_')) data[k] = SafeStorage.get(k); });
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -486,7 +535,7 @@
             modules: { alarme: { icon: 'fa-bell', n: 'Alarme' }, cronometro: { icon: 'fa-stopwatch', n: 'Cronômetro' }, timer: { icon: 'fa-hourglass-half', n: 'Timer' }, calculadora: { icon: 'fa-calculator', n: 'Calc' }, tarefas: { icon: 'fa-calendar-check', n: 'Tarefas' }, habitos: { icon: 'fa-fire', n: 'Hábitos' } },
             recent: SafeStorage.parse('chronos_recent') || ['alarme', 'cronometro', 'timer'],
             go: (id) => {
-                App.Audio.init();
+                App.System.initInteraction();
                 if (id !== 'hub' && App.Router.modules[id]) {
                     App.Router.recent = App.Router.recent.filter(m => m !== id); App.Router.recent.unshift(id);
                     if (App.Router.recent.length > 3) App.Router.recent.pop(); SafeStorage.set('chronos_recent', JSON.stringify(App.Router.recent));
@@ -497,12 +546,10 @@
                 const activeTab = document.getElementById('view-' + id);
                 if(activeTab) { activeTab.classList.remove('hidden'); activeTab.classList.add('flex'); }
                 
-                // Abre Modal no Desktop (Remove hidden e aciona opacity)
                 if (App.State.isDesktop && id !== 'hub') {
                     App.State.isModalOpen = true;
                     const overlay = document.getElementById('app-overlay');
-                    overlay.classList.remove('lg:hidden'); 
-                    overlay.classList.add('lg:flex');
+                    overlay.classList.remove('lg:hidden'); overlay.classList.add('lg:flex');
                     setTimeout(() => overlay.classList.remove('lg:opacity-0'), 10);
                 }
 
@@ -516,10 +563,8 @@
                     const overlay = document.getElementById('app-overlay');
                     overlay.classList.add('lg:opacity-0');
                     setTimeout(() => { 
-                        overlay.classList.remove('lg:flex'); 
-                        overlay.classList.add('lg:hidden'); 
-                        App.State.currentView = 'hub';
-                        App.Router.render();
+                        overlay.classList.remove('lg:flex'); overlay.classList.add('lg:hidden'); 
+                        App.State.currentView = 'hub'; App.Router.render();
                     }, 300);
                 }
             },
@@ -537,8 +582,20 @@
 
         App.System = {
             editCb: null,
+            initInteraction: () => {
+                App.Audio.init();
+                if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+                    Notification.requestPermission();
+                }
+            },
             showAlert: (title, msg, isAlarm = false) => {
                 App.Audio.startAlert();
+                
+                // Dispara Notificação Nativa PWA se estiver em background
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification(title, { body: msg, icon: 'icon-192.png' });
+                }
+
                 document.getElementById('alert-title').innerText = title; document.getElementById('alert-msg').innerText = msg;
                 document.getElementById('btn-snooze').style.display = isAlarm ? 'block' : 'none';
                 const m = document.getElementById('alert-modal'); m.classList.replace('hidden', 'flex'); setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('alert-content').classList.replace('scale-95', 'scale-100'); }, 10);
@@ -568,13 +625,10 @@
                 }, 1000);
             },
             render: () => {
-                const list = document.getElementById('alarm-list'); 
-                const widget = document.getElementById('widget-alarm-status');
-                
+                const list = document.getElementById('alarm-list'); const widget = document.getElementById('widget-alarm-status');
                 if(App.Alarms.data.length === 0) { 
                     list.innerHTML = '<p class="text-textMuted text-center text-sm mt-10">Nenhum alarme configurado.</p>'; 
-                    if(App.State.isDesktop) widget.innerText = "Desativado";
-                    return; 
+                    if(App.State.isDesktop) widget.innerText = "Desativado"; return; 
                 }
                 
                 App.Alarms.data.sort((a, b) => a.time.localeCompare(b.time));
@@ -650,7 +704,7 @@
                 App.Timer.updateDisplay();
             },
             toggle: () => {
-                App.Audio.init(); const btn = document.getElementById('btn-timer-start');
+                App.System.initInteraction(); const btn = document.getElementById('btn-timer-start');
                 if (!App.Timer.running) {
                     if (App.Timer.totalSeconds === 0) App.Timer.totalSeconds = App.Timer.maxSeconds = (parseInt(App.UI.getPickerValue('timer-picker-h', 23)) * 3600) + (parseInt(App.UI.getPickerValue('timer-picker-m', 59)) * 60) + parseInt(App.UI.getPickerValue('timer-picker-s', 59));
                     if (App.Timer.totalSeconds === 0) return;
@@ -692,10 +746,18 @@
             renderLaps: () => { document.getElementById('stopwatch-laps').innerHTML = App.Stopwatch.laps.map(l => `<div class="flex justify-between py-4 border-b border-gray-800/50 text-base px-4"><span class="text-textMuted font-bold w-12">${String(l.num).padStart(2,'0')}</span><span class="text-white font-mono flex-1 text-center">+ ${l.lap}</span><span class="text-gold font-mono w-24 text-right">${l.total}</span></div>`).join(''); }
         };
 
+        // Calculadora Premium Upgrade (+/-, %)
         App.Calc = {
             curr: '0', prev: '', op: null, hist: SafeStorage.parse('chronos_calc') || [],
             input: (v) => {
-                if (v === 'clear') { App.Calc.curr = '0'; App.Calc.prev = ''; App.Calc.op = null; } else if (v === 'backspace') { App.Calc.curr = App.Calc.curr.slice(0, -1); if(!App.Calc.curr || App.Calc.curr==='-') App.Calc.curr='0'; } else if (['+','-','*','/'].includes(v)) { if (App.Calc.op && !App.Calc.curr) App.Calc.op = v; else { if (App.Calc.prev) App.Calc.compute(); App.Calc.prev = App.Calc.curr; App.Calc.curr = ''; App.Calc.op = v; } } else if (v === '=') { App.Calc.compute(true); App.Calc.op = null; } else { if (App.Calc.curr === '0' && v !== '.') App.Calc.curr = v; else if (v === '.' && App.Calc.curr.includes('.')) return; else App.Calc.curr += v; }
+                if (v === 'clear') { App.Calc.curr = '0'; App.Calc.prev = ''; App.Calc.op = null; } 
+                else if (v === 'backspace') { App.Calc.curr = App.Calc.curr.slice(0, -1); if(!App.Calc.curr || App.Calc.curr==='-') App.Calc.curr='0'; } 
+                else if (v === '+/-') { App.Calc.curr = String(parseFloat(App.Calc.curr) * -1); }
+                else if (v === '%') { App.Calc.curr = String(parseFloat(App.Calc.curr) / 100); }
+                else if (['+','-','*','/'].includes(v)) { if (App.Calc.op && !App.Calc.curr) App.Calc.op = v; else { if (App.Calc.prev) App.Calc.compute(); App.Calc.prev = App.Calc.curr; App.Calc.curr = ''; App.Calc.op = v; } } 
+                else if (v === '=') { App.Calc.compute(true); App.Calc.op = null; } 
+                else { if (App.Calc.curr === '0' && v !== '.') App.Calc.curr = v; else if (v === '.' && App.Calc.curr.includes('.')) return; else App.Calc.curr += v; }
+                
                 document.getElementById('calc-display').innerText = App.Calc.curr || '0'; document.getElementById('calc-prev').innerText = App.Calc.prev ? `${App.Calc.prev} ${App.Calc.op==='*'?'×':(App.Calc.op==='/'?'÷':App.Calc.op)}` : '';
                 if(App.State.isDesktop) document.getElementById('widget-calc-status').innerText = App.Calc.curr || '0';
             },
@@ -712,6 +774,7 @@
             clearHistory: () => { App.Calc.hist = []; SafeStorage.remove('chronos_calc'); App.Calc.closeHistory(); }
         };
 
+        // Upgrade Tarefas (Vassoura Limpar Concluídas)
         App.Tasks = {
             data: SafeStorage.parse('chronos_tasks') || [],
             render: () => { 
@@ -723,19 +786,43 @@
                 list.innerHTML = App.Tasks.data.map((t, i) => `<div class="bg-darkBg lg:bg-[#111] p-5 rounded-2xl flex justify-between items-center border ${t.done?'border-gray-800 opacity-50':'border-transparent'} transition hover:border-gray-800"><div class="flex items-center gap-4 overflow-hidden cursor-pointer flex-1" onclick="App.Tasks.toggle(${i})"><div class="w-8 h-8 rounded-full border-2 flex-shrink-0 ${t.done?'bg-gold border-gold text-darkBg':'border-gray-500 text-transparent'} flex items-center justify-center transition"><i class="fa-solid fa-check text-sm"></i></div><span class="text-white truncate uppercase tracking-wide text-lg ${t.done?'line-through text-textMuted':''}">${t.text}</span></div><div class="flex gap-2"><button onclick="App.System.openEdit('Editar Tarefa', '${t.text}', (v)=>{App.Tasks.data[${i}].text=v; App.Tasks.save();})" class="text-gold p-3 hover:scale-110 transition"><i class="fa-solid fa-pen"></i></button><button onclick="App.Tasks.delete(${i})" class="text-red-900 hover:text-red-500 p-3 transition"><i class="fa-solid fa-trash"></i></button></div></div>`).join(''); 
             },
             add: () => { const inp = document.getElementById('task-input'); if(inp.value.trim()){ App.Tasks.data.push({ text: inp.value.trim().toUpperCase(), done: false }); App.Tasks.save(); inp.value=''; } },
-            toggle: (i) => { App.Tasks.data[i].done = !App.Tasks.data[i].done; App.Tasks.save(); }, delete: (i) => { App.Tasks.data.splice(i, 1); App.Tasks.save(); }, save: () => { SafeStorage.set('chronos_tasks', JSON.stringify(App.Tasks.data)); App.Tasks.render(); }
+            toggle: (i) => { App.Tasks.data[i].done = !App.Tasks.data[i].done; App.Tasks.save(); }, 
+            delete: (i) => { App.Tasks.data.splice(i, 1); App.Tasks.save(); }, 
+            clearCompleted: () => { App.Tasks.data = App.Tasks.data.filter(t => !t.done); App.Tasks.save(); },
+            save: () => { SafeStorage.set('chronos_tasks', JSON.stringify(App.Tasks.data)); App.Tasks.render(); }
         };
 
+        // Upgrade Hábitos (Calendário Mini)
         App.Habits = {
             data: SafeStorage.parse('chronos_habits') || [],
             getStreak: (hist) => { if(!hist || !hist.length) return 0; let s = 0, d = new Date(), check = d.toISOString().split('T')[0]; if(!hist.includes(check)){ d.setDate(d.getDate()-1); check = d.toISOString().split('T')[0]; if(!hist.includes(check)) return 0; } while(hist.includes(check)){ s++; d.setDate(d.getDate()-1); check = d.toISOString().split('T')[0]; } return s; },
+            generateCalendar: (hist) => {
+                const now = new Date(); const year = now.getFullYear(); const month = now.getMonth();
+                const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const days = ['D','S','T','Q','Q','S','S'];
+                let html = '<div class="calendar-grid">';
+                days.forEach(d => html += `<div class="text-center text-[10px] text-gray-500 font-bold">${d}</div>`);
+                for(let i=0; i<firstDay; i++) html += `<div></div>`;
+                for(let i=1; i<=daysInMonth; i++) {
+                    const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                    const done = hist.includes(dStr); const isToday = (i === now.getDate());
+                    let classes = "w-6 h-6 mx-auto rounded-full flex items-center justify-center text-[10px] transition-all ";
+                    if(done) classes += "bg-gold text-darkBg font-bold shadow-[0_0_8px_rgba(212,175,55,0.4)]"; else if(isToday) classes += "border border-gold text-gold"; else classes += "text-gray-600";
+                    html += `<div class="${classes}">${i}</div>`;
+                }
+                html += '</div>'; return html;
+            },
+            toggleExpand: (id) => { App.State.expandedHabit = App.State.expandedHabit === id ? null : id; App.Habits.render(); },
             render: () => { 
                 const list = document.getElementById('habit-list'); 
                 if(App.State.isDesktop) document.getElementById('widget-habits-status').innerText = `${App.Habits.data.length} monitorados`;
-                
                 if(App.Habits.data.length===0){ list.innerHTML = '<p class="text-center mt-10 text-sm text-gray-500">Nenhum hábito.</p>'; return; } 
                 const today = new Date().toISOString().split('T')[0];
-                list.innerHTML = App.Habits.data.map((h, i) => { const done = h.hist.includes(today); const stk = App.Habits.getStreak(h.hist); return `<div class="bg-darkBg lg:bg-[#111] p-5 rounded-2xl flex justify-between items-center border border-gray-800 transition hover:border-gray-600"><div class="flex flex-col flex-1 pr-4"><span class="text-white font-medium truncate mb-2 uppercase tracking-wide cursor-pointer hover:text-gold transition text-lg" onclick="App.System.openEdit('Editar Hábito', '${h.name}', (v)=>{App.Habits.data[${i}].name=v; App.Habits.save();})">${h.name} <i class="fa-solid fa-pen text-xs text-gray-600 ml-2"></i></span><div class="text-sm font-bold ${stk>0?'text-gold':'text-gray-600'}"><i class="fa-solid fa-fire"></i> ${stk} dias seguidos</div></div><div class="flex items-center gap-4"><button onclick="App.Habits.toggle(${i})" class="w-14 h-14 rounded-full border-2 flex-shrink-0 transition-colors flex items-center justify-center ${done?'bg-gold border-gold text-darkBg shadow-[0_0_15px_rgba(212,175,55,0.4)]':'border-gray-500 text-transparent hover:border-gold hover:text-gold'}"><i class="fa-solid fa-check text-2xl"></i></button><button onclick="App.Habits.delete(${i})" class="text-gray-700 hover:text-red-500 p-3 transition"><i class="fa-solid fa-trash"></i></button></div></div>`; }).join(''); 
+                list.innerHTML = App.Habits.data.map((h, i) => { 
+                    const done = h.hist.includes(today); const stk = App.Habits.getStreak(h.hist); const expanded = App.State.expandedHabit === h.id;
+                    const calHtml = expanded ? App.Habits.generateCalendar(h.hist) : '';
+                    return `<div class="bg-darkBg lg:bg-[#111] p-5 rounded-2xl border border-gray-800 transition hover:border-gray-600 flex flex-col"><div class="flex justify-between items-center w-full"><div class="flex flex-col flex-1 pr-4" onclick="App.Habits.toggleExpand('${h.id}')"><span class="text-white font-medium truncate mb-2 uppercase tracking-wide cursor-pointer hover:text-gold transition text-lg">${h.name} <i class="fa-solid fa-chevron-${expanded?'up':'down'} text-xs text-gray-600 ml-2"></i></span><div class="text-sm font-bold ${stk>0?'text-gold':'text-gray-600'}"><i class="fa-solid fa-fire"></i> ${stk} dias seguidos</div></div><div class="flex items-center gap-2"><button onclick="App.System.openEdit('Editar Hábito', '${h.name}', (v)=>{App.Habits.data[${i}].name=v; App.Habits.save();})" class="text-gold p-3 hover:scale-110 transition hidden lg:block"><i class="fa-solid fa-pen"></i></button><button onclick="App.Habits.toggle(${i})" class="w-14 h-14 rounded-full border-2 flex-shrink-0 transition-colors flex items-center justify-center ${done?'bg-gold border-gold text-darkBg shadow-[0_0_15px_rgba(212,175,55,0.4)]':'border-gray-500 text-transparent hover:border-gold hover:text-gold'}"><i class="fa-solid fa-check text-2xl"></i></button><button onclick="App.Habits.delete(${i})" class="text-gray-700 hover:text-red-500 p-3 transition"><i class="fa-solid fa-trash"></i></button></div></div>${calHtml}</div>`; 
+                }).join(''); 
             },
             add: () => { const inp = document.getElementById('habit-input'); if(inp.value.trim()){ App.Habits.data.push({ id: Date.now().toString(), name: inp.value.trim().toUpperCase(), hist: [] }); App.Habits.save(); inp.value=''; } },
             toggle: (i) => { const t = new Date().toISOString().split('T')[0]; if(App.Habits.data[i].hist.includes(t)) App.Habits.data[i].hist = App.Habits.data[i].hist.filter(x => x !== t); else { App.Habits.data[i].hist.push(t); App.Audio.vibrate(20); } App.Habits.save(); },
@@ -750,9 +837,9 @@
 
             if (App.State.isDesktop) { 
                 App.Timer.init(); 
-                App.State.currentView = 'hub'; // Garante que o desktop fique no fundo no boot
+                App.State.currentView = 'hub'; 
             } else {
-                App.Router.go(App.Router.recent[0] || 'alarme'); // Garante que abra uma aba no mobile
+                App.Router.go(App.Router.recent[0] || 'alarme'); 
             }
 
             App.Router.render(); App.Alarms.init(); App.Tasks.render(); App.Habits.render();
