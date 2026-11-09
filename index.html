@@ -6,8 +6,9 @@
     <meta name="theme-color" content="#050505">
     <title>Chronos Hub</title>
     
-    <!-- PWA Manifest -->
+    <!-- PWA Linkages -->
     <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.svg">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -103,14 +104,13 @@
             <div id="alarm-list" class="space-y-4 overflow-y-auto hide-scrollbar flex-1 pb-4 pr-2"></div>
         </section>
 
-        <!-- TIMER (O Módulo Premium) -->
+        <!-- TIMER -->
         <section id="view-timer" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 items-center justify-center lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:h-[480px] bento-card">
             <h2 class="text-2xl font-light mb-6 text-gold w-full text-left">Temporizador</h2>
             <div class="flex-1 flex flex-col w-full items-center justify-center relative">
                 
                 <!-- SETUP VIEW -->
                 <div id="timer-setup-view" class="w-full flex flex-col items-center">
-                    <!-- Roleta Contida (max-w-xs) -->
                     <div class="relative w-full max-w-xs h-48 flex justify-center bg-darkBg lg:bg-[#111] rounded-3xl overflow-hidden text-3xl font-light shadow-inner mb-6 lg:border lg:border-gray-800/50">
                         <div class="absolute top-1/2 left-0 w-full h-[48px] -translate-y-1/2 bg-gold/5 pointer-events-none z-10 border-y border-gold/30"></div>
                         <div class="absolute inset-0 drum-overlay z-20"></div>
@@ -119,7 +119,6 @@
                         <div class="w-1/3 flex flex-col items-center relative"><div id="timer-picker-s" class="h-full w-full overflow-y-auto picker-container hide-scrollbar relative z-0"></div></div>
                     </div>
                     
-                    <!-- Ghost Buttons no Desktop -->
                     <div class="flex gap-3 w-full max-w-xs" id="timer-quick-actions">
                         <button onclick="App.Timer.addMinutes(1)" class="flex-1 py-3 bg-darkBg lg:bg-transparent lg:border lg:border-gray-700 rounded-xl text-sm font-semibold text-textMuted hover:text-gold lg:hover:border-gold transition active:scale-95">+1 min</button>
                         <button onclick="App.Timer.addMinutes(5)" class="flex-1 py-3 bg-darkBg lg:bg-transparent lg:border lg:border-gray-700 rounded-xl text-sm font-semibold text-textMuted hover:text-gold lg:hover:border-gold transition active:scale-95">+5 min</button>
@@ -132,10 +131,8 @@
                     <div class="relative w-64 h-64 lg:w-72 lg:h-72 flex justify-center items-center bg-darkBg lg:bg-[#0c0c0c] rounded-full shadow-[inset_0_5px_20px_rgba(0,0,0,0.5)] lg:border lg:border-gray-800/30">
                         <svg class="absolute inset-0 w-full h-full pointer-events-none z-30" viewBox="0 0 100 100">
                             <circle cx="50" cy="50" r="46" fill="none" stroke="#222" stroke-width="2"></circle>
-                            <!-- Anel Dourado com Neon Glow -->
                             <circle id="timer-svg-ring" class="progress-ring__circle neon-glow" cx="50" cy="50" r="46" fill="none" stroke="#D4AF37" stroke-width="3" stroke-dasharray="289.02" stroke-dashoffset="0" stroke-linecap="round"></circle>
                         </svg>
-                        <!-- Tipografia Ultra-Thin -->
                         <div class="text-5xl lg:text-6xl font-thin text-white tabular-nums tracking-widest z-40" id="timer-display">00:00:00</div>
                     </div>
                 </div>
@@ -192,7 +189,7 @@
                     <button onclick="App.Calc.input('3')" class="bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-800">3</button>
                     <button onclick="App.Calc.input('+')" class="bg-gold text-darkBg p-4 rounded-2xl font-bold text-2xl active:scale-95 transition hover:scale-105">+</button>
                     
-                    <button onclick="App.Calc.input('0')" class="col-span-2 bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-800">0</button>
+                    <button onclick="App.Calc.input('0')" class="col-span-2 bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-850">0</button>
                     <button onclick="App.Calc.input('.')" class="bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-800">.</button>
                     <button onclick="App.Calc.input('=')" class="bg-gold text-darkBg p-4 rounded-2xl font-bold text-2xl active:scale-95 transition shadow-[0_0_15px_rgba(212,175,55,0.4)] hover:scale-105">=</button>
                 </div>
@@ -221,7 +218,7 @@
 
     </main>
 
-    <!-- BARRA MOBILE (Oculta no Desktop) -->
+    <!-- BARRA MOBILE -->
     <nav class="w-full bg-darkBg border-t border-darkSurface pb-safe pt-2 fixed bottom-0 z-40 lg:hidden">
         <ul class="flex justify-around items-center h-16 pb-2" id="nav-list"></ul>
     </nav>
@@ -312,7 +309,7 @@
     </div>
 
     <!-- Histórico da Calculadora -->
-    <div id="calc-history-modal" class="fixed inset-0 bg-black/90 hidden items-end justify-center z-50 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+    <div id="calc-history-modal" class="fixed inset-0 bg-black/95 hidden items-end justify-center z-50 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
         <div id="calc-history-content" class="bg-darkSurface rounded-t-3xl lg:rounded-[2rem] lg:border lg:border-gray-800 w-full lg:max-w-md h-[70vh] lg:h-[600px] flex flex-col transform translate-y-full lg:translate-y-0 lg:scale-95 transition-all duration-300 overflow-hidden mt-auto lg:mt-0 shadow-2xl">
             <div class="flex justify-between items-center p-5 border-b border-gray-800 bg-darkSurface">
                 <h3 class="text-lg font-medium text-gold">Histórico de Cálculos</h3>
@@ -460,7 +457,7 @@
             }
         };
 
-        // 5. Router Inteligente (Híbrido Mobile/Desktop)
+        // 5. Router Inteligente
         App.Router = {
             modules: { alarme: { icon: 'fa-bell', n: 'Alarme' }, cronometro: { icon: 'fa-stopwatch', n: 'Cronômetro' }, timer: { icon: 'fa-hourglass-half', n: 'Timer' }, calculadora: { icon: 'fa-calculator', n: 'Calc' }, tarefas: { icon: 'fa-calendar-check', n: 'Tarefas' }, habitos: { icon: 'fa-fire', n: 'Hábitos' } },
             recent: SafeStorage.parse('chronos_recent') || ['alarme', 'cronometro', 'timer'],
@@ -491,7 +488,7 @@
                 const hc = (App.State.currentView === 'hub') ? 'text-gold' : 'text-textMuted hover:text-white';
                 nav.innerHTML += `<li class="flex-1 border-l border-darkSurface"><button onclick="App.Router.go('hub')" class="w-full flex flex-col items-center ${hc} py-2 active:scale-95 transition"><i class="fa-solid fa-layer-group text-xl mb-1"></i><span class="text-[10px] font-medium tracking-wide">Módulos</span></button></li>`;
                 
-                document.getElementById('hub-grid').innerHTML = Object.keys(App.Router.modules).map(id => `<div onclick="App.Router.go('${id}')" class="bg-darkSurface border border-transparent rounded-3xl p-6 flex flex-col items-center hover:border-gold cursor-pointer shadow-sm transition group"><i class="fa-solid ${App.Router.modules[id].icon} text-4xl text-gray-500 mb-4 group-hover:text-gold group-hover:scale-110 transition-transform"></i><span class="text-sm font-semibold text-textMuted group-hover:text-white">${App.Router.modules[id].n}</span></div>`).join('');
+                document.getElementById('hub-grid').innerHTML = Object.keys(App.Router.modules).map(id => `<div onclick="App.Router.go('${id}')" class="bg-darkSurface border border-transparent rounded-2xl p-6 flex flex-col items-center hover:border-gold cursor-pointer shadow-sm transition group"><i class="fa-solid ${App.Router.modules[id].icon} text-4xl text-gray-500 mb-4 group-hover:text-gold group-hover:scale-110 transition-transform"></i><span class="text-sm font-semibold text-textMuted group-hover:text-white">${App.Router.modules[id].n}</span></div>`).join('');
             }
         };
 
@@ -676,7 +673,7 @@
             document.getElementById('task-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') App.Tasks.add(); }); 
             document.getElementById('habit-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') App.Habits.add(); });
             
-            // PWA Registration
+            // PWA Activation
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('./sw.js').catch(err => console.log('PWA Bypass:', err));
