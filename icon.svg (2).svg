@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Fundo Dark Luxury com profundidade radial -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#141414" />
+      <stop offset="100%" stop-color="#050505" />
+    </radialGradient>
+    
+    <!-- Gradientes de Ouro -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF099" />
+      <stop offset="35%" stop-color="#D4AF37" />
+      <stop offset="70%" stop-color="#AA7C11" />
+      <stop offset="100%" stop-color="#5A3E00" />
+    </linearGradient>
+
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFDF00" />
+      <stop offset="100%" stop-color="#D4AF37" />
+    </linearGradient>
+    
+    <!-- Filtro de brilho Neon/OLED -->
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Fundo Circular e Sombra do App Icon -->
+  <rect width="512" height="512" rx="120" fill="url(#bgGrad)" />
+  <rect width="496" height="496" x="8" y="8" rx="112" fill="none" stroke="url(#goldGrad)" stroke-width="2" opacity="0.15" />
+  
+  <!-- Aro Externo do Cronógrafo -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#121212" stroke-width="12" />
+  <circle cx="256" cy="256" r="190" fill="none" stroke="url(#goldGrad)" stroke-width="4" opacity="0.6" />
+
+  <!-- Marcas de Minuto/Segundo (Tick Marks) -->
+  <g opacity="0.3">
+    <line x1="256" y1="74" x2="256" y2="82" stroke="url(#goldGrad)" stroke-width="3" />
+    <line x1="256" y1="430" x2="256" y2="438" stroke="url(#goldGrad)" stroke-width="3" />
+    <line x1="74" y1="256" x2="82" y2="256" stroke="url(#goldGrad)" stroke-width="3" />
+    <line x1="430" y1="256" x2="438" y2="256" stroke="url(#goldGrad)" stroke-width="3" />
+    <line x1="128" y1="128" x2="134" y2="134" stroke="url(#goldGrad)" stroke-width="2" />
+    <line x1="378" y1="128" x2="384" y2="134" stroke="url(#goldGrad)" stroke-width="2" />
+    <line x1="128" y1="378" x2="134" y2="384" stroke="url(#goldGrad)" stroke-width="2" />
+    <line x1="378" y1="378" x2="384" y2="384" stroke="url(#goldGrad)" stroke-width="2" />
+  </g>
+  
+  <!-- Anel Progressivo "C" (Stylized Chronos Arc) -->
+  <path d="M 256 76 A 180 180 0 1 1 110 210" fill="none" stroke="url(#goldGrad)" stroke-width="20" stroke-linecap="round" filter="url(#neonGlow)" />
+
+  <!-- Detalhes mecânicos internos -->
+  <circle cx="256" cy="256" r="135" fill="none" stroke="url(#goldGrad)" stroke-width="1" stroke-dasharray="8 8" opacity="0.2" />
+  <circle cx="256" cy="256" r="95" fill="none" stroke="#000" stroke-width="12" opacity="0.5" />
+
+  <!-- Núcleo central -->
+  <circle cx="256" cy="256" r="22" fill="#0c0c0c" stroke="url(#goldGrad)" stroke-width="3" />
+  <circle cx="256" cy="256" r="8" fill="url(#goldGrad)" />
+  
+  <!-- Ponteiro de Minutos (Estilo Luxury Watch) -->
+  <g filter="url(#neonGlow)" transform="rotate(45 256 256)">
+    <path d="M 256 256 L 253 140 L 256 120 L 259 140 Z" fill="url(#goldGrad)" />
+    <circle cx="256" cy="150" r="2" fill="#000" opacity="0.5" />
+  </g>
+  
+  <!-- Ponteiro de Segundos Fino (Golden Needle) -->
+  <g transform="rotate(315 256 256)">
+    <line x1="256" y1="280" x2="256" y2="85" stroke="#FFF099" stroke-width="2.5" />
+    <circle cx="256" cy="85" r="4.5" fill="url(#goldGrad)" stroke="#FFF099" stroke-width="1" />
+  </g>
+</svg>
