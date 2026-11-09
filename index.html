@@ -62,7 +62,7 @@
 
     <!-- HEADER GLOBAL -->
     <header class="w-full py-5 px-6 flex justify-between items-center bg-darkBg/80 backdrop-blur-md border-b border-darkSurface z-20">
-        <h1 class="text-xl font-bold tracking-wider text-gold cursor-pointer" onclick="App.Router.closeDesktop()">CHRONOS<span class="text-white font-light">HUB</span></h1>
+        <h1 class="text-xl font-bold tracking-wider text-gold cursor-pointer" onclick="App.Router.closeDesktop(null, true)">CHRONOS<span class="text-white font-light">HUB</span></h1>
         <button onclick="App.Settings.openModal()" class="text-gold hover:text-white transition p-2">
             <i class="fa-solid fa-gear text-xl"></i>
         </button>
@@ -108,7 +108,8 @@
     <!-- ========================================== -->
     <!-- CONTAINER PRINCIPAL (ABAS NO MOBILE / MODAL NO DESKTOP) -->
     <!-- ========================================== -->
-    <main id="app-overlay" class="flex-1 w-full h-full lg:fixed lg:inset-0 lg:bg-black/70 lg:backdrop-blur-sm lg:hidden lg:z-40 lg:flex lg:items-center lg:justify-center transition-opacity duration-300" onclick="App.Router.closeDesktop(event)">
+    <!-- Removido o lg:hidden direto que travava o JS. Adicionado flex flex-col inicial. -->
+    <main id="app-overlay" class="flex flex-col flex-1 w-full h-full lg:hidden lg:fixed lg:inset-0 lg:bg-black/70 lg:backdrop-blur-sm lg:z-40 lg:items-center lg:justify-center transition-opacity duration-300 lg:opacity-0" onclick="App.Router.closeDesktop(event)">
         
         <!-- A Janela de 65% no Desktop (Ocupa 100% no Mobile) -->
         <div id="app-window" class="w-full h-full lg:w-[65vw] lg:h-[75vh] lg:bg-[#0c0c0c] lg:rounded-[2.5rem] lg:shadow-[0_0_80px_rgba(0,0,0,0.9)] lg:border lg:border-gray-800/60 relative flex flex-col overflow-hidden" onclick="event.stopPropagation()">
@@ -188,7 +189,7 @@
                 <div class="w-full flex-1 overflow-y-auto hide-scrollbar max-w-lg pb-20 lg:pb-0"><div id="stopwatch-laps" class="w-full flex flex-col gap-2"></div></div>
             </section>
 
-            <!-- [BLOCO 5] CALCULADORA (RESOLVIDO VAZAMENTO COM FLEX-1 E MIN-H-0) -->
+            <!-- [BLOCO 5] CALCULADORA (RESOLVIDO VAZAMENTO) -->
             <section id="view-calculadora" class="tab-content hidden tab-anim flex-col w-full h-full p-6 lg:p-10">
                 <div class="flex justify-between items-center w-full max-w-md mx-auto mb-6 flex-shrink-0">
                     <h2 class="text-2xl lg:text-4xl font-light text-gold">Calculadora</h2>
@@ -196,13 +197,11 @@
                 </div>
                 
                 <div class="w-full flex-1 min-h-0 flex flex-col max-w-md mx-auto pb-20 lg:pb-0 gap-6">
-                    <!-- Display -->
                     <div class="w-full bg-darkSurface lg:bg-[#111] rounded-[2rem] p-8 flex flex-col justify-end items-end h-32 lg:h-40 shadow-[inset_0_2px_15px_rgba(0,0,0,0.6)] lg:border lg:border-gray-800/50 flex-shrink-0">
                         <div id="calc-prev" class="text-textMuted text-sm lg:text-base h-6 font-light tracking-wider mb-2"></div>
                         <div id="calc-display" class="text-6xl lg:text-7xl font-thin text-white tracking-wider truncate w-full text-right">0</div>
                     </div>
                     
-                    <!-- Teclado Responsivo -->
                     <div class="grid grid-cols-4 gap-3 lg:gap-4 w-full flex-1 min-h-0">
                         <button onclick="App.Calc.input('clear')" class="col-span-2 bg-red-900/30 text-red-400 rounded-3xl font-bold text-2xl active:scale-95 transition hover:bg-red-900/50">C</button>
                         <button onclick="App.Calc.input('backspace')" class="bg-darkSurface lg:bg-[#1a1a1a] text-white rounded-3xl font-bold text-2xl active:scale-95 transition hover:bg-gray-800"><i class="fa-solid fa-delete-left"></i></button>
@@ -359,10 +358,9 @@
 
     <script>
         // ==========================================
-        // ARQUITETURA MODULAR (SINGLE PAGE APPLICATION)
+        // ARQUITETURA MODULAR (SPA HÍBRIDA)
         // ==========================================
         
-        // 1. SafeStorage
         const SafeStorage = {
             get: (k) => { try { return localStorage.getItem(k); } catch(e){ return window['temp_'+k] || null; } },
             set: (k, v) => { try { localStorage.setItem(k, v); } catch(e){ window['temp_'+k] = v; } },
@@ -377,7 +375,6 @@
             SaveConfig: () => SafeStorage.set('chronos_config', JSON.stringify(App.Config))
         };
 
-        // 2. UI e Motor de Roleta
         App.UI = {
             generateDrumPicker: (containerId, max, isAlarm = false) => {
                 const container = document.getElementById(containerId);
@@ -440,7 +437,6 @@
             }
         };
 
-        // 3. Audio & Haptic
         App.Audio = {
             ctx: null, interval: null, hasInteracted: false,
             init: () => { 
@@ -462,7 +458,6 @@
             stopAlert: () => { clearInterval(App.Audio.interval); App.Audio.vibrate(0); }
         };
 
-        // 4. Configurações Globais
         App.Settings = {
             openModal: () => {
                 document.getElementById('set-sound').checked = App.Config.sound; document.getElementById('set-haptic').checked = App.Config.haptic;
@@ -487,7 +482,6 @@
             }
         };
 
-        // 5. Router Híbrido (Tabs Mobile / Modal 65% Desktop)
         App.Router = {
             modules: { alarme: { icon: 'fa-bell', n: 'Alarme' }, cronometro: { icon: 'fa-stopwatch', n: 'Cronômetro' }, timer: { icon: 'fa-hourglass-half', n: 'Timer' }, calculadora: { icon: 'fa-calculator', n: 'Calc' }, tarefas: { icon: 'fa-calendar-check', n: 'Tarefas' }, habitos: { icon: 'fa-fire', n: 'Hábitos' } },
             recent: SafeStorage.parse('chronos_recent') || ['alarme', 'cronometro', 'timer'],
@@ -499,17 +493,17 @@
                 }
                 App.State.currentView = id; 
                 
-                // Prepara views
                 document.querySelectorAll('.tab-content').forEach(el => { el.classList.remove('flex'); el.classList.add('hidden'); });
                 const activeTab = document.getElementById('view-' + id);
-                activeTab.classList.remove('hidden'); activeTab.classList.add('flex'); 
+                if(activeTab) { activeTab.classList.remove('hidden'); activeTab.classList.add('flex'); }
                 
-                // Desktop Overlay (Abre o modal de 65%)
-                if (App.State.isDesktop) {
+                // Abre Modal no Desktop (Remove hidden e aciona opacity)
+                if (App.State.isDesktop && id !== 'hub') {
                     App.State.isModalOpen = true;
                     const overlay = document.getElementById('app-overlay');
-                    overlay.classList.remove('hidden'); overlay.classList.add('flex');
-                    setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+                    overlay.classList.remove('lg:hidden'); 
+                    overlay.classList.add('lg:flex');
+                    setTimeout(() => overlay.classList.remove('lg:opacity-0'), 10);
                 }
 
                 if (id === 'timer' && !App.Timer.isInit) App.Timer.init();
@@ -517,16 +511,19 @@
             },
             closeDesktop: (e = null, force = false) => {
                 if (!App.State.isDesktop) return;
-                // Fecha apenas se clicou no fundo ou no botão fechar explicitamente
                 if (force || (e && e.target.id === 'app-overlay')) {
                     App.State.isModalOpen = false;
                     const overlay = document.getElementById('app-overlay');
-                    overlay.classList.add('opacity-0');
-                    setTimeout(() => { overlay.classList.remove('flex'); overlay.classList.add('hidden'); }, 300);
+                    overlay.classList.add('lg:opacity-0');
+                    setTimeout(() => { 
+                        overlay.classList.remove('lg:flex'); 
+                        overlay.classList.add('lg:hidden'); 
+                        App.State.currentView = 'hub';
+                        App.Router.render();
+                    }, 300);
                 }
             },
             render: () => {
-                // Atualiza Tabs Mobile
                 const nav = document.getElementById('nav-list'); nav.innerHTML = '';
                 App.Router.recent.forEach(id => {
                     const c = (App.State.currentView === id) ? 'text-gold' : 'text-textMuted hover:text-white';
@@ -538,7 +535,6 @@
             }
         };
 
-        // 6. Sistema Base Modais
         App.System = {
             editCb: null,
             showAlert: (title, msg, isAlarm = false) => {
@@ -556,7 +552,6 @@
             saveEdit: () => { const v = document.getElementById('edit-input').value.trim(); if(v && App.System.editCb) App.System.editCb(v); App.System.closeEdit(); }
         };
 
-        // 7. Módulo Alarme
         App.Alarms = {
             data: SafeStorage.parse('chronos_alarms') || [], lastTriggered: "", weekDays: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'], tempDays: [],
             initPickers: () => { App.UI.generateDrumPicker('alarm-picker-h', 23, true); App.UI.generateDrumPicker('alarm-picker-m', 59, true); },
@@ -584,14 +579,10 @@
                 
                 App.Alarms.data.sort((a, b) => a.time.localeCompare(b.time));
                 
-                // Update Desktop Widget
                 if (App.State.isDesktop) {
                     const activeAlarms = App.Alarms.data.filter(a => a.active);
-                    if (activeAlarms.length > 0) {
-                        widget.innerHTML = `<span class="text-white text-base">Próximo:</span> <span class="text-gold font-bold">${activeAlarms[0].time}</span>`;
-                    } else {
-                        widget.innerText = "Desativado";
-                    }
+                    if (activeAlarms.length > 0) { widget.innerHTML = `<span class="text-white text-base">Próximo:</span> <span class="text-gold font-bold">${activeAlarms[0].time}</span>`; } 
+                    else { widget.innerText = "Desativado"; }
                 }
 
                 list.innerHTML = App.Alarms.data.map(a => `<div class="bg-darkBg lg:bg-[#111] p-6 rounded-3xl flex justify-between items-center border border-transparent ${a.active ? 'hover:border-gold shadow-md' : 'opacity-50'} transition-all group cursor-pointer" onclick="App.Alarms.openModal('${a.id}')"><div class="flex-1"><div class="text-5xl font-light mb-1 ${a.active ? 'text-white' : 'text-textMuted'}">${a.time}</div><div class="${a.active ? 'text-gold' : 'text-gray-600'} text-xs font-bold uppercase truncate tracking-wider">${a.label || 'Alarme'} ${a.days.length>0 ? '• REPETE' : ''} ${a.snoozeParent ? '💤' : ''}</div></div><div class="flex items-center gap-4" onclick="event.stopPropagation()"><button onclick="App.Alarms.delete('${a.id}')" class="text-red-900/50 hover:text-red-500 p-3 text-2xl transition"><i class="fa-solid fa-trash"></i></button><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" onchange="App.Alarms.toggle('${a.id}')" class="sr-only peer" ${a.active ? 'checked' : ''}><div class="w-14 h-8 bg-gray-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-7 after:w-7 after:transition-all peer-checked:bg-gold"></div></label></div></div>`).join('');
@@ -633,7 +624,6 @@
             }
         };
 
-        // 8. Módulo Timer
         App.Timer = {
             totalSeconds: 0, maxSeconds: 1, interval: null, running: false, isInit: false,
             init: () => { 
@@ -646,7 +636,7 @@
                 const timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
                 
                 document.getElementById('timer-display').textContent = timeStr;
-                if (App.State.isDesktop) document.getElementById('widget-timer-time').textContent = timeStr; // Atualiza Widget Vivo
+                if (App.State.isDesktop) document.getElementById('widget-timer-time').textContent = timeStr; 
 
                 const offset = 289.02 - (App.Timer.totalSeconds / App.Timer.maxSeconds) * 289.02; 
                 document.getElementById('timer-svg-ring').style.strokeDashoffset = offset || 0;
@@ -682,7 +672,6 @@
             }
         };
 
-        // 9. Módulo Cronômetro
         App.Stopwatch = {
             startTime: 0, diff: 0, saved: 0, running: false, interval: null, laps: [], lastLap: 0,
             format: (ms) => { const m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000), mili = Math.floor((ms % 1000) / 10); return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')},${mili.toString().padStart(2,'0')}`; },
@@ -690,7 +679,7 @@
                 App.Stopwatch.diff = new Date().getTime() - App.Stopwatch.startTime + App.Stopwatch.saved; 
                 const timeStr = App.Stopwatch.format(App.Stopwatch.diff);
                 document.getElementById('stopwatch-display').innerHTML = timeStr; 
-                if (App.State.isDesktop) document.getElementById('widget-stopwatch-time').innerHTML = timeStr; // Widget Vivo
+                if (App.State.isDesktop) document.getElementById('widget-stopwatch-time').innerHTML = timeStr; 
             },
             toggle: () => {
                 if (!App.Stopwatch.running) { App.Stopwatch.startTime = new Date().getTime(); App.Stopwatch.interval = setInterval(App.Stopwatch.update, 10); App.Stopwatch.running = true; document.getElementById('btn-start-stop').innerHTML = "Parar"; document.getElementById('btn-start-stop').className = "w-24 h-24 rounded-full bg-red-900/80 text-red-200 font-bold text-lg active:scale-95 transition"; document.getElementById('btn-lap-reset').innerHTML = "Volta"; document.getElementById('stopwatch-ring').style.display = "block"; if (App.State.isDesktop) document.getElementById('widget-stopwatch-time').classList.add('text-gold'); } 
@@ -703,7 +692,6 @@
             renderLaps: () => { document.getElementById('stopwatch-laps').innerHTML = App.Stopwatch.laps.map(l => `<div class="flex justify-between py-4 border-b border-gray-800/50 text-base px-4"><span class="text-textMuted font-bold w-12">${String(l.num).padStart(2,'0')}</span><span class="text-white font-mono flex-1 text-center">+ ${l.lap}</span><span class="text-gold font-mono w-24 text-right">${l.total}</span></div>`).join(''); }
         };
 
-        // 10. Módulo Calculadora (Flexbox fixo)
         App.Calc = {
             curr: '0', prev: '', op: null, hist: SafeStorage.parse('chronos_calc') || [],
             input: (v) => {
@@ -724,7 +712,6 @@
             clearHistory: () => { App.Calc.hist = []; SafeStorage.remove('chronos_calc'); App.Calc.closeHistory(); }
         };
 
-        // 11. Módulo Tarefas
         App.Tasks = {
             data: SafeStorage.parse('chronos_tasks') || [],
             render: () => { 
@@ -739,7 +726,6 @@
             toggle: (i) => { App.Tasks.data[i].done = !App.Tasks.data[i].done; App.Tasks.save(); }, delete: (i) => { App.Tasks.data.splice(i, 1); App.Tasks.save(); }, save: () => { SafeStorage.set('chronos_tasks', JSON.stringify(App.Tasks.data)); App.Tasks.render(); }
         };
 
-        // 12. Módulo Hábitos
         App.Habits = {
             data: SafeStorage.parse('chronos_habits') || [],
             getStreak: (hist) => { if(!hist || !hist.length) return 0; let s = 0, d = new Date(), check = d.toISOString().split('T')[0]; if(!hist.includes(check)){ d.setDate(d.getDate()-1); check = d.toISOString().split('T')[0]; if(!hist.includes(check)) return 0; } while(hist.includes(check)){ s++; d.setDate(d.getDate()-1); check = d.toISOString().split('T')[0]; } return s; },
@@ -757,31 +743,27 @@
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            // Lógica da Splash Screen
             setTimeout(() => {
                 const splash = document.getElementById('splash-screen');
-                if (splash) {
-                    splash.classList.add('opacity-0');
-                    setTimeout(() => splash.classList.add('hidden'), 700);
-                }
+                if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
             }, 2000);
 
-            // Inicialização
-            App.Router.render(); 
-            App.Alarms.init(); 
-            App.Tasks.render(); 
-            App.Habits.render();
+            if (App.State.isDesktop) { 
+                App.Timer.init(); 
+                App.State.currentView = 'hub'; // Garante que o desktop fique no fundo no boot
+            } else {
+                App.Router.go(App.Router.recent[0] || 'alarme'); // Garante que abra uma aba no mobile
+            }
+
+            App.Router.render(); App.Alarms.init(); App.Tasks.render(); App.Habits.render();
             
-            // Corrige inicialização do Timer/Cronômetro no Background Widget
             if(App.State.isDesktop) { App.Timer.updateDisplay(); App.Stopwatch.update(); }
 
             document.getElementById('task-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') App.Tasks.add(); }); 
             document.getElementById('habit-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') App.Habits.add(); });
             
             if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('./sw.js').catch(err => console.log('PWA Bypass:', err));
-                });
+                window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('PWA Bypass:', err)); });
             }
         });
     </script>
