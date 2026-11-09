@@ -73,6 +73,16 @@
 </head>
 <body class="bg-darkBg text-white h-screen w-full flex flex-col overflow-hidden" onclick="App.Audio.init()">
 
+    <!-- ========================================== -->
+    <!-- SPLASH SCREEN (TELA DE CARREGAMENTO ANIMADA) -->
+    <!-- ========================================== -->
+    <div id="splash-screen" class="fixed inset-0 bg-[#050505] z-[100] flex flex-col items-center justify-center transition-opacity duration-700 ease-out">
+        <!-- O GIF animado gerado -->
+        <img src="http://googleusercontent.com/generated_animated_image/1994070470284986235" alt="Chronos Loading" class="w-48 h-48 lg:w-64 lg:h-64 rounded-[2.5rem] shadow-[0_0_50px_rgba(212,175,55,0.2)] mb-8 object-cover border border-gray-800/50">
+        <!-- Texto pulsante -->
+        <h1 class="text-2xl font-bold tracking-widest text-gold animate-pulse">CHRONOS<span class="text-white font-light">HUB</span></h1>
+    </div>
+
     <!-- HEADER GLOBAL -->
     <header class="w-full py-5 px-6 flex justify-between items-center bg-darkBg/80 backdrop-blur-md border-b border-darkSurface z-20">
         <h1 class="text-xl font-bold tracking-wider text-gold">CHRONOS<span class="text-white font-light">HUB</span></h1>
@@ -309,7 +319,7 @@
     </div>
 
     <!-- Histórico da Calculadora -->
-    <div id="calc-history-modal" class="fixed inset-0 bg-black/95 hidden items-end justify-center z-50 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+    <div id="calc-history-modal" class="fixed inset-0 bg-black/90 hidden items-end justify-center z-50 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
         <div id="calc-history-content" class="bg-darkSurface rounded-t-3xl lg:rounded-[2rem] lg:border lg:border-gray-800 w-full lg:max-w-md h-[70vh] lg:h-[600px] flex flex-col transform translate-y-full lg:translate-y-0 lg:scale-95 transition-all duration-300 overflow-hidden mt-auto lg:mt-0 shadow-2xl">
             <div class="flex justify-between items-center p-5 border-b border-gray-800 bg-darkSurface">
                 <h3 class="text-lg font-medium text-gold">Histórico de Cálculos</h3>
@@ -488,7 +498,7 @@
                 const hc = (App.State.currentView === 'hub') ? 'text-gold' : 'text-textMuted hover:text-white';
                 nav.innerHTML += `<li class="flex-1 border-l border-darkSurface"><button onclick="App.Router.go('hub')" class="w-full flex flex-col items-center ${hc} py-2 active:scale-95 transition"><i class="fa-solid fa-layer-group text-xl mb-1"></i><span class="text-[10px] font-medium tracking-wide">Módulos</span></button></li>`;
                 
-                document.getElementById('hub-grid').innerHTML = Object.keys(App.Router.modules).map(id => `<div onclick="App.Router.go('${id}')" class="bg-darkSurface border border-transparent rounded-2xl p-6 flex flex-col items-center hover:border-gold cursor-pointer shadow-sm transition group"><i class="fa-solid ${App.Router.modules[id].icon} text-4xl text-gray-500 mb-4 group-hover:text-gold group-hover:scale-110 transition-transform"></i><span class="text-sm font-semibold text-textMuted group-hover:text-white">${App.Router.modules[id].n}</span></div>`).join('');
+                document.getElementById('hub-grid').innerHTML = Object.keys(App.Router.modules).map(id => `<div onclick="App.Router.go('${id}')" class="bg-darkSurface border border-transparent rounded-3xl p-6 flex flex-col items-center hover:border-gold cursor-pointer shadow-sm transition group"><i class="fa-solid ${App.Router.modules[id].icon} text-4xl text-gray-500 mb-4 group-hover:text-gold group-hover:scale-110 transition-transform"></i><span class="text-sm font-semibold text-textMuted group-hover:text-white">${App.Router.modules[id].n}</span></div>`).join('');
             }
         };
 
@@ -668,6 +678,15 @@
         };
 
         window.addEventListener('DOMContentLoaded', () => {
+            // Lógica da Splash Screen
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                if (splash) {
+                    splash.classList.add('opacity-0');
+                    setTimeout(() => splash.classList.add('hidden'), 700); // Aguarda a transição CSS terminar
+                }
+            }, 2500); // Duração da Splash Screen (2,5 segundos)
+
             if (App.State.isDesktop) { App.Timer.init(); }
             App.Router.render(); App.Alarms.init(); App.Tasks.render(); App.Habits.render();
             document.getElementById('task-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') App.Tasks.add(); }); 
