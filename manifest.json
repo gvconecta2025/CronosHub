@@ -1,0 +1,22 @@
+{
+  "name": "Chronos Hub",
+  "short_name": "Chronos",
+  "description": "Utilitário Premium com Alarme, Cronômetro, Timer, Calculadora, Tarefas e Hábitos.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
