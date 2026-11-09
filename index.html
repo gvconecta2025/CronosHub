@@ -74,12 +74,11 @@
 <body class="bg-darkBg text-white h-screen w-full flex flex-col overflow-hidden" onclick="App.Audio.init()">
 
     <!-- ========================================== -->
-    <!-- SPLASH SCREEN (TELA DE CARREGAMENTO ANIMADA) -->
+    <!-- SPLASH SCREEN (TELA DE CARREGAMENTO) -->
     <!-- ========================================== -->
     <div id="splash-screen" class="fixed inset-0 bg-[#050505] z-[100] flex flex-col items-center justify-center transition-opacity duration-700 ease-out">
-        <!-- O GIF animado gerado -->
-        <img src="http://googleusercontent.com/generated_animated_image/1994070470284986235" alt="Chronos Loading" class="w-48 h-48 lg:w-64 lg:h-64 rounded-[2.5rem] shadow-[0_0_50px_rgba(212,175,55,0.2)] mb-8 object-cover border border-gray-800/50">
-        <!-- Texto pulsante -->
+        <!-- Ícone SVG com pulso dourado -->
+        <img src="icon.svg" alt="Chronos Loading" class="w-32 h-32 lg:w-40 lg:h-40 mb-8 animate-pulse drop-shadow-[0_0_20px_rgba(212,175,55,0.2)]">
         <h1 class="text-2xl font-bold tracking-widest text-gold animate-pulse">CHRONOS<span class="text-white font-light">HUB</span></h1>
     </div>
 
@@ -92,7 +91,8 @@
     </header>
 
     <!-- MAIN AREA (GRID DESKTOP BENTO BOX / TABS MOBILE) -->
-    <main class="flex-1 overflow-y-auto relative pb-24 lg:pb-12 lg:pt-8 lg:px-10 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-8 lg:items-start hide-scrollbar">
+    <!-- lg:items-stretch garante que os cards da mesma linha fiquem com a mesma altura -->
+    <main class="flex-1 overflow-y-auto relative pb-24 lg:pb-12 lg:pt-8 lg:px-10 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-8 lg:items-stretch hide-scrollbar">
         
         <!-- HUB (Mobile Only) -->
         <section id="view-hub" class="tab-content hidden flex-col w-full h-full p-6 lg:hidden">
@@ -101,7 +101,7 @@
         </section>
 
         <!-- DESPERTADOR -->
-        <section id="view-alarme" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:h-[480px] bento-card">
+        <section id="view-alarme" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:min-h-[460px] bento-card">
             <div class="flex justify-between items-end mb-8">
                 <div>
                     <h2 class="text-3xl font-light">Despertador</h2>
@@ -115,7 +115,7 @@
         </section>
 
         <!-- TIMER -->
-        <section id="view-timer" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 items-center justify-center lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:h-[480px] bento-card">
+        <section id="view-timer" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:min-h-[460px] bento-card">
             <h2 class="text-2xl font-light mb-6 text-gold w-full text-left">Temporizador</h2>
             <div class="flex-1 flex flex-col w-full items-center justify-center relative">
                 
@@ -155,22 +155,24 @@
         </section>
 
         <!-- CRONÔMETRO -->
-        <section id="view-cronometro" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 items-center lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:h-[480px] bento-card">
-            <h2 class="text-2xl font-light mb-8 self-start w-full text-left text-gold">Cronômetro</h2>
-            <div class="w-56 h-56 rounded-full border-2 border-darkBg lg:border-gray-800/50 flex items-center justify-center relative mb-8 flex-shrink-0 bg-darkBg lg:bg-[#111] shadow-inner">
-                <div class="absolute inset-0 rounded-full border-4 border-gold border-t-transparent animate-spin" style="animation-duration: 3s; display: none;" id="stopwatch-ring"></div>
-                <div class="text-4xl lg:text-5xl font-thin tabular-nums tracking-wide" id="stopwatch-display">00:00,00</div>
+        <section id="view-cronometro" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:min-h-[460px] bento-card">
+            <h2 class="text-2xl font-light mb-4 text-gold w-full text-left">Cronômetro</h2>
+            <div class="flex-1 flex flex-col items-center w-full">
+                <div class="w-56 h-56 rounded-full border-2 border-darkBg lg:border-gray-800/50 flex items-center justify-center relative mb-8 flex-shrink-0 bg-darkBg lg:bg-[#111] shadow-inner mt-4">
+                    <div class="absolute inset-0 rounded-full border-4 border-gold border-t-transparent animate-spin" style="animation-duration: 3s; display: none;" id="stopwatch-ring"></div>
+                    <div class="text-4xl lg:text-5xl font-thin tabular-nums tracking-wide" id="stopwatch-display">00:00,00</div>
+                </div>
+                <div class="flex gap-6 w-full justify-center mb-8">
+                    <button id="btn-lap-reset" onclick="App.Stopwatch.lapOrReset()" class="w-20 h-20 rounded-full bg-darkBg lg:bg-[#1a1a1a] lg:border lg:border-gray-800 font-semibold hover:bg-gray-800 transition active:scale-95">Zerar</button>
+                    <button id="btn-start-stop" onclick="App.Stopwatch.toggle()" class="w-20 h-20 rounded-full bg-gold text-darkBg font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)] hover:scale-105 transition active:scale-95">Iniciar</button>
+                </div>
+                <div class="w-full flex-1 overflow-y-auto hide-scrollbar pr-2"><div id="stopwatch-laps" class="w-full flex flex-col gap-2 pb-4"></div></div>
             </div>
-            <div class="flex gap-6 w-full justify-center mb-8">
-                <button id="btn-lap-reset" onclick="App.Stopwatch.lapOrReset()" class="w-20 h-20 rounded-full bg-darkBg lg:bg-[#1a1a1a] lg:border lg:border-gray-800 font-semibold hover:bg-gray-800 transition active:scale-95">Zerar</button>
-                <button id="btn-start-stop" onclick="App.Stopwatch.toggle()" class="w-20 h-20 rounded-full bg-gold text-darkBg font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)] hover:scale-105 transition active:scale-95">Iniciar</button>
-            </div>
-            <div class="w-full flex-1 overflow-y-auto hide-scrollbar pr-2"><div id="stopwatch-laps" class="w-full flex flex-col gap-2 pb-4"></div></div>
         </section>
 
-        <!-- CALCULADORA -->
-        <section id="view-calculadora" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 items-center justify-center lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:h-[480px] bento-card">
-            <div class="flex justify-between items-center w-full max-w-sm mx-auto mb-6">
+        <!-- CALCULADORA (Alinhamento Corrigido) -->
+        <section id="view-calculadora" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:min-h-[460px] bento-card">
+            <div class="flex justify-between items-center w-full mb-6">
                 <h2 class="text-2xl font-light text-gold">Calculadora</h2>
                 <button onclick="App.Calc.openHistory()" class="text-textMuted hover:text-gold text-xl transition"><i class="fa-solid fa-clock-rotate-left"></i></button>
             </div>
@@ -207,7 +209,7 @@
         </section>
 
         <!-- TAREFAS -->
-        <section id="view-tarefas" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:h-[480px] bento-card">
+        <section id="view-tarefas" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:min-h-[460px] bento-card">
             <h2 class="text-2xl font-light mb-6 text-gold w-full text-left">Tarefas Diárias</h2>
             <div class="flex gap-2 mb-6">
                 <input type="text" id="task-input" placeholder="NOVA TAREFA..." class="flex-1 bg-darkBg lg:bg-[#111] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-gold uppercase transition font-light" oninput="this.value = this.value.toUpperCase()">
@@ -217,7 +219,7 @@
         </section>
 
         <!-- HÁBITOS -->
-        <section id="view-habitos" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:h-[480px] bento-card">
+        <section id="view-habitos" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:min-h-[460px] bento-card">
             <h2 class="text-2xl font-light mb-6 text-gold w-full text-left">Rastreador de Hábitos</h2>
             <div class="flex gap-2 mb-6">
                 <input type="text" id="habit-input" placeholder="NOVO HÁBITO..." class="flex-1 bg-darkBg lg:bg-[#111] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-gold uppercase transition font-light" oninput="this.value = this.value.toUpperCase()">
@@ -683,9 +685,9 @@
                 const splash = document.getElementById('splash-screen');
                 if (splash) {
                     splash.classList.add('opacity-0');
-                    setTimeout(() => splash.classList.add('hidden'), 700); // Aguarda a transição CSS terminar
+                    setTimeout(() => splash.classList.add('hidden'), 700);
                 }
-            }, 2500); // Duração da Splash Screen (2,5 segundos)
+            }, 2500);
 
             if (App.State.isDesktop) { App.Timer.init(); }
             App.Router.render(); App.Alarms.init(); App.Tasks.render(); App.Habits.render();
