@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>Chronos Hub</title>
+    
+    <!-- PWA Manifest & Icons -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Configuração de Tema -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { darkBg: '#0a0a0a', darkSurface: '#1a1a1a', gold: '#D4AF37', textMuted: '#a3a3a3' }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { -webkit-tap-highlight-color: transparent; user-select: none; overscroll-behavior-y: contain; }
+        .tab-content { display: none; animation: fadeIn 0.2s ease-in-out; }
+        .tab-content.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Roleta */
+        .picker-container { scroll-snap-type: y mandatory; }
+        .picker-item { scroll-snap-align: center; scroll-snap-stop: always; height: 48px; }
+        .drum-overlay { background: linear-gradient(to bottom, #0a0a0a 0%, transparent 35%, transparent 65%, #0a0a0a 100%); pointer-events: none; }
+        
+        /* Anel do Timer */
+        .progress-ring__circle { transition: stroke-dashoffset 1s linear; transform: rotate(-90deg); transform-origin: 50% 50%; }
+    </style>
+</head>
+<body class="bg-darkBg text-white h-screen w-full flex flex-col overflow-hidden" onclick="App.Audio.init()">
+
+    <!-- HEADER GLOBAL -->
+    <header class="w-full py-5 px-6 flex justify-between items-center bg-darkBg border-b border-darkSurface z-10">
+        <h1 class="text-xl font-bold tracking-wider text-gold">CHRONOS<span class="text-white font-light">HUB</span></h1>
+        <button onclick="App.Settings.openModal()" class="text-gold hover:text-white transition p-2">
+            <i class="fa-solid fa-gear text-xl"></i>
+        </button>
+    </header>
+
+    <main class="flex-1 overflow-y-auto relative pb-24 hide-scrollbar">
+        
+        <!-- HUB -->
+        <section id="view-hub" class="tab-content active flex-col w-full h-full p-6">
+            <h2 class="text-3xl font-light mb-6">Central de <span class="text-gold font-bold">Módulos</span></h2>
+            <div class="grid grid-cols-2 gap-4" id="hub-grid"></div>
+        </section>
+
+        <!-- DESPERTADOR -->
+        <section id="view-alarme" class="tab-content flex-col w-full h-full p-6">
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-3xl font-light">Despertador</h2>
+                    <p class="text-textMuted text-sm mt-1" id="current-date"></p>
+                </div>
+                <button onclick="App.Alarms.openModal()" class="bg-gold text-darkBg w-12 h-12 rounded-full flex items-center justify-center text-xl shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+            <div id="alarm-list" class="space-y-4"></div>
+        </section>
+
+        <!-- CRONÔMETRO -->
+        <section id="view-cronometro" class="tab-content flex-col w-full h-full p-6 items-center">
+            <h2 class="text-2xl font-light mb-8 self-start w-full text-left text-gold">Cronômetro</h2>
+            <div class="w-56 h-56 rounded-full border-4 border-darkSurface flex items-center justify-center relative mb-8 flex-shrink-0">
+                <div class="absolute inset-0 rounded-full border-4 border-gold border-t-transparent animate-spin" style="animation-duration: 3s; display: none;" id="stopwatch-ring"></div>
+                <div class="text-4xl font-light tabular-nums" id="stopwatch-display">00:00,00</div>
+            </div>
+            <div class="flex gap-6 w-full justify-center mb-8">
+                <button id="btn-lap-reset" onclick="App.Stopwatch.lapOrReset()" class="w-20 h-20 rounded-full bg-darkSurface font-semibold">Zerar</button>
+                <button id="btn-start-stop" onclick="App.Stopwatch.toggle()" class="w-20 h-20 rounded-full bg-gold text-darkBg font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)]">Iniciar</button>
+            </div>
+            <div class="w-full flex-1 overflow-y-auto"><div id="stopwatch-laps" class="w-full flex flex-col gap-2 pb-4"></div></div>
+        </section>
+
+        <!-- TIMER -->
+        <section id="view-timer" class="tab-content flex-col w-full h-full p-6 items-center justify-center">
+            <h2 class="text-2xl font-light mb-6 text-gold w-full text-left">Temporizador</h2>
+            <div class="flex-1 flex flex-col w-full items-center justify-center">
+                
+                <div class="relative w-64 h-64 flex justify-center items-center rounded-full">
+                    <svg class="absolute inset-0 w-full h-full pointer-events-none z-30" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="46" fill="none" stroke="#1a1a1a" stroke-width="4"></circle>
+                        <circle id="timer-svg-ring" class="progress-ring__circle" cx="50" cy="50" r="46" fill="none" stroke="#D4AF37" stroke-width="4" stroke-dasharray="289.02" stroke-dashoffset="0"></circle>
+                    </svg>
+
+                    <div id="timer-setup-view" class="absolute inset-0 flex justify-center items-center bg-transparent overflow-hidden text-2xl font-light rounded-full z-20">
+                        <div class="absolute top-1/2 left-0 w-full h-[48px] -translate-y-1/2 bg-gold/5 pointer-events-none z-10 border-y border-gold/30"></div>
+                        <div class="absolute inset-0 drum-overlay z-20 rounded-full"></div>
+                        <div class="w-1/3 flex flex-col items-center relative"><div id="timer-picker-h" class="h-full w-full overflow-y-auto picker-container hide-scrollbar relative z-0"></div></div>
+                        <div class="w-1/3 flex flex-col items-center relative"><div id="timer-picker-m" class="h-full w-full overflow-y-auto picker-container hide-scrollbar relative z-0"></div></div>
+                        <div class="w-1/3 flex flex-col items-center relative"><div id="timer-picker-s" class="h-full w-full overflow-y-auto picker-container hide-scrollbar relative z-0"></div></div>
+                    </div>
+
+                    <div id="timer-countdown-view" class="absolute inset-0 hidden flex-col items-center justify-center z-20 bg-darkBg rounded-full">
+                        <div class="text-4xl font-light text-white tabular-nums tracking-wider" id="timer-display">00:00:00</div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-10 w-full" id="timer-quick-actions">
+                    <button onclick="App.Timer.addMinutes(1)" class="flex-1 py-2 bg-darkSurface rounded-xl text-sm text-textMuted hover:text-gold">+1 min</button>
+                    <button onclick="App.Timer.addMinutes(5)" class="flex-1 py-2 bg-darkSurface rounded-xl text-sm text-textMuted hover:text-gold">+5 min</button>
+                    <button onclick="App.Timer.addMinutes(10)" class="flex-1 py-2 bg-darkSurface rounded-xl text-sm text-textMuted hover:text-gold">+10 min</button>
+                </div>
+
+                <div class="flex gap-4 w-full mt-4">
+                    <button id="btn-timer-reset" onclick="App.Timer.reset()" class="w-1/3 py-4 rounded-xl bg-darkSurface text-textMuted font-bold text-sm hidden">Zerar</button>
+                    <button id="btn-timer-start" onclick="App.Timer.toggle()" class="flex-1 py-4 rounded-xl bg-gold text-darkBg font-bold text-lg shadow-[0_0_20px_rgba(212,175,55,0.3)]">Iniciar Timer</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- CALCULADORA -->
+        <section id="view-calculadora" class="tab-content flex-col w-full h-full p-6 items-center justify-center">
+            <div class="flex justify-between items-center w-full max-w-sm mx-auto mb-6">
+                <h2 class="text-2xl font-light text-gold">Calculadora</h2>
+                <button onclick="App.Calc.openHistory()" class="text-textMuted hover:text-gold text-xl"><i class="fa-solid fa-clock-rotate-left"></i></button>
+            </div>
+            <div class="w-full flex-1 flex flex-col justify-end max-w-sm mx-auto">
+                <div class="w-full bg-darkSurface rounded-3xl p-6 flex flex-col justify-end items-end mb-6 h-32 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
+                    <div id="calc-prev" class="text-textMuted text-sm h-5 font-light tracking-wider"></div>
+                    <div id="calc-display" class="text-5xl font-light text-white tracking-wider truncate w-full text-right mt-1">0</div>
+                </div>
+                <div class="grid grid-cols-4 gap-3 w-full">
+                    <button onclick="App.Calc.input('clear')" class="col-span-2 bg-red-900/40 text-red-400 p-4 rounded-2xl font-bold text-xl">C</button>
+                    <button onclick="App.Calc.input('backspace')" class="bg-gray-800 text-white p-4 rounded-2xl font-bold text-xl"><i class="fa-solid fa-delete-left"></i></button>
+                    <button onclick="App.Calc.input('/')" class="bg-gold text-darkBg p-4 rounded-2xl font-bold text-xl">÷</button>
+                    <button onclick="App.Calc.input('7')" class="bg-darkSurface text-white p-4 rounded-2xl text-2xl">7</button>
+                    <button onclick="App.Calc.input('8')" class="bg-darkSurface text-white p-4 rounded-2xl text-2xl">8</button>
+                    <button onclick="App.Calc.input('9')" class="bg-darkSurface text-white p-4 rounded-2xl text-2xl">9</button>
+                    <button onclick="App.Calc.input('*')" class="bg-gold text-darkBg p-4 rounded-2xl font-bold text-xl">×</button>
+                    <button onclick="App.Calc.input('4')" class="bg-darkSurface text-white p-4 rounded-2xl text-2xl">4</button>
+                    <button onclick="App.Calc.input('5')" class="bg-darkSurface text-white p-4 rounded-2xl text-2xl">5</button>
+                    <button onclick="App.Calc.input('6')" class="bg-darkSurface text-white p-4 rounded-2xl text-2xl">6</button>
+                    <button onclick="App.Calc.input('-')" class="bg-gold text-darkBg p-4 rounded-2xl font-bold text-2xl">−</button>
+                    <button onclick="App.Calc.input('1')" class="bg-darkSurface text-white p-4 rounded-2xl text-2xl">1</button>
+                    <button onclick="App.Calc.input('2')" class="bg-darkSurface text-white p-4 rounded-2xl text-2xl">2</button>
+                    <button onclick="App.Calc.input('3')" class="bg-darkSurface text-white p-4 rounded-2xl text-2xl">3</button>
+                    <button onclick="App.Calc.input('+')" class="bg-gold text-darkBg p-4 rounded-2xl font-bold text-2xl">+</button>
+                    <button onclick="App.Calc.input('0')" class="col-span-2 bg-darkSurface text-white p-4 rounded-2xl text-2xl">0</button>
+                    <button onclick="App.Calc.input('.')" class="bg-darkSurface text-white p-4 rounded-2xl text-2xl">.</button>
+                    <button onclick="App.Calc.input('=')" class="bg-gold text-darkBg p-4 rounded-2xl font-bold text-2xl">=</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAREFAS -->
+        <section id="view-tarefas" class="tab-content flex-col w-full h-full p-6">
+            <h2 class="text-2xl font-light mb-6 text-gold w-full text-left">Tarefas Diárias</h2>
+            <div class="flex gap-2 mb-6">
+                <input type="text" id="task-input" placeholder="NOVA TAREFA..." class="flex-1 bg-darkSurface border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-gold uppercase" oninput="this.value = this.value.toUpperCase()">
+                <button onclick="App.Tasks.add()" class="bg-gold text-darkBg px-5 rounded-xl font-bold shadow-[0_0_10px_rgba(212,175,55,0.2)]"><i class="fa-solid fa-plus text-lg"></i></button>
+            </div>
+            <div id="task-list" class="space-y-3 overflow-y-auto flex-1 pb-10 hide-scrollbar"></div>
+        </section>
+
+        <!-- HÁBITOS -->
+        <section id="view-habitos" class="tab-content flex-col w-full h-full p-6">
+            <h2 class="text-2xl font-light mb-6 text-gold w-full text-left">Rastreador de Hábitos</h2>
+            <div class="flex gap-2 mb-6">
+                <input type="text" id="habit-input" placeholder="NOVO HÁBITO..." class="flex-1 bg-darkSurface border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-gold uppercase" oninput="this.value = this.value.toUpperCase()">
+                <button onclick="App.Habits.add()" class="bg-gold text-darkBg px-5 rounded-xl font-bold shadow-[0_0_10px_rgba(212,175,55,0.2)]"><i class="fa-solid fa-plus text-lg"></i></button>
+            </div>
+            <div id="habit-list" class="space-y-4 overflow-y-auto flex-1 pb-10 hide-scrollbar"></div>
+        </section>
+
+    </main>
+
+    <nav class="w-full bg-darkBg border-t border-darkSurface pb-safe pt-2 fixed bottom-0 z-40">
+        <ul class="flex justify-around items-center h-16 pb-2" id="nav-list"></ul>
+    </nav>
+
+    <!-- MODAIS -->
+    <!-- Configurações e Backup -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 opacity-0 transition-opacity duration-300">
+        <div id="settings-content" class="bg-darkSurface p-6 rounded-2xl border border-gray-800 w-3/4 max-w-sm transform scale-95 transition-transform duration-300">
+            <h3 class="text-xl font-light text-gold mb-6">Configurações</h3>
+            <div class="space-y-4 mb-8">
+                <div class="flex justify-between items-center">
+                    <span class="text-white text-sm">Sons de Alerta</span>
+                    <input type="checkbox" id="set-sound" onchange="App.Settings.toggle('sound')" class="accent-gold w-5 h-5">
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-white text-sm">Vibração (Haptic)</span>
+                    <input type="checkbox" id="set-haptic" onchange="App.Settings.toggle('haptic')" class="accent-gold w-5 h-5">
+                </div>
+                <hr class="border-gray-800 my-2">
+                <button onclick="App.Settings.exportBackup()" class="w-full py-3 bg-darkBg border border-gold text-gold font-bold rounded-xl text-sm"><i class="fa-solid fa-download mr-2"></i> Exportar Backup</button>
+                <button onclick="document.getElementById('import-file').click()" class="w-full py-3 bg-darkBg border border-gray-700 text-textMuted font-bold rounded-xl text-sm"><i class="fa-solid fa-upload mr-2"></i> Restaurar Backup</button>
+                <input type="file" id="import-file" class="hidden" accept=".json" onchange="App.Settings.importBackup(event)">
+            </div>
+            <button onclick="App.Settings.closeModal()" class="w-full py-3 bg-gray-800 text-white font-bold rounded-xl">Fechar</button>
+        </div>
+    </div>
+
+    <!-- Adicionar/Editar Alarme -->
+    <div id="alarm-modal" class="fixed inset-0 bg-black/90 hidden items-end justify-center z-50 opacity-0 transition-opacity duration-300">
+        <div id="alarm-content" class="bg-darkSurface rounded-t-3xl w-full max-h-[95vh] flex flex-col transform translate-y-full transition-transform duration-300 overflow-y-auto hide-scrollbar">
+            <div class="flex justify-between items-center p-5 sticky top-0 bg-darkSurface z-40 border-b border-gray-800">
+                <button onclick="App.Alarms.closeModal()" class="text-gray-400 p-2 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                <div class="text-center">
+                    <h3 class="text-lg font-medium text-white" id="alarm-modal-title">Novo alarme</h3>
+                    <p id="alarm-time-left" class="text-textMuted text-xs">Calculando...</p>
+                </div>
+                <button onclick="App.Alarms.save()" class="text-gold p-2 text-xl"><i class="fa-solid fa-check"></i></button>
+            </div>
+            <div class="p-6 flex-1 flex flex-col gap-6">
+                <div class="relative w-full h-48 flex justify-center bg-darkBg rounded-3xl overflow-hidden text-4xl font-light shadow-inner">
+                    <div class="absolute top-1/2 left-0 w-full h-[48px] -translate-y-1/2 border-y border-gold/40 bg-gold/5 pointer-events-none z-10"></div>
+                    <div class="absolute inset-0 drum-overlay z-20"></div>
+                    <div class="w-1/2 flex flex-col items-center relative"><div id="alarm-picker-h" class="h-full w-full overflow-y-auto picker-container hide-scrollbar relative z-0"></div></div>
+                    <div class="w-1/2 flex flex-col items-center relative"><div id="alarm-picker-m" class="h-full w-full overflow-y-auto picker-container hide-scrollbar relative z-0"></div></div>
+                </div>
+                <div>
+                    <p class="text-textMuted text-xs uppercase mb-3 px-2">Repetir</p>
+                    <div class="flex justify-between bg-darkBg p-2 rounded-2xl border border-gray-800" id="alarm-days"></div>
+                </div>
+                <div class="bg-darkBg rounded-2xl p-2 border border-gray-800">
+                    <div class="flex justify-between items-center p-4">
+                        <span class="text-white font-medium">Nome</span>
+                        <input type="text" id="alarm-label-input" placeholder="EX: ACORDAR" class="bg-transparent text-right text-gold font-medium focus:outline-none w-1/2 placeholder-gray-600 uppercase" oninput="this.value = this.value.toUpperCase()">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Editor Genérico -->
+    <div id="edit-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 opacity-0 transition-opacity duration-300">
+        <div id="edit-content" class="bg-darkSurface p-6 rounded-2xl border border-gray-800 w-3/4 max-w-sm transform scale-95 transition-transform duration-300">
+            <h3 class="text-xl font-light text-gold mb-6" id="edit-title">Editar</h3>
+            <div class="space-y-4 mb-6">
+                <input type="text" id="edit-input" class="w-full bg-darkBg border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-gold uppercase" oninput="this.value = this.value.toUpperCase()">
+            </div>
+            <div class="flex gap-3">
+                <button onclick="App.System.closeEdit()" class="flex-1 py-3 bg-gray-800 text-white font-bold rounded-xl">Cancelar</button>
+                <button onclick="App.System.saveEdit()" class="flex-1 py-3 bg-gold text-darkBg font-bold rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.3)]">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerta de Disparo -->
+    <div id="alert-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 opacity-0 transition-opacity duration-300">
+        <div id="alert-content" class="bg-darkSurface p-8 rounded-3xl border border-gold/40 w-10/12 max-w-sm text-center transform scale-95 transition-transform duration-300 shadow-[0_0_50px_rgba(212,175,55,0.2)]">
+            <i class="fa-solid fa-bell text-5xl text-gold mb-6 animate-bounce"></i>
+            <h3 class="text-3xl font-light mb-2 text-white" id="alert-title">Aviso</h3>
+            <p id="alert-msg" class="text-gold text-sm mb-8 font-bold tracking-widest uppercase"></p>
+            <div class="flex flex-col gap-3">
+                <button onclick="App.Alarms.snooze()" id="btn-snooze" class="w-full py-3 bg-gray-800 text-white font-bold rounded-xl active:scale-95 transition hidden">Soneca (10 min)</button>
+                <button onclick="App.System.closeAlert()" class="w-full py-4 bg-gold text-darkBg font-bold rounded-2xl active:scale-95 transition">Desligar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Histórico da Calculadora -->
+    <div id="calc-history-modal" class="fixed inset-0 bg-black/90 hidden items-end justify-center z-50 opacity-0 transition-opacity duration-300">
+        <div id="calc-history-content" class="bg-darkSurface rounded-t-3xl w-full h-[70vh] flex flex-col transform translate-y-full transition-transform duration-300">
+            <div class="flex justify-between items-center p-5 border-b border-gray-800">
+                <h3 class="text-lg font-medium text-gold">Histórico de Cálculos</h3>
+                <button onclick="App.Calc.closeHistory()" class="text-gray-400 p-2 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto hide-scrollbar p-6 space-y-4" id="calc-history-list"></div>
+            <div class="p-4 border-t border-gray-800">
+                <button onclick="App.Calc.clearHistory()" class="w-full py-3 bg-red-900/40 text-red-400 font-bold rounded-xl active:scale-95 transition">Limpar Histórico</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. SAFESTORAGE (Blindagem de Memória)
+        // ==========================================
+        const SafeStorage = {
+            get: (k) => { try { return localStorage.getItem(k); } catch(e){ return window['temp_'+k] || null; } },
+            set: (k, v) => { try { localStorage.setItem(k, v); } catch(e){ window['temp_'+k] = v; } },
+            remove: (k) => { try { localStorage.removeItem(k); } catch(e){ delete window['temp_'+k]; } },
+            parse: (k) => { try { return JSON.parse(SafeStorage.get(k)); } catch(e){ return null; } },
+            keys: () => { try { return Object.keys(localStorage); } catch(e){ return Object.keys(window).filter(k => k.startsWith('temp_')); } }
+        };
+
+        const App = {
+            State: { currentView: 'hub', editId: null },
+            Config: SafeStorage.parse('chronos_config') || { sound: true, haptic: true },
+            SaveConfig: () => SafeStorage.set('chronos_config', JSON.stringify(App.Config))
+        };
+
+        // ==========================================
+        // 2. CORE UI & ROLETA MATEMÁTICA
+        // ==========================================
+        App.UI = {
+            generateDrumPicker: (containerId, max, isAlarm = false) => {
+                const container = document.getElementById(containerId);
+                const copies = 11; const L = max + 1;
+                
+                let html = '<div class="h-[88px] w-full flex-shrink-0"></div>'; 
+                for (let c = 0; c < copies; c++) {
+                    for (let i = 0; i <= max; i++) {
+                        const v = i.toString().padStart(2, '0');
+                        html += `<div class="picker-item w-full flex items-center justify-center text-gray-700 opacity-30 transform scale-90 flex-shrink-0" data-val="${v}">${v}</div>`;
+                    }
+                }
+                html += '<div class="h-[88px] w-full flex-shrink-0"></div>';
+                container.innerHTML = html;
+
+                const applyActive = (idx) => {
+                    const prevIdx = container.dataset.activeIdx;
+                    if (prevIdx && prevIdx == idx) return;
+                    
+                    const items = container.querySelectorAll('.picker-item');
+                    if (prevIdx !== undefined && items[prevIdx]) {
+                        items[prevIdx].classList.remove('text-white', 'scale-110', 'opacity-100', 'font-normal');
+                        items[prevIdx].classList.add('text-gray-700', 'scale-90', 'opacity-30');
+                    }
+                    if (items[idx]) {
+                        items[idx].classList.remove('text-gray-700', 'scale-90', 'opacity-30');
+                        items[idx].classList.add('text-white', 'scale-110', 'opacity-100', 'font-normal');
+                        App.Audio.vibrate(5);
+                    }
+                    container.dataset.activeIdx = idx;
+                };
+
+                const middleIdx = Math.floor(copies / 2) * L;
+                setTimeout(() => { 
+                    container.classList.remove('scroll-smooth'); container.scrollTop = middleIdx * 48; 
+                    applyActive(middleIdx); setTimeout(() => container.classList.add('scroll-smooth'), 50); 
+                }, 10);
+
+                container.addEventListener('scroll', () => {
+                    const idx = Math.round(container.scrollTop / 48);
+                    applyActive(idx);
+                    if (isAlarm) App.Alarms.updateSubtitle();
+                    
+                    if (idx < L * 2 || idx > L * (copies - 3)) { 
+                        container.style.scrollBehavior = 'auto'; 
+                        const newIdx = (Math.floor(copies/2) * L) + (idx % L);
+                        container.scrollTop = newIdx * 48;
+                        setTimeout(() => { container.style.scrollBehavior = ''; applyActive(newIdx); }, 10);
+                    }
+                });
+            },
+            getPickerValue: (containerId, max) => {
+                const idx = Math.round(document.getElementById(containerId).scrollTop / 48);
+                return (idx % (max + 1)).toString().padStart(2, '0');
+            },
+            setPickerValue: (containerId, max, val) => {
+                const c = document.getElementById(containerId);
+                c.classList.remove('scroll-smooth'); c.scrollTop = ((5 * (max+1)) + parseInt(val)) * 48; 
+                setTimeout(() => c.classList.add('scroll-smooth'), 50);
+            }
+        };
+
+        App.Audio = {
+            ctx: null, interval: null,
+            init: () => { try { if (!App.Audio.ctx) App.Audio.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (App.Audio.ctx.state === 'suspended') App.Audio.ctx.resume(); } catch(e){} },
+            vibrate: (pattern) => { if (App.Config.haptic && navigator.vibrate) navigator.vibrate(pattern); },
+            playBeep: (freq, dur) => {
+                if (!App.Config.sound || !App.Audio.ctx) return;
+                try {
+                    const osc = App.Audio.ctx.createOscillator(); const gain = App.Audio.ctx.createGain();
+                    osc.connect(gain); gain.connect(App.Audio.ctx.destination);
+                    osc.type = 'sine'; osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0, App.Audio.ctx.currentTime); gain.gain.linearRampToValueAtTime(0.5, App.Audio.ctx.currentTime + 0.05); gain.gain.linearRampToValueAtTime(0, App.Audio.ctx.currentTime + dur);
+                    osc.start(); osc.stop(App.Audio.ctx.currentTime + dur);
+                } catch(e){}
+            },
+            startAlert: () => { App.Audio.init(); App.Audio.interval = setInterval(() => { App.Audio.playBeep(880, 0.15); setTimeout(() => App.Audio.playBeep(1046.50, 0.25), 200); App.Audio.vibrate([200, 100, 300]); }, 1200); },
+            stopAlert: () => { clearInterval(App.Audio.interval); App.Audio.vibrate(0); }
+        };
+
+        App.Settings = {
+            openModal: () => {
+                document.getElementById('set-sound').checked = App.Config.sound; document.getElementById('set-haptic').checked = App.Config.haptic;
+                document.getElementById('settings-modal').classList.replace('hidden', 'flex'); setTimeout(() => { document.getElementById('settings-modal').classList.remove('opacity-0'); document.getElementById('settings-content').classList.replace('scale-95', 'scale-100'); }, 10);
+            },
+            closeModal: () => { document.getElementById('settings-modal').classList.add('opacity-0'); document.getElementById('settings-content').classList.replace('scale-100', 'scale-95'); setTimeout(() => document.getElementById('settings-modal').classList.replace('flex', 'hidden'), 300); },
+            toggle: (key) => { App.Config[key] = !App.Config[key]; App.SaveConfig(); },
+            exportBackup: () => {
+                const data = {}; SafeStorage.keys().forEach(k => { if(k.startsWith('chronos_')) data[k] = SafeStorage.get(k); });
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+                a.download = `chronos_backup_${new Date().toISOString().split('T')[0]}.json`; a.click(); URL.revokeObjectURL(a.href);
+            },
+            importBackup: (e) => {
+                const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const data = JSON.parse(ev.target.result); Object.keys(data).forEach(k => { if (k.startsWith('chronos_')) SafeStorage.set(k, data[k]); });
+                        App.Settings.closeModal(); App.System.showAlert("Sucesso", "Backup restaurado com sucesso! Recarregando..."); setTimeout(() => location.reload(), 2000);
+                    } catch (err) { alert("Arquivo inválido."); }
+                }; reader.readAsText(file);
+            }
+        };
+
+        App.Router = {
+            modules: { alarme: { icon: 'fa-bell', n: 'Alarme' }, cronometro: { icon: 'fa-stopwatch', n: 'Cronômetro' }, timer: { icon: 'fa-hourglass-half', n: 'Timer' }, calculadora: { icon: 'fa-calculator', n: 'Calc' }, tarefas: { icon: 'fa-calendar-check', n: 'Tarefas' }, habitos: { icon: 'fa-fire', n: 'Hábitos' } },
+            recent: SafeStorage.parse('chronos_recent') || ['alarme', 'cronometro', 'timer'],
+            go: (id) => {
+                App.Audio.init();
+                if (id !== 'hub' && App.Router.modules[id]) {
+                    App.Router.recent = App.Router.recent.filter(m => m !== id); App.Router.recent.unshift(id);
+                    if (App.Router.recent.length > 3) App.Router.recent.pop(); SafeStorage.set('chronos_recent', JSON.stringify(App.Router.recent));
+                }
+                App.State.currentView = id; document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.getElementById('view-' + id).classList.add('active'); App.Router.render();
+            },
+            render: () => {
+                const nav = document.getElementById('nav-list'); nav.innerHTML = '';
+                App.Router.recent.forEach(id => {
+                    const c = (App.State.currentView === id) ? 'text-gold' : 'text-textMuted hover:text-white';
+                    nav.innerHTML += `<li class="flex-1"><button onclick="App.Router.go('${id}')" class="w-full flex flex-col items-center ${c} py-2 active:scale-95"><i class="fa-solid ${App.Router.modules[id].icon} text-xl mb-1"></i><span class="text-[10px] font-medium">${App.Router.modules[id].n}</span></button></li>`;
+                });
+                const hc = (App.State.currentView === 'hub') ? 'text-gold' : 'text-textMuted hover:text-white';
+                nav.innerHTML += `<li class="flex-1 border-l border-darkSurface"><button onclick="App.Router.go('hub')" class="w-full flex flex-col items-center ${hc} py-2 active:scale-95"><i class="fa-solid fa-layer-group text-xl mb-1"></i><span class="text-[10px] font-medium">Módulos</span></button></li>`;
+                document.getElementById('hub-grid').innerHTML = Object.keys(App.Router.modules).map(id => `<div onclick="App.Router.go('${id}')" class="bg-darkSurface border border-transparent rounded-2xl p-6 flex flex-col items-center hover:border-gold cursor-pointer shadow-sm"><i class="fa-solid ${App.Router.modules[id].icon} text-3xl text-gray-500 mb-3"></i><span class="text-sm font-semibold text-textMuted">${App.Router.modules[id].n}</span></div>`).join('');
+            }
+        };
+
+        App.System = {
+            editCb: null,
+            showAlert: (title, msg, isAlarm = false) => {
+                App.Audio.startAlert();
+                document.getElementById('alert-title').innerText = title; document.getElementById('alert-msg').innerText = msg;
+                document.getElementById('btn-snooze').style.display = isAlarm ? 'block' : 'none';
+                const m = document.getElementById('alert-modal'); m.classList.replace('hidden', 'flex'); setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('alert-content').classList.replace('scale-95', 'scale-100'); }, 10);
+            },
+            closeAlert: () => { App.Audio.stopAlert(); const m = document.getElementById('alert-modal'); m.classList.add('opacity-0'); document.getElementById('alert-content').classList.replace('scale-100', 'scale-95'); setTimeout(() => m.classList.replace('flex', 'hidden'), 300); },
+            openEdit: (title, val, cb) => {
+                document.getElementById('edit-title').innerText = title; document.getElementById('edit-input').value = val; App.System.editCb = cb;
+                const m = document.getElementById('edit-modal'); m.classList.replace('hidden', 'flex'); setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('edit-content').classList.replace('scale-95', 'scale-100'); }, 10);
+            },
+            closeEdit: () => { const m = document.getElementById('edit-modal'); m.classList.add('opacity-0'); document.getElementById('edit-content').classList.replace('scale-100', 'scale-95'); setTimeout(() => m.classList.replace('flex', 'hidden'), 300); },
+            saveEdit: () => { const v = document.getElementById('edit-input').value.trim(); if(v && App.System.editCb) App.System.editCb(v); App.System.closeEdit(); }
+        };
+
+        App.Alarms = {
+            data: SafeStorage.parse('chronos_alarms') || [], lastTriggered: "", weekDays: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'], tempDays: [],
+            init: () => {
+                App.UI.generateDrumPicker('alarm-picker-h', 23, true); App.UI.generateDrumPicker('alarm-picker-m', 59, true); App.Alarms.render();
+                document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', month: 'long', day: 'numeric' }).replace('-feira', '');
+                setInterval(() => {
+                    const now = new Date(); const cHHMM = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+                    if (now.getSeconds() === 0) App.Alarms.lastTriggered = "";
+                    if (App.Alarms.lastTriggered !== cHHMM) {
+                        const triggered = App.Alarms.data.find(a => a.active && a.time === cHHMM && (a.days.length === 0 || a.days.includes(now.getDay())));
+                        if (triggered) { App.Alarms.lastTriggered = cHHMM; App.System.showAlert("Despertador", triggered.label || "HORA DE ACORDAR!", true); if(triggered.snoozeParent) App.Alarms.delete(triggered.id); }
+                    }
+                }, 1000);
+            },
+            render: () => {
+                const list = document.getElementById('alarm-list'); if(App.Alarms.data.length === 0) { list.innerHTML = '<p class="text-textMuted text-center text-sm mt-10">Nenhum alarme configurado.</p>'; return; }
+                App.Alarms.data.sort((a, b) => a.time.localeCompare(b.time));
+                list.innerHTML = App.Alarms.data.map(a => `<div class="bg-darkSurface p-5 rounded-3xl flex justify-between items-center border border-transparent ${a.active ? 'hover:border-gold shadow-[0_4px_20px_rgba(0,0,0,0.4)]' : 'opacity-50'} transition-all group"><div class="flex-1 cursor-pointer" onclick="App.Alarms.openModal('${a.id}')"><div class="text-5xl font-light mb-1 ${a.active ? 'text-white' : 'text-textMuted'}">${a.time}</div><div class="${a.active ? 'text-gold' : 'text-gray-600'} text-xs font-bold uppercase truncate">${a.label || 'Alarme'} ${a.days.length>0 ? '• REPETE' : ''} ${a.snoozeParent ? '💤' : ''}</div></div><div class="flex items-center gap-4"><button onclick="App.Alarms.delete('${a.id}')" class="text-red-900/50 hover:text-red-500 p-2 text-xl"><i class="fa-solid fa-trash"></i></button><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" onchange="App.Alarms.toggle('${a.id}')" class="sr-only peer" ${a.active ? 'checked' : ''}><div class="w-12 h-7 bg-gray-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gold"></div></label></div></div>`).join('');
+            },
+            renderDays: () => { document.getElementById('alarm-days').innerHTML = App.Alarms.weekDays.map((d, i) => `<button onclick="App.Alarms.toggleDay(${i})" class="w-8 h-8 rounded-full text-xs font-bold transition-colors ${App.Alarms.tempDays.includes(i) ? 'bg-gold text-darkBg' : 'text-textMuted hover:bg-gray-800'}">${d}</button>`).join(''); },
+            toggleDay: (i) => { if(App.Alarms.tempDays.includes(i)) App.Alarms.tempDays = App.Alarms.tempDays.filter(d => d !== i); else App.Alarms.tempDays.push(i); App.Alarms.renderDays(); App.Alarms.updateSubtitle(); },
+            openModal: (id = null) => {
+                App.State.editId = id; App.Alarms.tempDays = []; let h, m, label = "";
+                if (id) { const a = App.Alarms.data.find(x => x.id === id); [h, m] = a.time.split(':'); label = a.label; App.Alarms.tempDays = [...a.days]; } else { const now = new Date(); h = now.getHours(); m = now.getMinutes(); }
+                document.getElementById('alarm-label-input').value = label; App.Alarms.renderDays();
+                const mEl = document.getElementById('alarm-modal'); mEl.classList.replace('hidden', 'flex');
+                setTimeout(() => { mEl.classList.remove('opacity-0'); document.getElementById('alarm-content').classList.remove('translate-y-full'); App.UI.setPickerValue('alarm-picker-h', 23, h); App.UI.setPickerValue('alarm-picker-m', 59, m); App.Alarms.updateSubtitle(); }, 10);
+            },
+            closeModal: () => { const m = document.getElementById('alarm-modal'); m.classList.add('opacity-0'); document.getElementById('alarm-content').classList.add('translate-y-full'); setTimeout(() => m.classList.replace('flex', 'hidden'), 300); },
+            save: () => {
+                const t = `${App.UI.getPickerValue('alarm-picker-h', 23)}:${App.UI.getPickerValue('alarm-picker-m', 59)}`; const l = document.getElementById('alarm-label-input').value;
+                if (App.State.editId) { const a = App.Alarms.data.find(x => x.id === App.State.editId); a.time = t; a.label = l; a.days = [...App.Alarms.tempDays]; a.active = true; } 
+                else { App.Alarms.data.push({ id: Date.now().toString(), time: t, label: l, days: [...App.Alarms.tempDays], active: true }); }
+                SafeStorage.set('chronos_alarms', JSON.stringify(App.Alarms.data)); App.Alarms.render(); App.Alarms.closeModal();
+            },
+            delete: (id) => { App.Alarms.data = App.Alarms.data.filter(a => a.id !== id); SafeStorage.set('chronos_alarms', JSON.stringify(App.Alarms.data)); App.Alarms.render(); },
+            toggle: (id) => { const a = App.Alarms.data.find(x => x.id === id); if(a) { a.active = !a.active; SafeStorage.set('chronos_alarms', JSON.stringify(App.Alarms.data)); App.Alarms.render(); } },
+            snooze: () => {
+                const now = new Date(); now.setMinutes(now.getMinutes() + 10);
+                App.Alarms.data.push({ id: 'snz_' + Date.now(), time: `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`, label: 'SONECA', days: [], active: true, snoozeParent: true });
+                SafeStorage.set('chronos_alarms', JSON.stringify(App.Alarms.data)); App.Alarms.render(); App.System.closeAlert();
+            },
+            updateSubtitle: () => {
+                const hStr = App.UI.getPickerValue('alarm-picker-h', 23); const mStr = App.UI.getPickerValue('alarm-picker-m', 59);
+                const now = new Date(); let target = new Date(now); target.setHours(parseInt(hStr), parseInt(mStr), 0, 0);
+                if (App.Alarms.tempDays.length === 0) { if (target <= now) target.setDate(target.getDate() + 1); } 
+                else { let dAdd = 0; let currDay = now.getDay(); if (!(App.Alarms.tempDays.includes(currDay) && target > now)) { for (let i = 1; i <= 7; i++) { if (App.Alarms.tempDays.includes((currDay + i) % 7)) { dAdd = i; break; } } target.setDate(target.getDate() + dAdd); } }
+                const diff = target - now; const dD = Math.floor(diff / 86400000); const dH = Math.floor((diff % 86400000) / 3600000); const dM = Math.floor((diff % 3600000) / 60000);
+                document.getElementById('alarm-time-left').innerText = `Disparará em ${dD>0 ? dD+'d, ' : ''}${dH}h e ${dM}m`;
+            }
+        };
+
+        App.Timer = {
+            totalSeconds: 0, maxSeconds: 1, interval: null, running: false,
+            init: () => { App.UI.generateDrumPicker('timer-picker-h', 23); App.UI.generateDrumPicker('timer-picker-m', 59); App.UI.generateDrumPicker('timer-picker-s', 59); },
+            updateDisplay: () => {
+                const h = Math.floor(App.Timer.totalSeconds / 3600), m = Math.floor((App.Timer.totalSeconds % 3600) / 60), s = App.Timer.totalSeconds % 60;
+                document.getElementById('timer-display').textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                const offset = 289.02 - (App.Timer.totalSeconds / App.Timer.maxSeconds) * 289.02; document.getElementById('timer-svg-ring').style.strokeDashoffset = offset || 0;
+            },
+            addMinutes: (m) => {
+                if(App.Timer.running) return;
+                if(App.Timer.totalSeconds === 0) App.Timer.totalSeconds = (parseInt(App.UI.getPickerValue('timer-picker-h', 23)) * 3600) + (parseInt(App.UI.getPickerValue('timer-picker-m', 59)) * 60) + parseInt(App.UI.getPickerValue('timer-picker-s', 59));
+                App.Timer.totalSeconds += m * 60; App.Timer.maxSeconds = App.Timer.totalSeconds;
+                document.getElementById('timer-setup-view').classList.add('hidden'); document.getElementById('timer-countdown-view').classList.replace('hidden', 'flex'); document.getElementById('btn-timer-reset').classList.remove('hidden'); document.getElementById('timer-quick-actions').classList.replace('flex', 'hidden');
+                App.Timer.updateDisplay();
+            },
+            toggle: () => {
+                App.Audio.init(); const btn = document.getElementById('btn-timer-start');
+                if (!App.Timer.running) {
+                    if (App.Timer.totalSeconds === 0) App.Timer.totalSeconds = App.Timer.maxSeconds = (parseInt(App.UI.getPickerValue('timer-picker-h', 23)) * 3600) + (parseInt(App.UI.getPickerValue('timer-picker-m', 59)) * 60) + parseInt(App.UI.getPickerValue('timer-picker-s', 59));
+                    if (App.Timer.totalSeconds === 0) return;
+                    App.Timer.running = true; document.getElementById('timer-setup-view').classList.add('hidden'); document.getElementById('timer-countdown-view').classList.replace('hidden', 'flex'); document.getElementById('btn-timer-reset').classList.remove('hidden'); document.getElementById('timer-quick-actions').classList.replace('flex', 'hidden');
+                    btn.textContent = 'Pausar'; btn.className = "flex-1 py-4 rounded-xl bg-red-900 text-red-200 font-bold text-lg"; App.Timer.updateDisplay();
+                    App.Timer.interval = setInterval(() => { if (App.Timer.totalSeconds > 0) { App.Timer.totalSeconds--; App.Timer.updateDisplay(); } else { App.Timer.reset(); App.System.showAlert("Tempo Esgotado!", "O TIMER FINALIZOU."); } }, 1000);
+                } else { App.Timer.running = false; clearInterval(App.Timer.interval); btn.textContent = 'Retomar'; btn.className = "flex-1 py-4 rounded-xl bg-gold text-darkBg font-bold text-lg shadow-[0_0_20px_rgba(212,175,55,0.3)]"; }
+            },
+            reset: () => {
+                App.Timer.running = false; clearInterval(App.Timer.interval); App.Timer.totalSeconds = 0;
+                document.getElementById('timer-setup-view').classList.remove('hidden'); document.getElementById('timer-countdown-view').classList.replace('flex', 'hidden'); document.getElementById('btn-timer-reset').classList.add('hidden'); document.getElementById('timer-quick-actions').classList.replace('hidden', 'flex');
+                document.getElementById('btn-timer-start').textContent = 'Iniciar Timer'; document.getElementById('btn-timer-start').className = "flex-1 py-4 rounded-xl bg-gold text-darkBg font-bold text-lg shadow-[0_0_20px_rgba(212,175,55,0.3)]"; document.getElementById('timer-svg-ring').style.strokeDashoffset = 0;
+            }
+        };
+
+        App.Stopwatch = {
+            startTime: 0, diff: 0, saved: 0, running: false, interval: null, laps: [], lastLap: 0,
+            format: (ms) => { const m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000), mili = Math.floor((ms % 1000) / 10); return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')},${mili.toString().padStart(2,'0')}`; },
+            update: () => { App.Stopwatch.diff = new Date().getTime() - App.Stopwatch.startTime + App.Stopwatch.saved; document.getElementById('stopwatch-display').innerHTML = App.Stopwatch.format(App.Stopwatch.diff); },
+            toggle: () => {
+                if (!App.Stopwatch.running) { App.Stopwatch.startTime = new Date().getTime(); App.Stopwatch.interval = setInterval(App.Stopwatch.update, 10); App.Stopwatch.running = true; document.getElementById('btn-start-stop').innerHTML = "Parar"; document.getElementById('btn-start-stop').className = "w-20 h-20 rounded-full bg-red-900 text-red-200 font-bold"; document.getElementById('btn-lap-reset').innerHTML = "Volta"; document.getElementById('stopwatch-ring').style.display = "block"; } 
+                else { clearInterval(App.Stopwatch.interval); App.Stopwatch.saved = App.Stopwatch.diff; App.Stopwatch.running = false; document.getElementById('btn-start-stop').innerHTML = "Retomar"; document.getElementById('btn-start-stop').className = "w-20 h-20 rounded-full bg-gold text-darkBg font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)]"; document.getElementById('btn-lap-reset').innerHTML = "Zerar"; document.getElementById('stopwatch-ring').style.display = "none"; }
+            },
+            lapOrReset: () => {
+                if (App.Stopwatch.running) { const cur = App.Stopwatch.diff; const lapT = cur - App.Stopwatch.lastLap; App.Stopwatch.lastLap = cur; App.Stopwatch.laps.unshift({ num: App.Stopwatch.laps.length + 1, lap: App.Stopwatch.format(lapT), total: App.Stopwatch.format(cur) }); App.Stopwatch.renderLaps(); } 
+                else { App.Stopwatch.saved = App.Stopwatch.diff = App.Stopwatch.lastLap = 0; App.Stopwatch.laps = []; document.getElementById('stopwatch-display').innerHTML = "00:00,00"; document.getElementById('btn-start-stop').innerHTML = "Iniciar"; document.getElementById('btn-lap-reset').innerHTML = "Zerar"; App.Stopwatch.renderLaps(); }
+            },
+            renderLaps: () => { document.getElementById('stopwatch-laps').innerHTML = App.Stopwatch.laps.map(l => `<div class="flex justify-between py-3 border-b border-gray-800 text-sm px-4"><span class="text-textMuted font-bold w-12">${String(l.num).padStart(2,'0')}</span><span class="text-white font-mono flex-1 text-center">+ ${l.lap}</span><span class="text-gold font-mono w-20 text-right">${l.total}</span></div>`).join(''); }
+        };
+
+        App.Calc = {
+            curr: '0', prev: '', op: null, hist: SafeStorage.parse('chronos_calc') || [],
+            input: (v) => {
+                if (v === 'clear') { App.Calc.curr = '0'; App.Calc.prev = ''; App.Calc.op = null; } else if (v === 'backspace') { App.Calc.curr = App.Calc.curr.slice(0, -1); if(!App.Calc.curr || App.Calc.curr==='-') App.Calc.curr='0'; } else if (['+','-','*','/'].includes(v)) { if (App.Calc.op && !App.Calc.curr) App.Calc.op = v; else { if (App.Calc.prev) App.Calc.compute(); App.Calc.prev = App.Calc.curr; App.Calc.curr = ''; App.Calc.op = v; } } else if (v === '=') { App.Calc.compute(true); App.Calc.op = null; } else { if (App.Calc.curr === '0' && v !== '.') App.Calc.curr = v; else if (v === '.' && App.Calc.curr.includes('.')) return; else App.Calc.curr += v; }
+                document.getElementById('calc-display').innerText = App.Calc.curr || '0'; document.getElementById('calc-prev').innerText = App.Calc.prev ? `${App.Calc.prev} ${App.Calc.op==='*'?'×':(App.Calc.op==='/'?'÷':App.Calc.op)}` : '';
+            },
+            compute: (save = false) => {
+                const c = parseFloat(App.Calc.curr), p = parseFloat(App.Calc.prev); if(isNaN(c)||isNaN(p)) return;
+                let res = 0; switch(App.Calc.op) { case '+': res = p+c; break; case '-': res = p-c; break; case '*': res = p*c; break; case '/': res = p/c; break; }
+                res = Math.round(res * 100000000) / 100000000;
+                if(save) { App.Calc.hist.unshift({ eq: `${p} ${App.Calc.op==='*'?'×':(App.Calc.op==='/'?'÷':App.Calc.op)} ${c}`, res }); if(App.Calc.hist.length > 20) App.Calc.hist.pop(); SafeStorage.set('chronos_calc', JSON.stringify(App.Calc.hist)); }
+                App.Calc.curr = res.toString(); App.Calc.prev = '';
+            },
+            openHistory: () => { const list = document.getElementById('calc-history-list'); list.innerHTML = App.Calc.hist.length === 0 ? '<p class="text-center mt-10">Vazio</p>' : App.Calc.hist.map(i => `<div class="bg-darkBg p-4 rounded-xl border border-gray-800 flex justify-between items-center shadow-sm"><span class="text-textMuted font-mono text-xs">${i.eq} =</span><span class="text-gold text-lg">${i.res}</span></div>`).join(''); document.getElementById('calc-history-modal').classList.replace('hidden', 'flex'); setTimeout(() => document.getElementById('calc-history-content').classList.remove('translate-y-full'), 10); },
+            closeHistory: () => { document.getElementById('calc-history-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('calc-history-modal').classList.replace('flex', 'hidden'), 300); },
+            clearHistory: () => { App.Calc.hist = []; SafeStorage.remove('chronos_calc'); App.Calc.closeHistory(); }
+        };
+
+        App.Tasks = {
+            data: SafeStorage.parse('chronos_tasks') || [],
+            render: () => { const list = document.getElementById('task-list'); if(App.Tasks.data.length===0){ list.innerHTML = '<p class="text-center mt-10 text-sm text-gray-500">Nenhuma tarefa.</p>'; return; }
+                list.innerHTML = App.Tasks.data.map((t, i) => `<div class="bg-darkSurface p-4 rounded-xl flex justify-between items-center border ${t.done?'border-gray-800 opacity-50':'border-transparent'} transition"><div class="flex items-center gap-3 overflow-hidden cursor-pointer flex-1" onclick="App.Tasks.toggle(${i})"><div class="w-6 h-6 rounded-full border-2 flex-shrink-0 ${t.done?'bg-gold border-gold text-darkBg':'border-gray-500 text-transparent'} flex items-center justify-center"><i class="fa-solid fa-check text-xs"></i></div><span class="text-white truncate uppercase ${t.done?'line-through text-textMuted':''}">${t.text}</span></div><div class="flex gap-2"><button onclick="App.System.openEdit('Editar Tarefa', '${t.text}', (v)=>{App.Tasks.data[${i}].text=v; App.Tasks.save();})" class="text-gold p-2"><i class="fa-solid fa-pen text-sm"></i></button><button onclick="App.Tasks.delete(${i})" class="text-red-900 hover:text-red-500 p-2"><i class="fa-solid fa-trash text-sm"></i></button></div></div>`).join(''); },
+            add: () => { const inp = document.getElementById('task-input'); if(inp.value.trim()){ App.Tasks.data.push({ text: inp.value.trim().toUpperCase(), done: false }); App.Tasks.save(); inp.value=''; } },
+            toggle: (i) => { App.Tasks.data[i].done = !App.Tasks.data[i].done; App.Tasks.save(); }, delete: (i) => { App.Tasks.data.splice(i, 1); App.Tasks.save(); }, save: () => { SafeStorage.set('chronos_tasks', JSON.stringify(App.Tasks.data)); App.Tasks.render(); }
+        };
+
+        App.Habits = {
+            data: SafeStorage.parse('chronos_habits') || [],
+            getStreak: (hist) => { if(!hist || !hist.length) return 0; let s = 0, d = new Date(), check = d.toISOString().split('T')[0]; if(!hist.includes(check)){ d.setDate(d.getDate()-1); check = d.toISOString().split('T')[0]; if(!hist.includes(check)) return 0; } while(hist.includes(check)){ s++; d.setDate(d.getDate()-1); check = d.toISOString().split('T')[0]; } return s; },
+            render: () => { const list = document.getElementById('habit-list'); if(App.Habits.data.length===0){ list.innerHTML = '<p class="text-center mt-10 text-sm text-gray-500">Nenhum hábito.</p>'; return; } const today = new Date().toISOString().split('T')[0];
+                list.innerHTML = App.Habits.data.map((h, i) => { const done = h.hist.includes(today); const stk = App.Habits.getStreak(h.hist); return `<div class="bg-darkSurface p-4 rounded-xl flex justify-between items-center border border-gray-800 transition"><div class="flex flex-col flex-1 pr-4"><span class="text-white font-medium truncate mb-1 uppercase cursor-pointer" onclick="App.System.openEdit('Editar Hábito', '${h.name}', (v)=>{App.Habits.data[${i}].name=v; App.Habits.save();})">${h.name} <i class="fa-solid fa-pen text-[10px] text-gray-600 ml-1"></i></span><div class="text-xs font-bold ${stk>0?'text-gold':'text-gray-600'}"><i class="fa-solid fa-fire"></i> ${stk} dias</div></div><div class="flex items-center gap-4"><button onclick="App.Habits.toggle(${i})" class="w-12 h-12 rounded-full border-2 flex-shrink-0 transition-colors flex items-center justify-center ${done?'bg-gold border-gold text-darkBg shadow-[0_0_15px_rgba(212,175,55,0.4)]':'border-gray-500 text-transparent'}"><i class="fa-solid fa-check text-xl"></i></button><button onclick="App.Habits.delete(${i})" class="text-gray-700 hover:text-red-500 p-2"><i class="fa-solid fa-trash"></i></button></div></div>`; }).join(''); },
+            add: () => { const inp = document.getElementById('habit-input'); if(inp.value.trim()){ App.Habits.data.push({ id: Date.now().toString(), name: inp.value.trim().toUpperCase(), hist: [] }); App.Habits.save(); inp.value=''; } },
+            toggle: (i) => { const t = new Date().toISOString().split('T')[0]; if(App.Habits.data[i].hist.includes(t)) App.Habits.data[i].hist = App.Habits.data[i].hist.filter(x => x !== t); else { App.Habits.data[i].hist.push(t); App.Audio.vibrate(20); } App.Habits.save(); },
+            delete: (i) => { App.Habits.data.splice(i, 1); App.Habits.save(); }, save: () => { SafeStorage.set('chronos_habits', JSON.stringify(App.Habits.data)); App.Habits.render(); }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            App.Router.render(); App.Alarms.init(); App.Timer.init(); App.Tasks.render(); App.Habits.render();
+            document.getElementById('task-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') App.Tasks.add(); }); document.getElementById('habit-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') App.Habits.add(); });
+            
+            // Registra o Service Worker (PWA)
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js')
+                        .then(reg => console.log('Service Worker registrado.', reg.scope))
+                        .catch(err => console.error('Erro no Service Worker:', err));
+                });
+            }
+        });
+    </script>
+</body>
+</html>
