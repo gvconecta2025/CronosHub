@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0a0a0a">
+    <meta name="theme-color" content="#050505">
     <title>Chronos Hub</title>
     
     <!-- PWA Manifest -->
@@ -27,49 +27,70 @@
     <style>
         body { -webkit-tap-highlight-color: transparent; user-select: none; overscroll-behavior-y: contain; }
         
-        /* Animação suave para as abas no mobile */
         .tab-anim { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        ::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* Oculta scrollbar no Mobile */
+        @media (max-width: 1023px) {
+            ::-webkit-scrollbar { display: none; }
+            .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        }
         
-        /* Engenharia da Roleta Matemática */
+        /* Scrollbar de Luxo no Desktop */
+        @media (min-width: 1024px) {
+            ::-webkit-scrollbar { width: 6px; height: 6px; }
+            ::-webkit-scrollbar-track { background: transparent; }
+            ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; transition: background 0.3s; }
+            ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+        }
+        
+        /* Engenharia da Roleta */
         .picker-container { scroll-snap-type: y mandatory; }
         .picker-item { scroll-snap-align: center; scroll-snap-stop: always; height: 48px; }
         .drum-overlay { background: linear-gradient(to bottom, #0a0a0a 0%, transparent 35%, transparent 65%, #0a0a0a 100%); pointer-events: none; }
         
-        /* SVG Timer Ring */
+        /* Timer SVG & Neon Glow */
         .progress-ring__circle { transition: stroke-dashoffset 1s linear; transform: rotate(-90deg); transform-origin: 50% 50%; }
+        .neon-glow { filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.4)); }
 
         /* Ajustes específicos de Layout Desktop */
         @media (min-width: 1024px) {
-            body { background-color: #050505; }
+            body { background: radial-gradient(circle at center, #151515 0%, #000000 100%); background-attachment: fixed; }
             .drum-overlay { background: linear-gradient(to bottom, #1a1a1a 0%, transparent 35%, transparent 65%, #1a1a1a 100%); }
+            
+            /* Bento Box Hover Effect */
+            .bento-card {
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .bento-card:hover {
+                transform: translateY(-5px);
+                border-color: rgba(212, 175, 55, 0.25);
+                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            }
         }
     </style>
 </head>
 <body class="bg-darkBg text-white h-screen w-full flex flex-col overflow-hidden" onclick="App.Audio.init()">
 
     <!-- HEADER GLOBAL -->
-    <header class="w-full py-5 px-6 flex justify-between items-center bg-darkBg border-b border-darkSurface z-20">
+    <header class="w-full py-5 px-6 flex justify-between items-center bg-darkBg/80 backdrop-blur-md border-b border-darkSurface z-20">
         <h1 class="text-xl font-bold tracking-wider text-gold">CHRONOS<span class="text-white font-light">HUB</span></h1>
         <button onclick="App.Settings.openModal()" class="text-gold hover:text-white transition p-2">
             <i class="fa-solid fa-gear text-xl"></i>
         </button>
     </header>
 
-    <!-- MAIN AREA (GRID NO DESKTOP, TABS NO MOBILE) -->
-    <main class="flex-1 overflow-y-auto relative pb-24 lg:pb-8 lg:pt-8 lg:px-8 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-8 lg:items-start hide-scrollbar">
+    <!-- MAIN AREA (GRID DESKTOP BENTO BOX / TABS MOBILE) -->
+    <main class="flex-1 overflow-y-auto relative pb-24 lg:pb-12 lg:pt-8 lg:px-10 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-8 lg:items-start hide-scrollbar">
         
-        <!-- [BLOCO 1] HUB (Fica oculto no Desktop) -->
+        <!-- HUB (Mobile Only) -->
         <section id="view-hub" class="tab-content hidden flex-col w-full h-full p-6 lg:hidden">
             <h2 class="text-3xl font-light mb-6">Central de <span class="text-gold font-bold">Módulos</span></h2>
             <div class="grid grid-cols-2 gap-4" id="hub-grid"></div>
         </section>
 
-        <!-- [BLOCO 2] DESPERTADOR -->
-        <section id="view-alarme" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-3xl lg:border lg:border-gray-800 lg:h-[500px] lg:shadow-xl">
+        <!-- DESPERTADOR -->
+        <section id="view-alarme" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:h-[480px] bento-card">
             <div class="flex justify-between items-end mb-8">
                 <div>
                     <h2 class="text-3xl font-light">Despertador</h2>
@@ -79,31 +100,18 @@
                     <i class="fa-solid fa-plus"></i>
                 </button>
             </div>
-            <div id="alarm-list" class="space-y-4 overflow-y-auto hide-scrollbar flex-1 pb-4"></div>
+            <div id="alarm-list" class="space-y-4 overflow-y-auto hide-scrollbar flex-1 pb-4 pr-2"></div>
         </section>
 
-        <!-- [BLOCO 3] CRONÔMETRO -->
-        <section id="view-cronometro" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 items-center lg:bg-darkSurface lg:rounded-3xl lg:border lg:border-gray-800 lg:h-[500px] lg:shadow-xl">
-            <h2 class="text-2xl font-light mb-8 self-start w-full text-left text-gold">Cronômetro</h2>
-            <div class="w-56 h-56 rounded-full border-4 border-darkBg lg:border-[#0f0f0f] flex items-center justify-center relative mb-8 flex-shrink-0 bg-darkBg">
-                <div class="absolute inset-0 rounded-full border-4 border-gold border-t-transparent animate-spin" style="animation-duration: 3s; display: none;" id="stopwatch-ring"></div>
-                <div class="text-4xl font-light tabular-nums" id="stopwatch-display">00:00,00</div>
-            </div>
-            <div class="flex gap-6 w-full justify-center mb-8">
-                <button id="btn-lap-reset" onclick="App.Stopwatch.lapOrReset()" class="w-20 h-20 rounded-full bg-darkBg font-semibold hover:bg-gray-800 transition active:scale-95">Zerar</button>
-                <button id="btn-start-stop" onclick="App.Stopwatch.toggle()" class="w-20 h-20 rounded-full bg-gold text-darkBg font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)] hover:scale-105 transition active:scale-95">Iniciar</button>
-            </div>
-            <div class="w-full flex-1 overflow-y-auto hide-scrollbar"><div id="stopwatch-laps" class="w-full flex flex-col gap-2 pb-4"></div></div>
-        </section>
-
-        <!-- [BLOCO 4] TIMER (Consertado e Separado) -->
-        <section id="view-timer" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 items-center justify-center lg:bg-darkSurface lg:rounded-3xl lg:border lg:border-gray-800 lg:h-[500px] lg:shadow-xl">
+        <!-- TIMER (O Módulo Premium) -->
+        <section id="view-timer" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 items-center justify-center lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:h-[480px] bento-card">
             <h2 class="text-2xl font-light mb-6 text-gold w-full text-left">Temporizador</h2>
             <div class="flex-1 flex flex-col w-full items-center justify-center relative">
                 
-                <!-- SETUP VIEW (Roletas Limpas + Botões) -->
+                <!-- SETUP VIEW -->
                 <div id="timer-setup-view" class="w-full flex flex-col items-center">
-                    <div class="relative w-full h-48 flex justify-center bg-darkBg lg:bg-[#0f0f0f] rounded-3xl overflow-hidden text-3xl font-light shadow-inner mb-6">
+                    <!-- Roleta Contida (max-w-xs) -->
+                    <div class="relative w-full max-w-xs h-48 flex justify-center bg-darkBg lg:bg-[#111] rounded-3xl overflow-hidden text-3xl font-light shadow-inner mb-6 lg:border lg:border-gray-800/50">
                         <div class="absolute top-1/2 left-0 w-full h-[48px] -translate-y-1/2 bg-gold/5 pointer-events-none z-10 border-y border-gold/30"></div>
                         <div class="absolute inset-0 drum-overlay z-20"></div>
                         <div class="w-1/3 flex flex-col items-center relative"><div id="timer-picker-h" class="h-full w-full overflow-y-auto picker-container hide-scrollbar relative z-0"></div></div>
@@ -111,93 +119,109 @@
                         <div class="w-1/3 flex flex-col items-center relative"><div id="timer-picker-s" class="h-full w-full overflow-y-auto picker-container hide-scrollbar relative z-0"></div></div>
                     </div>
                     
-                    <div class="flex gap-3 w-full" id="timer-quick-actions">
-                        <button onclick="App.Timer.addMinutes(1)" class="flex-1 py-3 bg-darkBg lg:bg-[#0f0f0f] rounded-xl text-sm font-semibold text-textMuted hover:text-gold transition active:scale-95">+1 min</button>
-                        <button onclick="App.Timer.addMinutes(5)" class="flex-1 py-3 bg-darkBg lg:bg-[#0f0f0f] rounded-xl text-sm font-semibold text-textMuted hover:text-gold transition active:scale-95">+5 min</button>
-                        <button onclick="App.Timer.addMinutes(10)" class="flex-1 py-3 bg-darkBg lg:bg-[#0f0f0f] rounded-xl text-sm font-semibold text-textMuted hover:text-gold transition active:scale-95">+10 min</button>
+                    <!-- Ghost Buttons no Desktop -->
+                    <div class="flex gap-3 w-full max-w-xs" id="timer-quick-actions">
+                        <button onclick="App.Timer.addMinutes(1)" class="flex-1 py-3 bg-darkBg lg:bg-transparent lg:border lg:border-gray-700 rounded-xl text-sm font-semibold text-textMuted hover:text-gold lg:hover:border-gold transition active:scale-95">+1 min</button>
+                        <button onclick="App.Timer.addMinutes(5)" class="flex-1 py-3 bg-darkBg lg:bg-transparent lg:border lg:border-gray-700 rounded-xl text-sm font-semibold text-textMuted hover:text-gold lg:hover:border-gold transition active:scale-95">+5 min</button>
+                        <button onclick="App.Timer.addMinutes(10)" class="flex-1 py-3 bg-darkBg lg:bg-transparent lg:border lg:border-gray-700 rounded-xl text-sm font-semibold text-textMuted hover:text-gold lg:hover:border-gold transition active:scale-95">+10 min</button>
                     </div>
                 </div>
 
-                <!-- COUNTDOWN VIEW (Anel SVG + Display) -->
+                <!-- COUNTDOWN VIEW -->
                 <div id="timer-countdown-view" class="hidden flex-col items-center justify-center w-full mb-6 mt-4">
-                    <div class="relative w-64 h-64 flex justify-center items-center bg-darkBg lg:bg-[#0f0f0f] rounded-full shadow-[0_0_30px_rgba(0,0,0,0.4)]">
+                    <div class="relative w-64 h-64 lg:w-72 lg:h-72 flex justify-center items-center bg-darkBg lg:bg-[#0c0c0c] rounded-full shadow-[inset_0_5px_20px_rgba(0,0,0,0.5)] lg:border lg:border-gray-800/30">
                         <svg class="absolute inset-0 w-full h-full pointer-events-none z-30" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="46" fill="none" stroke="#222" stroke-width="3"></circle>
-                            <circle id="timer-svg-ring" class="progress-ring__circle" cx="50" cy="50" r="46" fill="none" stroke="#D4AF37" stroke-width="4" stroke-dasharray="289.02" stroke-dashoffset="0"></circle>
+                            <circle cx="50" cy="50" r="46" fill="none" stroke="#222" stroke-width="2"></circle>
+                            <!-- Anel Dourado com Neon Glow -->
+                            <circle id="timer-svg-ring" class="progress-ring__circle neon-glow" cx="50" cy="50" r="46" fill="none" stroke="#D4AF37" stroke-width="3" stroke-dasharray="289.02" stroke-dashoffset="0" stroke-linecap="round"></circle>
                         </svg>
-                        <div class="text-4xl font-light text-white tabular-nums tracking-wider z-40" id="timer-display">00:00:00</div>
+                        <!-- Tipografia Ultra-Thin -->
+                        <div class="text-5xl lg:text-6xl font-thin text-white tabular-nums tracking-widest z-40" id="timer-display">00:00:00</div>
                     </div>
                 </div>
 
-                <!-- Controles -->
-                <div class="flex gap-4 w-full mt-auto pt-4">
-                    <button id="btn-timer-reset" onclick="App.Timer.reset()" class="w-1/3 py-4 rounded-xl bg-darkBg lg:bg-[#0f0f0f] text-textMuted font-bold text-sm hidden active:scale-95 hover:bg-gray-800 transition">Zerar</button>
+                <div class="flex gap-4 w-full mt-auto pt-4 max-w-sm">
+                    <button id="btn-timer-reset" onclick="App.Timer.reset()" class="w-1/3 py-4 rounded-xl bg-darkBg lg:bg-transparent lg:border lg:border-gray-700 text-textMuted font-bold text-sm hidden active:scale-95 hover:bg-gray-800 lg:hover:border-gray-500 transition">Zerar</button>
                     <button id="btn-timer-start" onclick="App.Timer.toggle()" class="flex-1 py-4 rounded-xl bg-gold text-darkBg font-bold text-lg shadow-[0_0_20px_rgba(212,175,55,0.3)] transition active:scale-95">Iniciar Timer</button>
                 </div>
             </div>
         </section>
 
-        <!-- [BLOCO 5] CALCULADORA -->
-        <section id="view-calculadora" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 items-center justify-center lg:bg-darkSurface lg:rounded-3xl lg:border lg:border-gray-800 lg:h-[500px] lg:shadow-xl">
+        <!-- CRONÔMETRO -->
+        <section id="view-cronometro" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 items-center lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:h-[480px] bento-card">
+            <h2 class="text-2xl font-light mb-8 self-start w-full text-left text-gold">Cronômetro</h2>
+            <div class="w-56 h-56 rounded-full border-2 border-darkBg lg:border-gray-800/50 flex items-center justify-center relative mb-8 flex-shrink-0 bg-darkBg lg:bg-[#111] shadow-inner">
+                <div class="absolute inset-0 rounded-full border-4 border-gold border-t-transparent animate-spin" style="animation-duration: 3s; display: none;" id="stopwatch-ring"></div>
+                <div class="text-4xl lg:text-5xl font-thin tabular-nums tracking-wide" id="stopwatch-display">00:00,00</div>
+            </div>
+            <div class="flex gap-6 w-full justify-center mb-8">
+                <button id="btn-lap-reset" onclick="App.Stopwatch.lapOrReset()" class="w-20 h-20 rounded-full bg-darkBg lg:bg-[#1a1a1a] lg:border lg:border-gray-800 font-semibold hover:bg-gray-800 transition active:scale-95">Zerar</button>
+                <button id="btn-start-stop" onclick="App.Stopwatch.toggle()" class="w-20 h-20 rounded-full bg-gold text-darkBg font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)] hover:scale-105 transition active:scale-95">Iniciar</button>
+            </div>
+            <div class="w-full flex-1 overflow-y-auto hide-scrollbar pr-2"><div id="stopwatch-laps" class="w-full flex flex-col gap-2 pb-4"></div></div>
+        </section>
+
+        <!-- CALCULADORA -->
+        <section id="view-calculadora" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 items-center justify-center lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:h-[480px] bento-card">
             <div class="flex justify-between items-center w-full max-w-sm mx-auto mb-6">
                 <h2 class="text-2xl font-light text-gold">Calculadora</h2>
                 <button onclick="App.Calc.openHistory()" class="text-textMuted hover:text-gold text-xl transition"><i class="fa-solid fa-clock-rotate-left"></i></button>
             </div>
             <div class="w-full flex-1 flex flex-col justify-end max-w-sm mx-auto">
-                <div class="w-full bg-darkBg lg:bg-[#0f0f0f] rounded-3xl p-6 flex flex-col justify-end items-end mb-6 h-32 shadow-[inset_0_2px_15px_rgba(0,0,0,0.6)]">
+                <div class="w-full bg-darkBg lg:bg-[#111] rounded-3xl p-6 flex flex-col justify-end items-end mb-6 h-32 shadow-[inset_0_2px_15px_rgba(0,0,0,0.6)] lg:border lg:border-gray-800/50">
                     <div id="calc-prev" class="text-textMuted text-sm h-5 font-light tracking-wider"></div>
                     <div id="calc-display" class="text-5xl font-light text-white tracking-wider truncate w-full text-right mt-1">0</div>
                 </div>
                 <div class="grid grid-cols-4 gap-3 w-full">
                     <button onclick="App.Calc.input('clear')" class="col-span-2 bg-red-900/40 text-red-400 p-4 rounded-2xl font-bold text-xl active:scale-95 transition">C</button>
-                    <button onclick="App.Calc.input('backspace')" class="bg-darkBg lg:bg-[#0f0f0f] text-white p-4 rounded-2xl font-bold text-xl active:scale-95 transition hover:bg-gray-800"><i class="fa-solid fa-delete-left"></i></button>
+                    <button onclick="App.Calc.input('backspace')" class="bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl font-bold text-xl active:scale-95 transition hover:bg-gray-800 lg:hover:border lg:hover:border-gray-700"><i class="fa-solid fa-delete-left"></i></button>
                     <button onclick="App.Calc.input('/')" class="bg-gold text-darkBg p-4 rounded-2xl font-bold text-xl active:scale-95 transition hover:scale-105">÷</button>
                     
-                    <button onclick="App.Calc.input('7')" class="bg-darkBg lg:bg-[#0f0f0f] text-white p-4 rounded-2xl text-2xl active:scale-95 transition hover:bg-gray-800">7</button>
-                    <button onclick="App.Calc.input('8')" class="bg-darkBg lg:bg-[#0f0f0f] text-white p-4 rounded-2xl text-2xl active:scale-95 transition hover:bg-gray-800">8</button>
-                    <button onclick="App.Calc.input('9')" class="bg-darkBg lg:bg-[#0f0f0f] text-white p-4 rounded-2xl text-2xl active:scale-95 transition hover:bg-gray-800">9</button>
+                    <button onclick="App.Calc.input('7')" class="bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-800">7</button>
+                    <button onclick="App.Calc.input('8')" class="bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-800">8</button>
+                    <button onclick="App.Calc.input('9')" class="bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-800">9</button>
                     <button onclick="App.Calc.input('*')" class="bg-gold text-darkBg p-4 rounded-2xl font-bold text-xl active:scale-95 transition hover:scale-105">×</button>
                     
-                    <button onclick="App.Calc.input('4')" class="bg-darkBg lg:bg-[#0f0f0f] text-white p-4 rounded-2xl text-2xl active:scale-95 transition hover:bg-gray-800">4</button>
-                    <button onclick="App.Calc.input('5')" class="bg-darkBg lg:bg-[#0f0f0f] text-white p-4 rounded-2xl text-2xl active:scale-95 transition hover:bg-gray-800">5</button>
-                    <button onclick="App.Calc.input('6')" class="bg-darkBg lg:bg-[#0f0f0f] text-white p-4 rounded-2xl text-2xl active:scale-95 transition hover:bg-gray-800">6</button>
+                    <button onclick="App.Calc.input('4')" class="bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-800">4</button>
+                    <button onclick="App.Calc.input('5')" class="bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-800">5</button>
+                    <button onclick="App.Calc.input('6')" class="bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-800">6</button>
                     <button onclick="App.Calc.input('-')" class="bg-gold text-darkBg p-4 rounded-2xl font-bold text-2xl active:scale-95 transition hover:scale-105">−</button>
                     
-                    <button onclick="App.Calc.input('1')" class="bg-darkBg lg:bg-[#0f0f0f] text-white p-4 rounded-2xl text-2xl active:scale-95 transition hover:bg-gray-800">1</button>
-                    <button onclick="App.Calc.input('2')" class="bg-darkBg lg:bg-[#0f0f0f] text-white p-4 rounded-2xl text-2xl active:scale-95 transition hover:bg-gray-800">2</button>
-                    <button onclick="App.Calc.input('3')" class="bg-darkBg lg:bg-[#0f0f0f] text-white p-4 rounded-2xl text-2xl active:scale-95 transition hover:bg-gray-800">3</button>
+                    <button onclick="App.Calc.input('1')" class="bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-800">1</button>
+                    <button onclick="App.Calc.input('2')" class="bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-800">2</button>
+                    <button onclick="App.Calc.input('3')" class="bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-800">3</button>
                     <button onclick="App.Calc.input('+')" class="bg-gold text-darkBg p-4 rounded-2xl font-bold text-2xl active:scale-95 transition hover:scale-105">+</button>
                     
-                    <button onclick="App.Calc.input('0')" class="col-span-2 bg-darkBg lg:bg-[#0f0f0f] text-white p-4 rounded-2xl text-2xl active:scale-95 transition hover:bg-gray-800">0</button>
-                    <button onclick="App.Calc.input('.')" class="bg-darkBg lg:bg-[#0f0f0f] text-white p-4 rounded-2xl text-2xl active:scale-95 transition hover:bg-gray-800">.</button>
+                    <button onclick="App.Calc.input('0')" class="col-span-2 bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-800">0</button>
+                    <button onclick="App.Calc.input('.')" class="bg-darkBg lg:bg-[#1a1a1a] text-white p-4 rounded-2xl text-2xl font-light active:scale-95 transition hover:bg-gray-800">.</button>
                     <button onclick="App.Calc.input('=')" class="bg-gold text-darkBg p-4 rounded-2xl font-bold text-2xl active:scale-95 transition shadow-[0_0_15px_rgba(212,175,55,0.4)] hover:scale-105">=</button>
                 </div>
             </div>
         </section>
 
-        <!-- [BLOCO 6] TAREFAS -->
-        <section id="view-tarefas" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-3xl lg:border lg:border-gray-800 lg:h-[500px] lg:shadow-xl">
+        <!-- TAREFAS -->
+        <section id="view-tarefas" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:h-[480px] bento-card">
             <h2 class="text-2xl font-light mb-6 text-gold w-full text-left">Tarefas Diárias</h2>
             <div class="flex gap-2 mb-6">
-                <input type="text" id="task-input" placeholder="NOVA TAREFA..." class="flex-1 bg-darkBg lg:bg-[#0f0f0f] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-gold uppercase transition" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="task-input" placeholder="NOVA TAREFA..." class="flex-1 bg-darkBg lg:bg-[#111] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-gold uppercase transition font-light" oninput="this.value = this.value.toUpperCase()">
                 <button onclick="App.Tasks.add()" class="bg-gold text-darkBg px-5 rounded-xl font-bold shadow-[0_0_10px_rgba(212,175,55,0.2)] hover:scale-105 transition active:scale-95"><i class="fa-solid fa-plus text-lg"></i></button>
             </div>
-            <div id="task-list" class="space-y-3 overflow-y-auto flex-1 pb-4 hide-scrollbar"></div>
+            <div id="task-list" class="space-y-3 overflow-y-auto flex-1 pb-4 hide-scrollbar pr-2"></div>
         </section>
 
-        <!-- [BLOCO 7] HÁBITOS -->
-        <section id="view-habitos" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-3xl lg:border lg:border-gray-800 lg:h-[500px] lg:shadow-xl">
+        <!-- HÁBITOS -->
+        <section id="view-habitos" class="tab-content hidden lg:flex tab-anim flex-col w-full h-full p-6 lg:bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800/60 lg:h-[480px] bento-card">
             <h2 class="text-2xl font-light mb-6 text-gold w-full text-left">Rastreador de Hábitos</h2>
             <div class="flex gap-2 mb-6">
-                <input type="text" id="habit-input" placeholder="NOVO HÁBITO..." class="flex-1 bg-darkBg lg:bg-[#0f0f0f] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-gold uppercase transition" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="habit-input" placeholder="NOVO HÁBITO..." class="flex-1 bg-darkBg lg:bg-[#111] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-gold uppercase transition font-light" oninput="this.value = this.value.toUpperCase()">
                 <button onclick="App.Habits.add()" class="bg-gold text-darkBg px-5 rounded-xl font-bold shadow-[0_0_10px_rgba(212,175,55,0.2)] hover:scale-105 transition active:scale-95"><i class="fa-solid fa-plus text-lg"></i></button>
             </div>
-            <div id="habit-list" class="space-y-4 overflow-y-auto flex-1 pb-4 hide-scrollbar"></div>
+            <div id="habit-list" class="space-y-4 overflow-y-auto flex-1 pb-4 hide-scrollbar pr-2"></div>
         </section>
 
     </main>
 
-    <!-- BARRA DE NAVEGAÇÃO MOBILE (Oculta no Desktop) -->
+    <!-- BARRA MOBILE (Oculta no Desktop) -->
     <nav class="w-full bg-darkBg border-t border-darkSurface pb-safe pt-2 fixed bottom-0 z-40 lg:hidden">
         <ul class="flex justify-around items-center h-16 pb-2" id="nav-list"></ul>
     </nav>
@@ -206,31 +230,31 @@
     <!-- MODAIS DO SISTEMA -->
     <!-- ========================================== -->
     
-    <!-- Configurações e Backup -->
-    <div id="settings-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 opacity-0 transition-opacity duration-300">
-        <div id="settings-content" class="bg-darkSurface p-6 rounded-2xl border border-gray-800 w-11/12 max-w-md transform scale-95 transition-transform duration-300 shadow-2xl">
+    <!-- Configurações -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <div id="settings-content" class="bg-darkSurface p-6 rounded-[2rem] border border-gray-800 w-11/12 max-w-md transform scale-95 transition-transform duration-300 shadow-2xl">
             <h3 class="text-xl font-light text-gold mb-6">Configurações</h3>
             <div class="space-y-4 mb-8">
-                <div class="flex justify-between items-center p-3 bg-darkBg rounded-xl border border-gray-800">
+                <div class="flex justify-between items-center p-4 bg-darkBg rounded-2xl border border-gray-800">
                     <span class="text-white text-sm">Sons de Alerta</span>
                     <input type="checkbox" id="set-sound" onchange="App.Settings.toggle('sound')" class="accent-gold w-5 h-5">
                 </div>
-                <div class="flex justify-between items-center p-3 bg-darkBg rounded-xl border border-gray-800">
+                <div class="flex justify-between items-center p-4 bg-darkBg rounded-2xl border border-gray-800">
                     <span class="text-white text-sm">Vibração (Haptic)</span>
                     <input type="checkbox" id="set-haptic" onchange="App.Settings.toggle('haptic')" class="accent-gold w-5 h-5">
                 </div>
                 <hr class="border-gray-800 my-4">
-                <button onclick="App.Settings.exportBackup()" class="w-full py-3 bg-darkBg border border-gold text-gold font-bold rounded-xl text-sm hover:bg-gold/10 transition active:scale-95"><i class="fa-solid fa-download mr-2"></i> Exportar Backup (JSON)</button>
-                <button onclick="document.getElementById('import-file').click()" class="w-full py-3 bg-darkBg border border-gray-700 text-textMuted font-bold rounded-xl text-sm hover:text-white transition active:scale-95"><i class="fa-solid fa-upload mr-2"></i> Restaurar Backup</button>
+                <button onclick="App.Settings.exportBackup()" class="w-full py-4 bg-darkBg border border-gold text-gold font-bold rounded-xl text-sm hover:bg-gold/10 transition active:scale-95"><i class="fa-solid fa-download mr-2"></i> Exportar Backup (JSON)</button>
+                <button onclick="document.getElementById('import-file').click()" class="w-full py-4 bg-darkBg border border-gray-700 text-textMuted font-bold rounded-xl text-sm hover:text-white transition active:scale-95"><i class="fa-solid fa-upload mr-2"></i> Restaurar Backup</button>
                 <input type="file" id="import-file" class="hidden" accept=".json" onchange="App.Settings.importBackup(event)">
             </div>
-            <button onclick="App.Settings.closeModal()" class="w-full py-3 bg-gray-800 text-white font-bold rounded-xl hover:bg-gray-700 transition active:scale-95">Fechar</button>
+            <button onclick="App.Settings.closeModal()" class="w-full py-4 bg-gray-800 text-white font-bold rounded-xl hover:bg-gray-700 transition active:scale-95">Fechar</button>
         </div>
     </div>
 
     <!-- Adicionar/Editar Alarme -->
-    <div id="alarm-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 opacity-0 transition-opacity duration-300">
-        <div id="alarm-content" class="bg-darkSurface lg:rounded-3xl lg:border lg:border-gray-800 rounded-t-3xl w-full lg:max-w-md h-[95vh] lg:h-auto flex flex-col transform translate-y-full lg:translate-y-0 lg:scale-95 transition-all duration-300 overflow-hidden shadow-2xl mt-auto lg:mt-0">
+    <div id="alarm-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <div id="alarm-content" class="bg-darkSurface lg:rounded-[2rem] lg:border lg:border-gray-800 rounded-t-3xl w-full lg:max-w-md h-[95vh] lg:h-auto flex flex-col transform translate-y-full lg:translate-y-0 lg:scale-95 transition-all duration-300 overflow-hidden shadow-2xl mt-auto lg:mt-0">
             <div class="flex justify-between items-center p-5 bg-darkSurface z-40 border-b border-gray-800">
                 <button onclick="App.Alarms.closeModal()" class="text-gray-400 p-2 text-xl hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
                 <div class="text-center">
@@ -261,42 +285,42 @@
     </div>
 
     <!-- Editor Genérico -->
-    <div id="edit-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 opacity-0 transition-opacity duration-300">
-        <div id="edit-content" class="bg-darkSurface p-6 rounded-3xl border border-gray-800 w-11/12 max-w-sm transform scale-95 transition-transform duration-300 shadow-2xl">
+    <div id="edit-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <div id="edit-content" class="bg-darkSurface p-6 rounded-[2rem] border border-gray-800 w-11/12 max-w-sm transform scale-95 transition-transform duration-300 shadow-2xl">
             <h3 class="text-xl font-light text-gold mb-6" id="edit-title">Editar</h3>
             <div class="space-y-4 mb-6">
                 <input type="text" id="edit-input" class="w-full bg-darkBg border border-gray-700 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-gold uppercase transition" oninput="this.value = this.value.toUpperCase()">
             </div>
             <div class="flex gap-3">
-                <button onclick="App.System.closeEdit()" class="flex-1 py-3 bg-gray-800 text-white font-bold rounded-xl hover:bg-gray-700 transition active:scale-95">Cancelar</button>
-                <button onclick="App.System.saveEdit()" class="flex-1 py-3 bg-gold text-darkBg font-bold rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:scale-105 transition active:scale-95">Salvar</button>
+                <button onclick="App.System.closeEdit()" class="flex-1 py-4 bg-gray-800 text-white font-bold rounded-xl hover:bg-gray-700 transition active:scale-95">Cancelar</button>
+                <button onclick="App.System.saveEdit()" class="flex-1 py-4 bg-gold text-darkBg font-bold rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:scale-105 transition active:scale-95">Salvar</button>
             </div>
         </div>
     </div>
 
     <!-- Alerta de Disparo -->
-    <div id="alert-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 opacity-0 transition-opacity duration-300">
-        <div id="alert-content" class="bg-darkSurface p-8 rounded-3xl border border-gold/40 w-11/12 max-w-sm text-center transform scale-95 transition-transform duration-300 shadow-[0_0_50px_rgba(212,175,55,0.2)]">
+    <div id="alert-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 opacity-0 transition-opacity duration-300 backdrop-blur-md">
+        <div id="alert-content" class="bg-darkSurface p-8 rounded-[2rem] border border-gold/40 w-11/12 max-w-sm text-center transform scale-95 transition-transform duration-300 shadow-[0_0_50px_rgba(212,175,55,0.2)]">
             <i class="fa-solid fa-bell text-5xl text-gold mb-6 animate-bounce"></i>
             <h3 class="text-3xl font-light mb-2 text-white" id="alert-title">Aviso</h3>
             <p id="alert-msg" class="text-gold text-sm mb-8 font-bold tracking-widest uppercase"></p>
             <div class="flex flex-col gap-3">
-                <button onclick="App.Alarms.snooze()" id="btn-snooze" class="w-full py-3 bg-darkBg border border-gray-700 text-white font-bold rounded-xl active:scale-95 transition hover:bg-gray-800 hidden">Soneca (10 min)</button>
-                <button onclick="App.System.closeAlert()" class="w-full py-4 bg-gold text-darkBg font-bold rounded-2xl active:scale-95 transition shadow-[0_0_15px_rgba(212,175,55,0.4)]">Desligar</button>
+                <button onclick="App.Alarms.snooze()" id="btn-snooze" class="w-full py-4 bg-darkBg border border-gray-700 text-white font-bold rounded-xl active:scale-95 transition hover:bg-gray-800 hidden">Soneca (10 min)</button>
+                <button onclick="App.System.closeAlert()" class="w-full py-4 bg-gold text-darkBg font-bold rounded-xl active:scale-95 transition shadow-[0_0_15px_rgba(212,175,55,0.4)] hover:scale-105">Desligar</button>
             </div>
         </div>
     </div>
 
     <!-- Histórico da Calculadora -->
-    <div id="calc-history-modal" class="fixed inset-0 bg-black/90 hidden items-end justify-center z-50 opacity-0 transition-opacity duration-300">
-        <div id="calc-history-content" class="bg-darkSurface rounded-t-3xl lg:rounded-3xl lg:border lg:border-gray-800 w-full lg:max-w-sm h-[70vh] lg:h-[600px] flex flex-col transform translate-y-full lg:translate-y-0 lg:scale-95 transition-all duration-300 overflow-hidden mt-auto lg:mt-0 shadow-2xl">
+    <div id="calc-history-modal" class="fixed inset-0 bg-black/90 hidden items-end justify-center z-50 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <div id="calc-history-content" class="bg-darkSurface rounded-t-3xl lg:rounded-[2rem] lg:border lg:border-gray-800 w-full lg:max-w-md h-[70vh] lg:h-[600px] flex flex-col transform translate-y-full lg:translate-y-0 lg:scale-95 transition-all duration-300 overflow-hidden mt-auto lg:mt-0 shadow-2xl">
             <div class="flex justify-between items-center p-5 border-b border-gray-800 bg-darkSurface">
                 <h3 class="text-lg font-medium text-gold">Histórico de Cálculos</h3>
                 <button onclick="App.Calc.closeHistory()" class="text-gray-400 p-2 text-xl hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="flex-1 overflow-y-auto hide-scrollbar p-6 space-y-4 bg-darkBg" id="calc-history-list"></div>
             <div class="p-4 border-t border-gray-800 bg-darkSurface">
-                <button onclick="App.Calc.clearHistory()" class="w-full py-3 bg-red-900/30 text-red-400 font-bold rounded-xl active:scale-95 transition hover:bg-red-900/50">Limpar Histórico</button>
+                <button onclick="App.Calc.clearHistory()" class="w-full py-4 bg-red-900/30 text-red-400 font-bold rounded-xl active:scale-95 transition hover:bg-red-900/50">Limpar Histórico</button>
             </div>
         </div>
     </div>
@@ -306,7 +330,7 @@
         // ARQUITETURA MODULAR
         // ==========================================
         
-        // 1. SafeStorage (Blindagem de Memória Local)
+        // 1. SafeStorage
         const SafeStorage = {
             get: (k) => { try { return localStorage.getItem(k); } catch(e){ return window['temp_'+k] || null; } },
             set: (k, v) => { try { localStorage.setItem(k, v); } catch(e){ window['temp_'+k] = v; } },
@@ -448,7 +472,6 @@
                 }
                 App.State.currentView = id; 
                 
-                // Limpa abas no Mobile, no Desktop o Tailwind 'lg:flex' força exibição.
                 document.querySelectorAll('.tab-content').forEach(el => {
                     el.classList.remove('flex'); el.classList.add('hidden');
                 });
@@ -456,9 +479,7 @@
                 const activeTab = document.getElementById('view-' + id);
                 activeTab.classList.remove('hidden'); activeTab.classList.add('flex'); 
                 
-                // Inicia o Timer Pickers apenas se ficou visível no Mobile
                 if (id === 'timer' && !App.Timer.isInit && !App.State.isDesktop) App.Timer.init();
-                
                 App.Router.render();
             },
             render: () => {
@@ -470,7 +491,7 @@
                 const hc = (App.State.currentView === 'hub') ? 'text-gold' : 'text-textMuted hover:text-white';
                 nav.innerHTML += `<li class="flex-1 border-l border-darkSurface"><button onclick="App.Router.go('hub')" class="w-full flex flex-col items-center ${hc} py-2 active:scale-95 transition"><i class="fa-solid fa-layer-group text-xl mb-1"></i><span class="text-[10px] font-medium tracking-wide">Módulos</span></button></li>`;
                 
-                document.getElementById('hub-grid').innerHTML = Object.keys(App.Router.modules).map(id => `<div onclick="App.Router.go('${id}')" class="bg-darkSurface border border-transparent rounded-2xl p-6 flex flex-col items-center hover:border-gold cursor-pointer shadow-sm transition group"><i class="fa-solid ${App.Router.modules[id].icon} text-4xl text-gray-500 mb-4 group-hover:text-gold group-hover:scale-110 transition-transform"></i><span class="text-sm font-semibold text-textMuted group-hover:text-white">${App.Router.modules[id].n}</span></div>`).join('');
+                document.getElementById('hub-grid').innerHTML = Object.keys(App.Router.modules).map(id => `<div onclick="App.Router.go('${id}')" class="bg-darkSurface border border-transparent rounded-3xl p-6 flex flex-col items-center hover:border-gold cursor-pointer shadow-sm transition group"><i class="fa-solid ${App.Router.modules[id].icon} text-4xl text-gray-500 mb-4 group-hover:text-gold group-hover:scale-110 transition-transform"></i><span class="text-sm font-semibold text-textMuted group-hover:text-white">${App.Router.modules[id].n}</span></div>`).join('');
             }
         };
 
@@ -513,9 +534,9 @@
             render: () => {
                 const list = document.getElementById('alarm-list'); if(App.Alarms.data.length === 0) { list.innerHTML = '<p class="text-textMuted text-center text-sm mt-10">Nenhum alarme configurado.</p>'; return; }
                 App.Alarms.data.sort((a, b) => a.time.localeCompare(b.time));
-                list.innerHTML = App.Alarms.data.map(a => `<div class="bg-darkBg lg:bg-[#0f0f0f] p-5 rounded-3xl flex justify-between items-center border border-transparent ${a.active ? 'hover:border-gold shadow-md' : 'opacity-50'} transition-all group cursor-pointer" onclick="App.Alarms.openModal('${a.id}')"><div class="flex-1"><div class="text-5xl font-light mb-1 ${a.active ? 'text-white' : 'text-textMuted'}">${a.time}</div><div class="${a.active ? 'text-gold' : 'text-gray-600'} text-[10px] font-bold uppercase truncate">${a.label || 'Alarme'} ${a.days.length>0 ? '• REPETE' : ''} ${a.snoozeParent ? '💤' : ''}</div></div><div class="flex items-center gap-4" onclick="event.stopPropagation()"><button onclick="App.Alarms.delete('${a.id}')" class="text-red-900/50 hover:text-red-500 p-2 text-xl transition"><i class="fa-solid fa-trash"></i></button><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" onchange="App.Alarms.toggle('${a.id}')" class="sr-only peer" ${a.active ? 'checked' : ''}><div class="w-12 h-7 bg-gray-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gold"></div></label></div></div>`).join('');
+                list.innerHTML = App.Alarms.data.map(a => `<div class="bg-darkBg lg:bg-[#111] p-5 rounded-3xl flex justify-between items-center border border-transparent ${a.active ? 'hover:border-gold shadow-md' : 'opacity-50'} transition-all group cursor-pointer" onclick="App.Alarms.openModal('${a.id}')"><div class="flex-1"><div class="text-5xl font-light mb-1 ${a.active ? 'text-white' : 'text-textMuted'}">${a.time}</div><div class="${a.active ? 'text-gold' : 'text-gray-600'} text-[10px] font-bold uppercase truncate tracking-wider">${a.label || 'Alarme'} ${a.days.length>0 ? '• REPETE' : ''} ${a.snoozeParent ? '💤' : ''}</div></div><div class="flex items-center gap-4" onclick="event.stopPropagation()"><button onclick="App.Alarms.delete('${a.id}')" class="text-red-900/50 hover:text-red-500 p-2 text-xl transition"><i class="fa-solid fa-trash"></i></button><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" onchange="App.Alarms.toggle('${a.id}')" class="sr-only peer" ${a.active ? 'checked' : ''}><div class="w-12 h-7 bg-gray-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gold"></div></label></div></div>`).join('');
             },
-            renderDays: () => { document.getElementById('alarm-days').innerHTML = App.Alarms.weekDays.map((d, i) => `<button onclick="App.Alarms.toggleDay(${i})" class="w-9 h-9 rounded-full text-xs font-bold transition-colors ${App.Alarms.tempDays.includes(i) ? 'bg-gold text-darkBg shadow-md' : 'text-textMuted hover:bg-gray-700'}">${d}</button>`).join(''); },
+            renderDays: () => { document.getElementById('alarm-days').innerHTML = App.Alarms.weekDays.map((d, i) => `<button onclick="App.Alarms.toggleDay(${i})" class="w-10 h-10 rounded-full text-xs font-bold transition-colors ${App.Alarms.tempDays.includes(i) ? 'bg-gold text-darkBg shadow-md' : 'text-textMuted hover:bg-gray-700'}">${d}</button>`).join(''); },
             toggleDay: (i) => { if(App.Alarms.tempDays.includes(i)) App.Alarms.tempDays = App.Alarms.tempDays.filter(d => d !== i); else App.Alarms.tempDays.push(i); App.Alarms.renderDays(); App.Alarms.updateSubtitle(); },
             openModal: (id = null) => {
                 App.State.editId = id; App.Alarms.tempDays = []; let h, m, label = "";
@@ -526,7 +547,7 @@
                     mEl.classList.remove('opacity-0'); 
                     document.getElementById('alarm-content').classList.remove('translate-y-full'); 
                     if (App.State.isDesktop) document.getElementById('alarm-content').classList.replace('scale-95', 'scale-100');
-                    App.Alarms.initPickers(); // Initialize safely when visible
+                    App.Alarms.initPickers();
                     App.UI.setPickerValue('alarm-picker-h', 23, h); 
                     App.UI.setPickerValue('alarm-picker-m', 59, m); 
                     App.Alarms.updateSubtitle(); 
@@ -574,7 +595,7 @@
                 if (!App.Timer.isInit) App.Timer.init();
                 if(App.Timer.totalSeconds === 0) App.Timer.totalSeconds = (parseInt(App.UI.getPickerValue('timer-picker-h', 23)) * 3600) + (parseInt(App.UI.getPickerValue('timer-picker-m', 59)) * 60) + parseInt(App.UI.getPickerValue('timer-picker-s', 59));
                 App.Timer.totalSeconds += m * 60; App.Timer.maxSeconds = Math.max(App.Timer.maxSeconds, App.Timer.totalSeconds);
-                document.getElementById('timer-setup-view').classList.add('hidden'); document.getElementById('timer-countdown-view').classList.replace('hidden', 'flex'); document.getElementById('btn-timer-reset').classList.remove('hidden'); document.getElementById('timer-quick-actions').classList.replace('flex', 'hidden');
+                document.getElementById('timer-setup-view').classList.add('hidden'); document.getElementById('timer-countdown-view').classList.replace('hidden', 'flex'); document.getElementById('btn-timer-reset').classList.remove('hidden'); document.getElementById('timer-quick-actions').classList.add('invisible');
                 App.Timer.updateDisplay();
             },
             toggle: () => {
@@ -582,14 +603,14 @@
                 if (!App.Timer.running) {
                     if (App.Timer.totalSeconds === 0) App.Timer.totalSeconds = App.Timer.maxSeconds = (parseInt(App.UI.getPickerValue('timer-picker-h', 23)) * 3600) + (parseInt(App.UI.getPickerValue('timer-picker-m', 59)) * 60) + parseInt(App.UI.getPickerValue('timer-picker-s', 59));
                     if (App.Timer.totalSeconds === 0) return;
-                    App.Timer.running = true; document.getElementById('timer-setup-view').classList.add('hidden'); document.getElementById('timer-countdown-view').classList.replace('hidden', 'flex'); document.getElementById('btn-timer-reset').classList.remove('hidden'); document.getElementById('timer-quick-actions').classList.replace('flex', 'hidden');
+                    App.Timer.running = true; document.getElementById('timer-setup-view').classList.add('hidden'); document.getElementById('timer-countdown-view').classList.replace('hidden', 'flex'); document.getElementById('btn-timer-reset').classList.remove('hidden'); document.getElementById('timer-quick-actions').classList.add('invisible');
                     btn.textContent = 'Pausar'; btn.className = "flex-1 py-4 rounded-xl bg-red-900 text-red-200 font-bold text-lg transition active:scale-95"; App.Timer.updateDisplay();
                     App.Timer.interval = setInterval(() => { if (App.Timer.totalSeconds > 0) { App.Timer.totalSeconds--; App.Timer.updateDisplay(); } else { App.Timer.reset(); App.System.showAlert("Tempo Esgotado!", "O TIMER FINALIZOU."); } }, 1000);
                 } else { App.Timer.running = false; clearInterval(App.Timer.interval); btn.textContent = 'Retomar'; btn.className = "flex-1 py-4 rounded-xl bg-gold text-darkBg font-bold text-lg shadow-[0_0_20px_rgba(212,175,55,0.3)] transition active:scale-95"; }
             },
             reset: () => {
                 App.Timer.running = false; clearInterval(App.Timer.interval); App.Timer.totalSeconds = 0;
-                document.getElementById('timer-setup-view').classList.remove('hidden'); document.getElementById('timer-countdown-view').classList.replace('flex', 'hidden'); document.getElementById('btn-timer-reset').classList.add('hidden'); document.getElementById('timer-quick-actions').classList.replace('hidden', 'flex');
+                document.getElementById('timer-setup-view').classList.remove('hidden'); document.getElementById('timer-countdown-view').classList.replace('flex', 'hidden'); document.getElementById('btn-timer-reset').classList.add('hidden'); document.getElementById('timer-quick-actions').classList.remove('invisible');
                 document.getElementById('btn-timer-start').textContent = 'Iniciar Timer'; document.getElementById('btn-timer-start').className = "flex-1 py-4 rounded-xl bg-gold text-darkBg font-bold text-lg shadow-[0_0_20px_rgba(212,175,55,0.3)] transition active:scale-95"; document.getElementById('timer-svg-ring').style.strokeDashoffset = 0;
             }
         };
@@ -624,7 +645,7 @@
                 if(save) { App.Calc.hist.unshift({ eq: `${p} ${App.Calc.op==='*'?'×':(App.Calc.op==='/'?'÷':App.Calc.op)} ${c}`, res }); if(App.Calc.hist.length > 20) App.Calc.hist.pop(); SafeStorage.set('chronos_calc', JSON.stringify(App.Calc.hist)); }
                 App.Calc.curr = res.toString(); App.Calc.prev = '';
             },
-            openHistory: () => { const list = document.getElementById('calc-history-list'); list.innerHTML = App.Calc.hist.length === 0 ? '<p class="text-center mt-10 text-gray-500">Vazio</p>' : App.Calc.hist.map(i => `<div class="bg-darkSurface lg:bg-darkBg p-4 rounded-xl border border-gray-800 flex justify-between items-center shadow-sm"><span class="text-textMuted font-mono text-xs">${i.eq} =</span><span class="text-gold text-lg">${i.res}</span></div>`).join(''); document.getElementById('calc-history-modal').classList.replace('hidden', 'flex'); setTimeout(() => { document.getElementById('calc-history-modal').classList.remove('opacity-0'); document.getElementById('calc-history-content').classList.remove('translate-y-full'); if (App.State.isDesktop) document.getElementById('calc-history-content').classList.replace('scale-95', 'scale-100'); }, 10); },
+            openHistory: () => { const list = document.getElementById('calc-history-list'); list.innerHTML = App.Calc.hist.length === 0 ? '<p class="text-center mt-10 text-gray-500">Vazio</p>' : App.Calc.hist.map(i => `<div class="bg-darkSurface lg:bg-[#1a1a1a] p-4 rounded-xl border border-gray-800 flex justify-between items-center shadow-sm"><span class="text-textMuted font-mono text-xs">${i.eq} =</span><span class="text-gold text-lg">${i.res}</span></div>`).join(''); document.getElementById('calc-history-modal').classList.replace('hidden', 'flex'); setTimeout(() => { document.getElementById('calc-history-modal').classList.remove('opacity-0'); document.getElementById('calc-history-content').classList.remove('translate-y-full'); if (App.State.isDesktop) document.getElementById('calc-history-content').classList.replace('scale-95', 'scale-100'); }, 10); },
             closeHistory: () => { document.getElementById('calc-history-content').classList.add('translate-y-full'); if (App.State.isDesktop) document.getElementById('calc-history-content').classList.replace('scale-100', 'scale-95'); setTimeout(() => { document.getElementById('calc-history-modal').classList.add('opacity-0'); setTimeout(() => document.getElementById('calc-history-modal').classList.replace('flex', 'hidden'), 300); }, 10); },
             clearHistory: () => { App.Calc.hist = []; SafeStorage.remove('chronos_calc'); App.Calc.closeHistory(); }
         };
@@ -633,7 +654,7 @@
         App.Tasks = {
             data: SafeStorage.parse('chronos_tasks') || [],
             render: () => { const list = document.getElementById('task-list'); if(App.Tasks.data.length===0){ list.innerHTML = '<p class="text-center mt-10 text-sm text-gray-500">Nenhuma tarefa.</p>'; return; }
-                list.innerHTML = App.Tasks.data.map((t, i) => `<div class="bg-darkBg lg:bg-[#0f0f0f] p-4 rounded-xl flex justify-between items-center border ${t.done?'border-gray-800 opacity-50':'border-transparent'} transition hover:border-gray-800"><div class="flex items-center gap-3 overflow-hidden cursor-pointer flex-1" onclick="App.Tasks.toggle(${i})"><div class="w-6 h-6 rounded-full border-2 flex-shrink-0 ${t.done?'bg-gold border-gold text-darkBg':'border-gray-500 text-transparent'} flex items-center justify-center transition"><i class="fa-solid fa-check text-xs"></i></div><span class="text-white truncate uppercase ${t.done?'line-through text-textMuted':''}">${t.text}</span></div><div class="flex gap-2"><button onclick="App.System.openEdit('Editar Tarefa', '${t.text}', (v)=>{App.Tasks.data[${i}].text=v; App.Tasks.save();})" class="text-gold p-2 hover:scale-110 transition"><i class="fa-solid fa-pen text-sm"></i></button><button onclick="App.Tasks.delete(${i})" class="text-red-900 hover:text-red-500 p-2 transition"><i class="fa-solid fa-trash text-sm"></i></button></div></div>`).join(''); },
+                list.innerHTML = App.Tasks.data.map((t, i) => `<div class="bg-darkBg lg:bg-[#111] p-4 rounded-xl flex justify-between items-center border ${t.done?'border-gray-800 opacity-50':'border-transparent'} transition hover:border-gray-800"><div class="flex items-center gap-3 overflow-hidden cursor-pointer flex-1" onclick="App.Tasks.toggle(${i})"><div class="w-6 h-6 rounded-full border-2 flex-shrink-0 ${t.done?'bg-gold border-gold text-darkBg':'border-gray-500 text-transparent'} flex items-center justify-center transition"><i class="fa-solid fa-check text-xs"></i></div><span class="text-white truncate uppercase tracking-wide ${t.done?'line-through text-textMuted':''}">${t.text}</span></div><div class="flex gap-2"><button onclick="App.System.openEdit('Editar Tarefa', '${t.text}', (v)=>{App.Tasks.data[${i}].text=v; App.Tasks.save();})" class="text-gold p-2 hover:scale-110 transition"><i class="fa-solid fa-pen text-sm"></i></button><button onclick="App.Tasks.delete(${i})" class="text-red-900 hover:text-red-500 p-2 transition"><i class="fa-solid fa-trash text-sm"></i></button></div></div>`).join(''); },
             add: () => { const inp = document.getElementById('task-input'); if(inp.value.trim()){ App.Tasks.data.push({ text: inp.value.trim().toUpperCase(), done: false }); App.Tasks.save(); inp.value=''; } },
             toggle: (i) => { App.Tasks.data[i].done = !App.Tasks.data[i].done; App.Tasks.save(); }, delete: (i) => { App.Tasks.data.splice(i, 1); App.Tasks.save(); }, save: () => { SafeStorage.set('chronos_tasks', JSON.stringify(App.Tasks.data)); App.Tasks.render(); }
         };
@@ -643,19 +664,24 @@
             data: SafeStorage.parse('chronos_habits') || [],
             getStreak: (hist) => { if(!hist || !hist.length) return 0; let s = 0, d = new Date(), check = d.toISOString().split('T')[0]; if(!hist.includes(check)){ d.setDate(d.getDate()-1); check = d.toISOString().split('T')[0]; if(!hist.includes(check)) return 0; } while(hist.includes(check)){ s++; d.setDate(d.getDate()-1); check = d.toISOString().split('T')[0]; } return s; },
             render: () => { const list = document.getElementById('habit-list'); if(App.Habits.data.length===0){ list.innerHTML = '<p class="text-center mt-10 text-sm text-gray-500">Nenhum hábito.</p>'; return; } const today = new Date().toISOString().split('T')[0];
-                list.innerHTML = App.Habits.data.map((h, i) => { const done = h.hist.includes(today); const stk = App.Habits.getStreak(h.hist); return `<div class="bg-darkBg lg:bg-[#0f0f0f] p-4 rounded-xl flex justify-between items-center border border-gray-800 transition hover:border-gray-600"><div class="flex flex-col flex-1 pr-4"><span class="text-white font-medium truncate mb-1 uppercase cursor-pointer hover:text-gold transition" onclick="App.System.openEdit('Editar Hábito', '${h.name}', (v)=>{App.Habits.data[${i}].name=v; App.Habits.save();})">${h.name} <i class="fa-solid fa-pen text-[10px] text-gray-600 ml-1"></i></span><div class="text-xs font-bold ${stk>0?'text-gold':'text-gray-600'}"><i class="fa-solid fa-fire"></i> ${stk} dias</div></div><div class="flex items-center gap-4"><button onclick="App.Habits.toggle(${i})" class="w-12 h-12 rounded-full border-2 flex-shrink-0 transition-colors flex items-center justify-center ${done?'bg-gold border-gold text-darkBg shadow-[0_0_15px_rgba(212,175,55,0.4)]':'border-gray-500 text-transparent hover:border-gold hover:text-gold'}"><i class="fa-solid fa-check text-xl"></i></button><button onclick="App.Habits.delete(${i})" class="text-gray-700 hover:text-red-500 p-2 transition"><i class="fa-solid fa-trash"></i></button></div></div>`; }).join(''); },
+                list.innerHTML = App.Habits.data.map((h, i) => { const done = h.hist.includes(today); const stk = App.Habits.getStreak(h.hist); return `<div class="bg-darkBg lg:bg-[#111] p-4 rounded-xl flex justify-between items-center border border-gray-800 transition hover:border-gray-600"><div class="flex flex-col flex-1 pr-4"><span class="text-white font-medium truncate mb-1 uppercase tracking-wide cursor-pointer hover:text-gold transition" onclick="App.System.openEdit('Editar Hábito', '${h.name}', (v)=>{App.Habits.data[${i}].name=v; App.Habits.save();})">${h.name} <i class="fa-solid fa-pen text-[10px] text-gray-600 ml-1"></i></span><div class="text-xs font-bold ${stk>0?'text-gold':'text-gray-600'}"><i class="fa-solid fa-fire"></i> ${stk} dias</div></div><div class="flex items-center gap-4"><button onclick="App.Habits.toggle(${i})" class="w-12 h-12 rounded-full border-2 flex-shrink-0 transition-colors flex items-center justify-center ${done?'bg-gold border-gold text-darkBg shadow-[0_0_15px_rgba(212,175,55,0.4)]':'border-gray-500 text-transparent hover:border-gold hover:text-gold'}"><i class="fa-solid fa-check text-xl"></i></button><button onclick="App.Habits.delete(${i})" class="text-gray-700 hover:text-red-500 p-2 transition"><i class="fa-solid fa-trash"></i></button></div></div>`; }).join(''); },
             add: () => { const inp = document.getElementById('habit-input'); if(inp.value.trim()){ App.Habits.data.push({ id: Date.now().toString(), name: inp.value.trim().toUpperCase(), hist: [] }); App.Habits.save(); inp.value=''; } },
             toggle: (i) => { const t = new Date().toISOString().split('T')[0]; if(App.Habits.data[i].hist.includes(t)) App.Habits.data[i].hist = App.Habits.data[i].hist.filter(x => x !== t); else { App.Habits.data[i].hist.push(t); App.Audio.vibrate(20); } App.Habits.save(); },
             delete: (i) => { App.Habits.data.splice(i, 1); App.Habits.save(); }, save: () => { SafeStorage.set('chronos_habits', JSON.stringify(App.Habits.data)); App.Habits.render(); }
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            // Check if Desktop, render everything
             if (App.State.isDesktop) { App.Timer.init(); }
-            
             App.Router.render(); App.Alarms.init(); App.Tasks.render(); App.Habits.render();
             document.getElementById('task-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') App.Tasks.add(); }); 
             document.getElementById('habit-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') App.Habits.add(); });
+            
+            // PWA Registration
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js').catch(err => console.log('PWA Bypass:', err));
+                });
+            }
         });
     </script>
 </body>
