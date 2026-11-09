@@ -93,6 +93,14 @@
     <!-- ========================================== -->
     <div class="hidden lg:grid grid-cols-3 gap-8 p-12 h-full w-full content-start max-w-7xl mx-auto" id="desktop-dashboard">
         
+        <!-- WIDGET CALENDÁRIO -->
+        <div onclick="App.Router.go('calendario')" class="widget-card rounded-[2rem] p-8 cursor-pointer flex flex-col justify-between h-44 group">
+            <div class="flex justify-between items-start text-textMuted group-hover:text-gold transition-colors"><i class="fa-solid fa-calendar-days text-2xl"></i><span class="text-[10px] uppercase tracking-[0.2em] font-bold">Calendário</span></div>
+            <div class="flex items-baseline gap-2 text-white">
+                <span class="text-5xl font-extralight tabular-nums text-transparent bg-clip-text bg-gold-metallic drop-shadow-md" id="widget-calendar-day">--</span>
+                <span class="text-sm font-bold uppercase tracking-widest text-gray-500 group-hover:text-white transition-colors" id="widget-calendar-month">---</span>
+            </div>
+        </div>
         <div onclick="App.Router.go('alarme')" class="widget-card rounded-[2rem] p-8 cursor-pointer flex flex-col justify-between h-44 group">
             <div class="flex justify-between items-start text-textMuted group-hover:text-gold transition-colors"><i class="fa-solid fa-bell text-2xl"></i><span class="text-[10px] uppercase tracking-[0.2em] font-bold">Despertador</span></div>
             <div class="text-3xl font-light text-white" id="widget-alarm-status">Ativo</div>
@@ -140,8 +148,47 @@
                 <div class="grid grid-cols-2 gap-5" id="hub-grid"></div>
             </section>
 
+           <!-- [BLOCO NOVO] CALENDÁRIO PREMIUM -->
+            <section id="view-calendario" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar">
+                <div class="flex justify-between items-center mb-8 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">
+                    <div>
+                        <h2 class="text-3xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic">Calendário</h2>
+                        <p class="text-gray-400 text-sm mt-1 uppercase tracking-widest font-bold" id="calendar-header-month">CARREGANDO...</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="App.Calendar.prevMonth()" class="bg-button-dark border border-white/5 text-gold w-14 h-14 rounded-2xl flex items-center justify-center hover:bg-white/5 transition-all shadow-lg active:scale-95"><i class="fa-solid fa-chevron-left"></i></button>
+                        <button onclick="App.Calendar.nextMonth()" class="bg-button-dark border border-white/5 text-gold w-14 h-14 rounded-2xl flex items-center justify-center hover:bg-white/5 transition-all shadow-lg active:scale-95"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                
+                <div class="flex-1 flex flex-col w-full max-w-2xl mx-auto gap-8 pb-24 lg:pb-0">
+                    <!-- Estatísticas do Mês integradas -->
+                    <div class="grid grid-cols-2 gap-4 w-full flex-shrink-0">
+                        <div class="bg-button-dark border border-white/5 p-6 rounded-[2rem] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex flex-col justify-center items-center">
+                            <span class="text-gray-500 text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Maior Streak</span>
+                            <span class="text-3xl font-light text-white"><i class="fa-solid fa-fire text-gold text-lg mr-2"></i><span id="cal-stat-streak">0</span></span>
+                        </div>
+                        <div class="bg-button-dark border border-white/5 p-6 rounded-[2rem] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex flex-col justify-center items-center">
+                            <span class="text-gray-500 text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Tarefas Feitas</span>
+                            <span class="text-3xl font-light text-gold" id="cal-stat-tasks">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Grelha Metálica do Calendário -->
+                    <div class="bg-black/30 border border-white/10 rounded-[2.5rem] p-6 lg:p-8 shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)] flex-1 min-h-0">
+                        <div class="grid grid-cols-7 gap-2 mb-6 text-center text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500">
+                            <div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div>
+                        </div>
+                        <div id="calendar-grid" class="grid grid-cols-7 gap-3 lg:gap-4 text-center">
+                            <!-- Injetado pelo JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section> 
+            
+            
             <!-- [BLOCO 1] DESPERTADOR -->
-            <section id="view-alarme" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar relative">
+                        <section id="view-alarme" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar relative">
                 <div class="flex justify-between items-end mb-10 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">
                     <div>
                         <h2 class="text-4xl lg:text-5xl font-light text-white">Despertador</h2>
