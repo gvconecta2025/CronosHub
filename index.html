@@ -64,13 +64,16 @@
         .widget-card { background: rgba(25, 25, 25, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
         .widget-card:hover { transform: translateY(-4px); border-color: rgba(212, 175, 55, 0.3); box-shadow: 0 15px 40px rgba(212, 175, 55, 0.1); background: rgba(30, 30, 30, 0.6); }
 
-        /* Calendário e Lembretes */
+        /* Calendário e Heatmap */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
         .heatmap-dot { width: 4px; height: 4px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
 
         /* Input Premium */
         .input-premium { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); transition: all 0.3s ease; }
         .input-premium:focus { border-color: #D4AF37; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5), 0 0 15px rgba(212,175,55,0.1); outline: none; }
+        
+        /* Custom Native Date Input Overlay */
+        input[type="date"]::-webkit-calendar-picker-indicator { width: 100%; height: 100%; margin: 0; padding: 0; cursor: pointer; opacity: 0; }
     </style>
 </head>
 <body class="text-white h-screen w-full flex flex-col overflow-hidden font-sans" onclick="App.System.initInteraction()">
@@ -92,7 +95,6 @@
     <!-- ========================================== -->
     <!-- DASHBOARD DESKTOP (8 WIDGETS PREMIUM) -->
     <!-- ========================================== -->
-    <!-- Atualizado para grid-cols-4 para abrigar as 8 ferramentas em simetria perfeita -->
     <div class="hidden lg:grid lg:grid-cols-4 gap-6 p-10 h-full w-full content-start max-w-[1500px] mx-auto" id="desktop-dashboard">
         
         <div onclick="App.Router.go('calendario')" class="widget-card rounded-[2rem] p-8 cursor-pointer flex flex-col justify-between h-44 group">
@@ -103,7 +105,6 @@
             </div>
         </div>
 
-        <!-- WIDGET LEMBRETES -->
         <div onclick="App.Router.go('lembretes')" class="widget-card rounded-[2rem] p-8 cursor-pointer flex flex-col justify-between h-44 group relative overflow-hidden">
             <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition-all"></div>
             <div class="flex justify-between items-start text-textMuted group-hover:text-blue-400 transition-colors"><i class="fa-solid fa-note-sticky text-2xl relative z-10"></i><span class="text-[10px] uppercase tracking-[0.2em] font-bold relative z-10">Lembretes</span></div>
@@ -156,7 +157,7 @@
                 <div class="grid grid-cols-2 gap-5" id="hub-grid"></div>
             </section>
 
-            <!-- [BLOCO 1] CALENDÁRIO PREMIUM (HEATMAP E VIAGEM NO TEMPO) -->
+            <!-- [BLOCO 1] CALENDÁRIO PREMIUM -->
             <section id="view-calendario" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar relative">
                 <div class="flex justify-between items-center mb-8 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">
                     <div>
@@ -206,7 +207,7 @@
                 </div>
             </section>
 
-            <!-- [BLOCO 2] LEMBRETES (NOVA FERRAMENTA) -->
+            <!-- [BLOCO 2] LEMBRETES (Com Busca de Data e Etiquetas) -->
             <section id="view-lembretes" class="tab-content hidden tab-anim flex-col w-full h-full p-8 lg:p-12 overflow-y-auto hide-scrollbar relative">
                 <div class="flex flex-col mb-8 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-6 z-10 border-b border-transparent lg:border-white/5 gap-6">
                     <div class="flex justify-between items-center w-full">
@@ -214,7 +215,14 @@
                             <h2 class="text-3xl lg:text-4xl font-light text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-blue-500">Lembretes</h2>
                             <p class="text-gray-400 text-sm mt-1 uppercase tracking-widest font-bold">AGENDA PESSOAL</p>
                         </div>
-                        <button onclick="App.Reminders.goToToday()" class="bg-button-dark border border-white/10 text-blue-400 px-4 py-2 rounded-xl text-xs uppercase tracking-widest font-bold hover:bg-white/5 transition-all shadow-lg active:scale-95">Hoje</button>
+                        <div class="flex gap-2">
+                            <button onclick="App.Reminders.goToToday()" class="bg-button-dark border border-white/10 text-blue-400 px-4 py-2 rounded-xl text-xs uppercase tracking-widest font-bold hover:bg-white/5 transition-all shadow-lg active:scale-95">Hoje</button>
+                            <!-- Botão Mágico de Busca Nativa -->
+                            <div class="relative bg-button-dark border border-white/10 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/5 transition-all shadow-lg active:scale-95 cursor-pointer">
+                                <i class="fa-solid fa-calendar-day"></i>
+                                <input type="date" class="absolute inset-0 opacity-0 cursor-pointer" onchange="App.Reminders.goToDate(this.value)">
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Mini Calendário Horizontal Exclusivo -->
@@ -227,9 +235,19 @@
                     </div>
                 </div>
                 
-                <div class="flex gap-4 mb-8 flex-shrink-0 max-w-3xl mx-auto w-full">
-                    <input type="text" id="reminder-input" placeholder="Novo lembrete para a data selecionada..." class="flex-1 input-premium rounded-2xl px-6 py-4 text-white font-light text-lg tracking-wide focus:border-blue-400">
-                    <button onclick="App.Reminders.add()" class="bg-gradient-to-br from-blue-400 to-blue-600 text-white px-6 rounded-2xl font-bold shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:scale-105 transition active:scale-95"><i class="fa-solid fa-paper-plane text-xl"></i></button>
+                <div class="flex flex-col mb-8 flex-shrink-0 max-w-3xl mx-auto w-full gap-3">
+                    <div class="flex gap-4 w-full">
+                        <input type="text" id="reminder-input" placeholder="Novo lembrete para a data selecionada..." class="flex-1 input-premium rounded-2xl px-6 py-4 text-white font-light text-lg tracking-wide focus:border-blue-400">
+                        <button onclick="App.Reminders.add()" class="bg-gradient-to-br from-blue-400 to-blue-600 text-white px-6 rounded-2xl font-bold shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:scale-105 transition active:scale-95"><i class="fa-solid fa-paper-plane text-xl"></i></button>
+                    </div>
+                    
+                    <!-- Sistema de Etiquetas Premium -->
+                    <div class="flex gap-2 overflow-x-auto hide-scrollbar py-1" id="reminder-tags-container">
+                        <button onclick="App.Reminders.selectTag('pessoal', this)" class="rem-tag-btn px-4 py-1.5 rounded-full text-xs font-bold border border-gold text-gold bg-gold/10 transition-all flex-shrink-0">Pessoal</button>
+                        <button onclick="App.Reminders.selectTag('trabalho', this)" class="rem-tag-btn px-4 py-1.5 rounded-full text-xs font-bold border border-blue-500/30 text-blue-400 bg-transparent transition-all flex-shrink-0 hover:border-blue-500">Trabalho</button>
+                        <button onclick="App.Reminders.selectTag('aniversario', this)" class="rem-tag-btn px-4 py-1.5 rounded-full text-xs font-bold border border-purple-500/30 text-purple-400 bg-transparent transition-all flex-shrink-0 hover:border-purple-500">Aniversário</button>
+                        <button onclick="App.Reminders.selectTag('urgente', this)" class="rem-tag-btn px-4 py-1.5 rounded-full text-xs font-bold border border-red-500/30 text-red-400 bg-transparent transition-all flex-shrink-0 hover:border-red-500">Urgente</button>
+                    </div>
                 </div>
                 
                 <div class="flex-1 flex flex-col w-full max-w-3xl mx-auto min-h-0">
@@ -494,10 +512,9 @@
             </div>
         </div>
     </div>
-
     <script>
         // ==========================================
-        // O CÉREBRO JAVASCRIPT (COM HEATMAP, VIAGEM NO TEMPO E LEMBRETES)
+        // O CÉREBRO JAVASCRIPT (COM ETIQUETAS E BUSCA NATIVA)
         // ==========================================
         
         const SafeStorage = {
@@ -509,7 +526,13 @@
         };
 
         const App = {
-            State: { currentView: 'hub', isDesktop: window.innerWidth >= 1024, isModalOpen: false, expandedHabit: null },
+            State: { 
+                currentView: 'hub', 
+                isDesktop: window.innerWidth >= 1024, 
+                isModalOpen: false, 
+                expandedHabit: null,
+                selectedReminderTag: 'pessoal' // Tag padrão
+            },
             Config: SafeStorage.parse('chronos_config') || { sound: true, haptic: true, tone: 'classic' },
             SaveConfig: () => SafeStorage.set('chronos_config', JSON.stringify(App.Config))
         };
@@ -651,7 +674,7 @@
         App.Router = {
             modules: { 
                 calendario: { icon: 'fa-calendar-days', n: 'Calendário' }, 
-                lembretes: { icon: 'fa-note-sticky', n: 'Lembretes' }, // Nova Ferramenta Registrada!
+                lembretes: { icon: 'fa-note-sticky', n: 'Lembretes' }, 
                 alarme: { icon: 'fa-bell', n: 'Alarme' }, 
                 cronometro: { icon: 'fa-stopwatch', n: 'Cronômetro' }, 
                 timer: { icon: 'fa-hourglass-half', n: 'Timer' }, 
@@ -911,7 +934,6 @@
                 if(App.Tasks.data.length===0){ list.innerHTML = '<p class="text-center mt-10 text-sm text-gray-500 tracking-wide">Nenhuma tarefa adicionada.</p>'; return; }
                 list.innerHTML = App.Tasks.data.map((t, i) => `<div class="bg-button-dark p-5 rounded-2xl flex justify-between items-center border ${t.done?'border-white/5 opacity-50 shadow-none':'border-gold/20 shadow-[0_4px_15px_rgba(212,175,55,0.05)]'} transition-all hover:border-gold/50 group"><div class="flex items-center gap-5 overflow-hidden cursor-pointer flex-1" onclick="App.Tasks.toggle(${i})"><div class="w-8 h-8 rounded-full border border-white/20 flex-shrink-0 ${t.done?'bg-gold-metallic border-gold text-black shadow-[inset_0_2px_5px_rgba(0,0,0,0.3)]':'bg-[#0a0a0a] text-transparent shadow-inner'} flex items-center justify-center transition-all"><i class="fa-solid fa-check text-sm"></i></div><span class="text-white truncate uppercase tracking-[0.1em] text-lg font-light ${t.done?'line-through text-gray-500':''}">${t.text}</span></div><div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity lg:opacity-100"><button onclick="App.System.openEdit('Editar Tarefa', '${t.text}', (v)=>{App.Tasks.data[${i}].text=v; App.Tasks.save();})" class="text-gold p-3 hover:scale-110 transition"><i class="fa-solid fa-pen"></i></button><button onclick="App.Tasks.delete(${i})" class="text-red-900 hover:text-red-500 p-3 transition"><i class="fa-solid fa-trash"></i></button></div></div>`).join(''); 
                 
-                // Força re-render do calendário para atualizar heatmaps das tarefas
                 if (App.State.currentView === 'calendario') App.Calendar.render();
             },
             add: () => { 
@@ -920,14 +942,13 @@
                     App.Tasks.data.push({ 
                         text: inp.value.trim().toUpperCase(), 
                         done: false, 
-                        createdAt: new Date().toISOString().split('T')[0] // Guarda o dia em que foi criada (para o histórico)
+                        createdAt: new Date().toISOString().split('T')[0]
                     }); 
                     App.Tasks.save(); inp.value=''; 
                 } 
             },
             toggle: (i) => { 
                 App.Tasks.data[i].done = !App.Tasks.data[i].done; 
-                // Se concluída agora, regista a data de conclusão para o calendário
                 if(App.Tasks.data[i].done) App.Tasks.data[i].completedAt = new Date().toISOString().split('T')[0];
                 else delete App.Tasks.data[i].completedAt;
                 App.Tasks.save(); 
@@ -950,7 +971,6 @@
                     return `<div class="bg-button-dark p-6 rounded-[1.5rem] border ${done?'border-gold/20 shadow-[0_4px_15px_rgba(212,175,55,0.05)]':'border-white/5'} transition-all hover:border-gold/40 flex flex-col group"><div class="flex justify-between items-center w-full"><div class="flex flex-col flex-1 pr-4"><span class="text-white font-light truncate mb-2 uppercase tracking-[0.1em] text-xl">${h.name}</span><div class="text-xs font-bold tracking-widest uppercase ${stk>0?'text-gold':'text-gray-600'}"><i class="fa-solid fa-fire mr-1"></i> ${stk} dias seguidos</div></div><div class="flex items-center gap-2"><button onclick="App.System.openEdit('Editar Hábito', '${h.name}', (v)=>{App.Habits.data[${i}].name=v; App.Habits.save();})" class="text-gold p-3 hover:scale-110 transition hidden lg:block opacity-0 group-hover:opacity-100"><i class="fa-solid fa-pen"></i></button><button onclick="App.Habits.toggle(${i})" class="w-14 h-14 rounded-full border border-white/20 flex-shrink-0 transition-all flex items-center justify-center ${done?'bg-gold-metallic text-black shadow-[0_0_15px_rgba(212,175,55,0.4)] border-transparent':'bg-[#0a0a0a] text-transparent hover:border-gold shadow-inner'}"><i class="fa-solid fa-check text-xl"></i></button><button onclick="App.Habits.delete(${i})" class="text-gray-700 hover:text-red-500 p-3 transition opacity-0 group-hover:opacity-100 lg:opacity-100"><i class="fa-solid fa-trash"></i></button></div></div></div>`; 
                 }).join(''); 
                 
-                // Força re-render do calendário para heatmaps
                 if (App.State.currentView === 'calendario') App.Calendar.render();
             },
             add: () => { const inp = document.getElementById('habit-input'); if(inp.value.trim()){ App.Habits.data.push({ id: Date.now().toString(), name: inp.value.trim().toUpperCase(), hist: [] }); App.Habits.save(); inp.value=''; } },
@@ -958,12 +978,15 @@
             delete: (i) => { App.Habits.data.splice(i, 1); App.Habits.save(); }, save: () => { SafeStorage.set('chronos_habits', JSON.stringify(App.Habits.data)); App.Habits.render(); }
         };
 
-        // [NOVA FERRAMENTA] Lembretes
+        // [MÓDULO ATUALIZADO] Lembretes com Busca de Data e Tags Premium
         App.Reminders = {
             data: SafeStorage.parse('chronos_reminders') || [],
-            currentDate: new Date(), // Controla o mini-calendário semanal
+            currentDate: new Date(),
             
-            init: () => { App.Reminders.render(); },
+            init: () => { 
+                App.State.selectedReminderTag = 'pessoal'; 
+                App.Reminders.render(); 
+            },
             
             formatDateYMD: (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,
             
@@ -972,32 +995,57 @@
             nextWeek: () => { App.Reminders.currentDate.setDate(App.Reminders.currentDate.getDate() + 7); App.Reminders.render(); },
             
             selectDay: (y, m, d) => { App.Reminders.currentDate = new Date(y, m, d); App.Reminders.render(); },
+            
+            // [NOVO] Função para o Seletor de Data Nativo
+            goToDate: (dateStr) => {
+                if(!dateStr) return;
+                // Ajuste de timezone para evitar que caia no dia anterior
+                const [y, m, d] = dateStr.split('-');
+                App.Reminders.currentDate = new Date(y, m - 1, d);
+                App.Reminders.render();
+            },
+
+            // [NOVO] Função de Seleção de Etiquetas
+            selectTag: (tag, btnEl) => {
+                App.State.selectedReminderTag = tag;
+                
+                // Reset a todos os botões
+                const btns = document.querySelectorAll('.rem-tag-btn');
+                btns.forEach(b => {
+                    b.classList.remove('bg-gold/10', 'bg-blue-500/10', 'bg-purple-500/10', 'bg-red-500/10');
+                    b.classList.add('bg-transparent');
+                    b.style.borderColor = ''; // Volta ao default do Tailwind class
+                });
+                
+                // Aplica cor ao ativo
+                btnEl.classList.remove('bg-transparent');
+                if(tag === 'pessoal') { btnEl.classList.add('bg-gold/10'); btnEl.style.borderColor = '#D4AF37'; }
+                else if(tag === 'trabalho') { btnEl.classList.add('bg-blue-500/10'); btnEl.style.borderColor = '#3b82f6'; }
+                else if(tag === 'aniversario') { btnEl.classList.add('bg-purple-500/10'); btnEl.style.borderColor = '#a855f7'; }
+                else if(tag === 'urgente') { btnEl.classList.add('bg-red-500/10'); btnEl.style.borderColor = '#ef4444'; }
+            },
 
             render: () => {
                 const now = new Date();
                 const selDateStr = App.Reminders.formatDateYMD(App.Reminders.currentDate);
                 const todayStr = App.Reminders.formatDateYMD(now);
                 
-                // 1. Renderiza o Título (Hoje, Amanhã ou Data Específica)
                 const titleEl = document.getElementById('reminders-list-title');
                 if(selDateStr === todayStr) titleEl.innerHTML = `Para Hoje`;
                 else {
                     const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
                     if(selDateStr === App.Reminders.formatDateYMD(tomorrow)) titleEl.innerHTML = `Para Amanhã`;
-                    else titleEl.innerHTML = `Dia ${String(App.Reminders.currentDate.getDate()).padStart(2,'0')}/${String(App.Reminders.currentDate.getMonth()+1).padStart(2,'0')}`;
+                    else titleEl.innerHTML = `Dia ${String(App.Reminders.currentDate.getDate()).padStart(2,'0')}/${String(App.Reminders.currentDate.getMonth()+1).padStart(2,'0')}/${App.Reminders.currentDate.getFullYear()}`;
                 }
 
-                // Atualiza Widget Desktop
                 if (App.State.isDesktop) {
                     const todaysReminders = App.Reminders.data.filter(r => r.date === todayStr && !r.done).length;
                     document.getElementById('widget-reminders-status').innerText = `${todaysReminders} p/ hoje`;
                 }
 
-                // 2. Renderiza a Tira Semanal (7 dias baseados na currentDate)
                 const stripEl = document.getElementById('reminders-week-strip');
                 let stripHtml = '';
                 
-                // Encontrar o Domingo desta semana selecionada
                 let currDayOfWeek = App.Reminders.currentDate.getDay();
                 let startOfWeek = new Date(App.Reminders.currentDate);
                 startOfWeek.setDate(startOfWeek.getDate() - currDayOfWeek);
@@ -1010,7 +1058,6 @@
                     const isSelected = (dStr === selDateStr);
                     const isToday = (dStr === todayStr);
                     
-                    // Conta se tem lembretes não feitos nesse dia
                     const hasReminders = App.Reminders.data.some(r => r.date === dStr && !r.done);
                     
                     let bg = isSelected ? "bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)] scale-110" : 
@@ -1027,7 +1074,6 @@
                 }
                 stripEl.innerHTML = stripHtml;
 
-                // 3. Renderiza a Lista de Lembretes do Dia Selecionado
                 const list = document.getElementById('reminders-list');
                 const dayReminders = App.Reminders.data.filter(r => r.date === selDateStr);
                 
@@ -1036,15 +1082,37 @@
                     return; 
                 }
                 
+                // Mapeamento de cores para as tags na lista
+                const tagColors = {
+                    'pessoal': 'text-gold border-gold/30',
+                    'trabalho': 'text-blue-400 border-blue-500/30',
+                    'aniversario': 'text-purple-400 border-purple-500/30',
+                    'urgente': 'text-red-400 border-red-500/30'
+                };
+                
+                const tagNames = {
+                    'pessoal': 'Pessoal',
+                    'trabalho': 'Trabalho',
+                    'aniversario': 'Aniversário',
+                    'urgente': 'Urgente'
+                };
+                
                 list.innerHTML = dayReminders.map(r => `
-                    <div class="bg-button-dark p-4 rounded-2xl flex justify-between items-center border ${r.done?'border-white/5 opacity-50':'border-blue-500/20 shadow-[0_4px_15px_rgba(59,130,246,0.05)]'} transition-all group">
-                        <div class="flex items-center gap-4 overflow-hidden cursor-pointer flex-1" onclick="App.Reminders.toggle('${r.id}')">
-                            <div class="w-6 h-6 rounded-full border border-white/20 flex-shrink-0 ${r.done?'bg-blue-500 border-blue-500 text-white shadow-[inset_0_2px_5px_rgba(0,0,0,0.3)]':'bg-black text-transparent shadow-inner'} flex items-center justify-center transition-all"><i class="fa-solid fa-check text-xs"></i></div>
-                            <span class="text-white truncate uppercase tracking-[0.1em] font-light ${r.done?'line-through text-gray-500':''}">${r.text}</span>
+                    <div class="bg-button-dark p-4 rounded-2xl flex flex-col justify-center border ${r.done?'border-white/5 opacity-50':'border-blue-500/20 shadow-[0_4px_15px_rgba(59,130,246,0.05)]'} transition-all group">
+                        <div class="flex justify-between items-center w-full">
+                            <div class="flex items-center gap-4 overflow-hidden cursor-pointer flex-1" onclick="App.Reminders.toggle('${r.id}')">
+                                <div class="w-6 h-6 rounded-full border border-white/20 flex-shrink-0 ${r.done?'bg-blue-500 border-blue-500 text-white shadow-[inset_0_2px_5px_rgba(0,0,0,0.3)]':'bg-black text-transparent shadow-inner'} flex items-center justify-center transition-all"><i class="fa-solid fa-check text-xs"></i></div>
+                                <div class="flex flex-col">
+                                    <span class="text-white truncate uppercase tracking-[0.1em] font-light ${r.done?'line-through text-gray-500':''}">${r.text}</span>
+                                    ${r.tag ? `<span class="text-[10px] uppercase font-bold tracking-widest mt-1 ${tagColors[r.tag].split(' ')[0]}">${tagNames[r.tag]}</span>` : ''}
+                                </div>
+                            </div>
+                            <button onclick="App.Reminders.delete('${r.id}')" class="text-gray-600 hover:text-red-500 p-2 transition"><i class="fa-solid fa-trash"></i></button>
                         </div>
-                        <button onclick="App.Reminders.delete('${r.id}')" class="text-gray-600 hover:text-red-500 p-2 transition"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 `).join('');
+                
+                if (App.State.currentView === 'calendario') App.Calendar.render();
             },
             
             add: () => { 
@@ -1054,7 +1122,8 @@
                         id: Date.now().toString(),
                         text: inp.value.trim().toUpperCase(), 
                         done: false, 
-                        date: App.Reminders.formatDateYMD(App.Reminders.currentDate) 
+                        date: App.Reminders.formatDateYMD(App.Reminders.currentDate),
+                        tag: App.State.selectedReminderTag // Grava a tag selecionada
                     }); 
                     App.Reminders.save(); inp.value=''; 
                 } 
@@ -1064,12 +1133,9 @@
             save: () => { SafeStorage.set('chronos_reminders', JSON.stringify(App.Reminders.data)); App.Reminders.render(); }
         };
 
-        // Calendário Premium (Com Heatmap e Viagem no Tempo)
         App.Calendar = {
             currentDate: new Date(),
-            
             init: () => { App.Calendar.render(); },
-            
             formatDateYMD: (y, m, d) => `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,
             
             showSummary: (y, m, d) => {
@@ -1080,7 +1146,6 @@
                 
                 title.innerText = `${String(d).padStart(2,'0')}/${String(m+1).padStart(2,'0')}/${y}`;
                 
-                // Procurar atividades neste dia exato
                 const tasksDone = App.Tasks.data.filter(t => t.completedAt === dateStr);
                 const habitsDone = App.Habits.data.filter(h => h.hist.includes(dateStr));
                 const remindersDone = App.Reminders.data.filter(r => r.date === dateStr && r.done);
@@ -1101,8 +1166,12 @@
                         html += `</div>`;
                     }
                     if(remindersDone.length > 0) {
+                        const tagColors = { 'pessoal': 'bg-gold', 'trabalho': 'bg-blue-400', 'aniversario': 'bg-purple-400', 'urgente': 'bg-red-400' };
                         html += `<div class="mb-4"><h4 class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2">Lembretes</h4>`;
-                        remindersDone.forEach(r => html += `<div class="flex items-center gap-2 mb-1 text-sm font-light text-blue-300"><div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>${r.text}</div>`);
+                        remindersDone.forEach(r => {
+                            const tColor = r.tag ? tagColors[r.tag] : 'bg-blue-500';
+                            html += `<div class="flex items-center gap-2 mb-1 text-sm font-light"><div class="w-1.5 h-1.5 rounded-full ${tColor}"></div>${r.text}</div>`;
+                        });
                         html += `</div>`;
                     }
                 }
@@ -1119,7 +1188,6 @@
                 const monthNames = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
                 document.getElementById('calendar-header-month').innerText = `${monthNames[month]} ${year}`;
                 
-                // Esconde resumo ao mudar de mês
                 document.getElementById('calendar-day-summary').classList.replace('flex', 'hidden');
                 
                 if (App.State.isDesktop) {
@@ -1130,18 +1198,15 @@
                 const firstDay = new Date(year, month, 1).getDay();
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
                 
-                let monthlyTasks = 0; // Para as estatísticas
+                let monthlyTasks = 0; 
                 let html = '';
                 
-                // Espaços vazios
                 for(let i = 0; i < firstDay; i++) { html += `<div class="aspect-square"></div>`; }
                 
-                // Dias do mês (Renderizando Heatmap)
                 for(let i = 1; i <= daysInMonth; i++) {
                     const dStr = App.Calendar.formatDateYMD(year, month, i);
                     const isToday = (i === now.getDate() && month === now.getMonth() && year === now.getFullYear());
                     
-                    // Cálculo do Heatmap
                     const hasTask = App.Tasks.data.some(t => t.completedAt === dStr);
                     const hasHabit = App.Habits.data.some(h => h.hist.includes(dStr));
                     const hasReminder = App.Reminders.data.some(r => r.date === dStr && r.done);
@@ -1156,7 +1221,6 @@
                         classes += "bg-[#181818] border border-white/5 text-gray-300 hover:border-gold/50 hover:text-gold shadow-[inset_0_2px_5px_rgba(0,0,0,0.5)] hover:scale-105 active:scale-95";
                     }
                     
-                    // Geração dos pontinhos neon (Heatmap)
                     let dots = '<div class="absolute bottom-1.5 flex gap-1">';
                     if (hasTask) dots += `<div class="heatmap-dot bg-white text-white/50"></div>`;
                     if (hasHabit) dots += `<div class="heatmap-dot bg-gold text-gold/50"></div>`;
@@ -1171,10 +1235,8 @@
                 
                 document.getElementById('calendar-grid').innerHTML = html;
                 
-                // Estatísticas do Mês Visualizado
                 let monthMaxStreak = 0;
                 App.Habits.data.forEach(h => { 
-                    // Uma versão super simples de streak no mês visualizado
                     let cur = 0, mMax = 0;
                     for(let i=1; i<=daysInMonth; i++) {
                         if(h.hist.includes(App.Calendar.formatDateYMD(year, month, i))) { cur++; if(cur>mMax) mMax = cur; }
@@ -1208,7 +1270,7 @@
             App.Tasks.render(); 
             App.Habits.render();
             App.Calendar.init(); 
-            App.Reminders.init(); // Inicia Módulo de Lembretes
+            App.Reminders.init();
             
             if(App.State.isDesktop) { App.Timer.updateDisplay(); App.Stopwatch.update(); }
 
