@@ -34,17 +34,18 @@
     </script>
 
     <style>
-        /* Correção 1: Antialiasing forte para evitar textos embaçados */
+        /* Base com Antialiasing Forte para ecrãs de alta densidade */
         body { 
             -webkit-font-smoothing: antialiased; 
             -moz-osx-font-smoothing: grayscale; 
             -webkit-tap-highlight-color: transparent; 
             user-select: none; 
             overscroll-behavior-y: contain; 
-            background-color: #050505; 
+            background-color: #050505;
+            overflow-x: hidden; /* Força bloqueio de vazamento horizontal */
         }
         
-        .tab-anim { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .tab-anim { animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         
         @media (max-width: 1023px) {
@@ -61,9 +62,21 @@
             .drum-overlay { background: linear-gradient(to bottom, #121212 0%, transparent 35%, transparent 65%, #121212 100%); }
         }
         
-        /* Correção 2: Pickers cristalinos (Sem transform: scale) */
-        .picker-container { scroll-snap-type: y mandatory; }
-        .picker-item { scroll-snap-align: center; scroll-snap-stop: always; height: 48px; font-size: 1.75rem; transition: opacity 0.2s ease, color 0.2s ease; }
+        /* CORREÇÃO DA NITIDEZ DOS SELETORES (Drum Pickers) */
+        .picker-container { scroll-snap-type: y mandatory; overscroll-behavior-y: contain; }
+        .picker-item { 
+            scroll-snap-align: center; 
+            scroll-snap-stop: always; 
+            height: 48px; 
+            transition: all 0.15s ease-out; 
+            /* Aceleração de Hardware para evitar embaçamento do texto */
+            will-change: transform, opacity, color, font-size;
+            transform: translateZ(0); 
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         .drum-overlay { background: linear-gradient(to bottom, #050505 0%, transparent 35%, transparent 65%, #050505 100%); pointer-events: none; }
         
         .progress-ring__circle { transition: stroke-dashoffset 1s linear; transform: rotate(-90deg); transform-origin: 50% 50%; }
@@ -73,7 +86,7 @@
         .widget-card:hover { transform: translateY(-4px); border-color: rgba(212, 175, 55, 0.3); box-shadow: 0 15px 40px rgba(212, 175, 55, 0.1); background: rgba(30, 30, 30, 0.6); }
 
         /* Calendário e Heatmap */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
         .heatmap-dot { width: 4px; height: 4px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
 
         /* Input Premium */
@@ -93,8 +106,8 @@
     </div>
 
     <!-- HEADER GLOBAL -->
-    <header class="w-full py-5 px-6 lg:px-8 flex justify-between items-center bg-black/40 backdrop-blur-xl border-b border-white/5 z-20 shrink-0">
-        <h1 class="text-2xl font-bold tracking-[0.2em] text-transparent bg-clip-text bg-gold-metallic cursor-pointer" onclick="App.Router.closeDesktop(null, true)">CHRONOS<span class="text-white font-light">HUB</span></h1>
+    <header class="w-full py-4 px-4 lg:px-8 flex justify-between items-center bg-black/40 backdrop-blur-xl border-b border-white/5 z-20 shrink-0">
+        <h1 class="text-xl lg:text-2xl font-bold tracking-[0.2em] text-transparent bg-clip-text bg-gold-metallic cursor-pointer" onclick="App.Router.closeDesktop(null, true)">CHRONOS<span class="text-white font-light">HUB</span></h1>
         <button onclick="App.Settings.openModal()" class="text-gray-400 hover:text-gold transition-colors p-2 active:scale-95">
             <i class="fa-solid fa-sliders text-xl"></i>
         </button>
@@ -103,7 +116,7 @@
     <!-- ========================================== -->
     <!-- DASHBOARD DESKTOP (8 WIDGETS PREMIUM) -->
     <!-- ========================================== -->
-    <div class="hidden lg:grid lg:grid-cols-4 gap-6 p-10 h-full w-full content-start max-w-[1500px] mx-auto" id="desktop-dashboard">
+    <div class="hidden lg:grid lg:grid-cols-4 gap-6 p-10 h-full w-full content-start max-w-[1500px] mx-auto overflow-y-auto" id="desktop-dashboard">
         
         <div onclick="App.Router.go('calendario')" class="widget-card rounded-[2rem] p-8 cursor-pointer flex flex-col justify-between h-44 group">
             <div class="flex justify-between items-start text-textMuted group-hover:text-gold transition-colors"><i class="fa-solid fa-calendar-days text-2xl"></i><span class="text-[10px] uppercase tracking-[0.2em] font-bold">Calendário</span></div>
@@ -160,14 +173,14 @@
             <button onclick="App.Router.closeDesktop(event, true)" class="hidden lg:flex absolute top-6 right-6 w-12 h-12 bg-white/5 border border-white/10 rounded-full items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/20 hover:border-red-500/50 transition-all z-50"><i class="fa-solid fa-xmark"></i></button>
 
             <!-- [HUB MOBILE] -->
-            <section id="view-hub" class="tab-content hidden flex-col w-full h-full p-5 lg:p-12 lg:hidden overflow-y-auto hide-scrollbar">
+            <section id="view-hub" class="tab-content hidden flex-col w-full h-full p-5 lg:p-10 lg:hidden overflow-y-auto hide-scrollbar">
                 <h2 class="text-3xl lg:text-4xl font-light mb-8 text-white">Módulos <span class="text-transparent bg-clip-text bg-gold-metallic font-medium">Premium</span></h2>
                 <div class="grid grid-cols-2 gap-4" id="hub-grid"></div>
             </section>
 
             <!-- [BLOCO 1] CALENDÁRIO PREMIUM -->
-            <section id="view-calendario" class="tab-content hidden tab-anim flex-col w-full h-full p-5 lg:p-12 overflow-y-auto hide-scrollbar relative">
-                <div class="flex justify-between items-center w-full max-w-5xl mx-auto mb-8 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">
+            <section id="view-calendario" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar relative">
+                <div class="flex justify-between items-center w-full max-w-5xl mx-auto mb-6 lg:mb-8 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">
                     <div>
                         <h2 class="text-2xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic">O Meu Mês</h2>
                         <p class="text-gray-400 text-xs lg:text-sm mt-1 uppercase tracking-widest font-bold" id="calendar-header-month">CARREGANDO...</p>
@@ -181,8 +194,8 @@
                 <div class="flex-1 flex flex-col xl:flex-row w-full max-w-5xl mx-auto gap-6 lg:gap-8 pb-24 lg:pb-0 min-h-0">
                     
                     <!-- Lado Esquerdo: Grelha do Calendário -->
-                    <div class="flex-1 flex flex-col bg-black/30 border border-white/10 rounded-[2rem] lg:rounded-[2.5rem] p-5 lg:p-8 shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)] min-h-0">
-                        <div class="grid grid-cols-7 gap-1 lg:gap-2 mb-4 text-center text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500 flex-shrink-0">
+                    <div class="flex-1 flex flex-col bg-black/30 border border-white/10 rounded-[1.5rem] lg:rounded-[2.5rem] p-4 lg:p-8 shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)] min-h-0">
+                        <div class="grid grid-cols-7 gap-1 lg:gap-2 mb-4 text-center text-[9px] lg:text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500 flex-shrink-0">
                             <div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div>
                         </div>
                         <div id="calendar-grid" class="grid grid-cols-7 gap-2 lg:gap-4 text-center flex-1 min-h-0 overflow-y-auto hide-scrollbar content-start">
@@ -191,23 +204,23 @@
                     </div>
 
                     <!-- Lado Direito: Estatísticas Dinâmicas e Viagem no Tempo -->
-                    <div class="w-full xl:w-72 flex flex-col gap-6 flex-shrink-0">
+                    <div class="w-full xl:w-72 flex flex-col gap-4 lg:gap-6 flex-shrink-0 min-w-0">
                         <!-- Stats do Mês Visualizado -->
-                        <div class="grid grid-cols-2 xl:grid-cols-1 gap-4">
-                            <div class="bg-button-dark border border-white/5 p-4 lg:p-6 rounded-[1.5rem] lg:rounded-[2rem] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex flex-col justify-center items-center xl:items-start text-center xl:text-left">
-                                <span class="text-gray-500 text-[9px] lg:text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Maior Streak</span>
-                                <span class="text-2xl lg:text-3xl font-light text-white"><i class="fa-solid fa-fire text-gold text-base lg:text-lg mr-2 drop-shadow-md"></i><span id="cal-stat-streak">0</span></span>
+                        <div class="grid grid-cols-2 xl:grid-cols-1 gap-3 lg:gap-4 min-w-0">
+                            <div class="bg-button-dark border border-white/5 p-4 lg:p-6 rounded-[1.25rem] lg:rounded-[2rem] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex flex-col justify-center items-center xl:items-start text-center xl:text-left min-w-0">
+                                <span class="text-gray-500 text-[8px] lg:text-[10px] uppercase tracking-[0.2em] font-bold mb-1 lg:mb-2 truncate w-full">Maior Streak</span>
+                                <span class="text-xl lg:text-3xl font-light text-white"><i class="fa-solid fa-fire text-gold text-sm lg:text-lg mr-1 lg:mr-2 drop-shadow-md"></i><span id="cal-stat-streak">0</span></span>
                             </div>
-                            <div class="bg-button-dark border border-white/5 p-4 lg:p-6 rounded-[1.5rem] lg:rounded-[2rem] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex flex-col justify-center items-center xl:items-start text-center xl:text-left">
-                                <span class="text-gray-500 text-[9px] lg:text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Tarefas Feitas</span>
-                                <span class="text-2xl lg:text-3xl font-light text-transparent bg-clip-text bg-gold-metallic" id="cal-stat-tasks">0</span>
+                            <div class="bg-button-dark border border-white/5 p-4 lg:p-6 rounded-[1.25rem] lg:rounded-[2rem] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex flex-col justify-center items-center xl:items-start text-center xl:text-left min-w-0">
+                                <span class="text-gray-500 text-[8px] lg:text-[10px] uppercase tracking-[0.2em] font-bold mb-1 lg:mb-2 truncate w-full">Tarefas Feitas</span>
+                                <span class="text-xl lg:text-3xl font-light text-transparent bg-clip-text bg-gold-metallic" id="cal-stat-tasks">0</span>
                             </div>
                         </div>
 
                         <!-- Painel Viagem no Tempo (Resumo do Dia) -->
-                        <div id="calendar-day-summary" class="hidden flex-col bg-[#151515] border border-white/5 rounded-[1.5rem] lg:rounded-[2rem] p-5 lg:p-6 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex-1 min-h-[200px]">
-                            <h3 class="text-gold text-base lg:text-lg font-light mb-4 border-b border-white/5 pb-3" id="summary-date-title">Selecione um dia</h3>
-                            <div class="space-y-4 overflow-y-auto hide-scrollbar flex-1" id="summary-content">
+                        <div id="calendar-day-summary" class="hidden flex-col bg-[#151515] border border-white/5 rounded-[1.25rem] lg:rounded-[2rem] p-4 lg:p-6 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex-1 min-h-[200px] min-w-0">
+                            <h3 class="text-gold text-sm lg:text-lg font-light mb-3 lg:mb-4 border-b border-white/5 pb-2 lg:pb-3 truncate w-full" id="summary-date-title">Selecione um dia</h3>
+                            <div class="space-y-3 lg:space-y-4 overflow-y-auto hide-scrollbar flex-1 min-w-0" id="summary-content">
                                 <!-- Preenchido via JS ao clicar num dia -->
                             </div>
                         </div>
@@ -215,15 +228,15 @@
                 </div>
             </section>
 
-            <!-- [BLOCO 2] LEMBRETES (Alinhamento Mobile Refinado) -->
-            <section id="view-lembretes" class="tab-content hidden tab-anim flex-col w-full h-full p-5 lg:p-12 overflow-y-auto hide-scrollbar relative">
-                <div class="flex flex-col mb-6 lg:mb-8 w-full max-w-3xl mx-auto sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 lg:pb-6 z-10 border-b border-transparent lg:border-white/5 gap-4 lg:gap-6">
-                    <div class="flex justify-between items-center w-full">
-                        <div>
-                            <h2 class="text-2xl lg:text-4xl font-light text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-blue-500">Lembretes</h2>
-                            <p class="text-gray-400 text-xs lg:text-sm mt-1 uppercase tracking-widest font-bold">AGENDA PESSOAL</p>
+            <!-- [BLOCO 2] LEMBRETES (Alinhamento Mobile Extremo) -->
+            <section id="view-lembretes" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar relative">
+                <div class="flex flex-col mb-6 lg:mb-8 w-full max-w-3xl mx-auto sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 lg:pb-6 z-10 border-b border-transparent lg:border-white/5 gap-4 lg:gap-6 min-w-0">
+                    <div class="flex justify-between items-center w-full min-w-0">
+                        <div class="min-w-0 flex-1 pr-2">
+                            <h2 class="text-2xl lg:text-4xl font-light text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-blue-500 truncate">Lembretes</h2>
+                            <p class="text-gray-400 text-[10px] lg:text-sm mt-1 uppercase tracking-widest font-bold truncate">AGENDA PESSOAL</p>
                         </div>
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 flex-shrink-0">
                             <button onclick="App.Reminders.goToToday()" class="bg-button-dark border border-white/10 text-blue-400 px-3 py-2 lg:px-4 rounded-xl text-[10px] lg:text-xs uppercase tracking-widest font-bold hover:bg-white/5 transition-all shadow-lg active:scale-95">Hoje</button>
                             <!-- Botão Mágico de Busca Nativa -->
                             <div class="relative bg-button-dark border border-white/10 text-white w-9 h-9 lg:w-10 lg:h-10 rounded-xl flex items-center justify-center hover:bg-white/5 transition-all shadow-lg active:scale-95 cursor-pointer">
@@ -234,18 +247,18 @@
                     </div>
 
                     <!-- Mini Calendário Horizontal Exclusivo -->
-                    <div class="flex items-center gap-1 lg:gap-2 w-full">
-                        <button onclick="App.Reminders.prevWeek()" class="text-gray-500 hover:text-blue-400 p-2 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
-                        <div id="reminders-week-strip" class="flex-1 flex justify-between gap-1 lg:gap-2 overflow-x-auto hide-scrollbar px-1 min-w-0">
+                    <div class="flex items-center gap-1 lg:gap-2 w-full min-w-0">
+                        <button onclick="App.Reminders.prevWeek()" class="text-gray-500 hover:text-blue-400 p-2 transition-colors flex-shrink-0"><i class="fa-solid fa-chevron-left"></i></button>
+                        <div id="reminders-week-strip" class="flex-1 flex justify-between gap-1 overflow-x-auto hide-scrollbar px-1 min-w-0">
                             <!-- Injetado via JS -->
                         </div>
-                        <button onclick="App.Reminders.nextWeek()" class="text-gray-500 hover:text-blue-400 p-2 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
+                        <button onclick="App.Reminders.nextWeek()" class="text-gray-500 hover:text-blue-400 p-2 transition-colors flex-shrink-0"><i class="fa-solid fa-chevron-right"></i></button>
                     </div>
                 </div>
                 
                 <div class="flex flex-col mb-6 lg:mb-8 flex-shrink-0 max-w-3xl mx-auto w-full gap-3 min-w-0">
-                    <div class="flex gap-2 lg:gap-4 w-full">
-                        <input type="text" id="reminder-input" placeholder="Novo lembrete..." class="flex-1 input-premium rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-white font-light text-base lg:text-lg tracking-wide focus:border-blue-400 min-w-0">
+                    <div class="flex gap-2 lg:gap-4 w-full min-w-0">
+                        <input type="text" id="reminder-input" placeholder="Novo lembrete..." class="flex-1 input-premium rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-white font-light text-sm lg:text-lg tracking-wide focus:border-blue-400 min-w-0">
                         <button onclick="App.Reminders.add()" class="bg-gradient-to-br from-blue-400 to-blue-600 text-white px-5 lg:px-6 rounded-xl lg:rounded-2xl font-bold shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:scale-105 transition active:scale-95 flex-shrink-0"><i class="fa-solid fa-paper-plane text-lg lg:text-xl"></i></button>
                     </div>
                     
@@ -258,52 +271,52 @@
                     </div>
                 </div>
                 
-                <div class="flex-1 flex flex-col w-full max-w-3xl mx-auto min-h-0">
-                    <h3 class="text-white text-lg lg:text-xl font-light mb-4 flex items-center gap-2 lg:gap-3"><i class="fa-regular fa-calendar text-blue-400"></i> <span id="reminders-list-title">Para Hoje</span></h3>
-                    <div id="reminders-list" class="space-y-3 overflow-y-auto hide-scrollbar flex-1 pb-24 lg:pb-10 min-w-0">
+                <div class="flex-1 flex flex-col w-full max-w-3xl mx-auto min-h-0 min-w-0">
+                    <h3 class="text-white text-base lg:text-xl font-light mb-3 lg:mb-4 flex items-center gap-2 lg:gap-3 flex-shrink-0"><i class="fa-regular fa-calendar text-blue-400"></i> <span id="reminders-list-title">Para Hoje</span></h3>
+                    <div id="reminders-list" class="space-y-2 lg:space-y-3 overflow-y-auto hide-scrollbar flex-1 pb-24 lg:pb-10 min-w-0">
                         <!-- Injetado via JS -->
                     </div>
                 </div>
             </section>
             <!-- [BLOCO 3] DESPERTADOR -->
-            <section id="view-alarme" class="tab-content hidden tab-anim flex-col w-full h-full p-5 lg:p-12 overflow-y-auto hide-scrollbar relative">
+            <section id="view-alarme" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar relative">
                 <div class="flex flex-col w-full max-w-3xl mx-auto flex-1 min-w-0">
-                    <div class="flex justify-between items-end mb-8 lg:mb-10 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">
-                        <div>
-                            <h2 class="text-3xl lg:text-5xl font-light text-white">Despertador</h2>
-                            <p class="text-gold text-xs lg:text-sm mt-1 lg:mt-2 uppercase tracking-widest font-medium" id="current-date"></p>
+                    <div class="flex justify-between items-end mb-6 lg:mb-10 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5 min-w-0">
+                        <div class="min-w-0 pr-2">
+                            <h2 class="text-3xl lg:text-5xl font-light text-white truncate">Despertador</h2>
+                            <p class="text-gold text-[10px] lg:text-sm mt-1 lg:mt-2 uppercase tracking-widest font-medium truncate" id="current-date"></p>
                         </div>
-                        <button onclick="App.Alarms.openModal()" class="bg-gold-metallic text-black w-12 h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-xl lg:text-2xl shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] hover:scale-105 transition-all">
+                        <button onclick="App.Alarms.openModal()" class="bg-gold-metallic text-black w-12 h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-xl lg:text-2xl shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] hover:scale-105 transition-all flex-shrink-0">
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     </div>
-                    <div id="alarm-list" class="space-y-4 lg:space-y-5 flex-1 pb-24 lg:pb-10 min-w-0"></div>
+                    <div id="alarm-list" class="space-y-3 lg:space-y-5 flex-1 pb-24 lg:pb-10 min-w-0"></div>
                 </div>
             </section>
 
             <!-- [BLOCO 4] TIMER -->
-            <section id="view-timer" class="tab-content hidden tab-anim flex-col w-full h-full p-5 lg:p-12 items-center justify-center relative">
-                <h2 class="text-3xl lg:text-4xl font-light mb-8 text-transparent bg-clip-text bg-gold-metallic w-full text-left lg:absolute lg:top-12 lg:left-12 max-w-lg lg:max-w-none mx-auto lg:mx-0">Temporizador</h2>
-                <div class="flex-1 flex flex-col w-full h-full items-center justify-center relative mt-4 lg:mt-0 max-w-lg mx-auto min-w-0">
+            <section id="view-timer" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 items-center justify-center relative">
+                <h2 class="text-2xl lg:text-4xl font-light mb-6 lg:mb-8 text-transparent bg-clip-text bg-gold-metallic w-full text-left lg:absolute lg:top-10 lg:left-10 max-w-lg lg:max-w-none mx-auto lg:mx-0 truncate">Temporizador</h2>
+                <div class="flex-1 flex flex-col w-full h-full items-center justify-center relative mt-2 lg:mt-0 max-w-lg mx-auto min-w-0">
                     
-                    <div id="timer-setup-view" class="w-full flex flex-col items-center">
-                        <div class="relative w-full h-56 lg:h-64 flex justify-center bg-button-dark rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden text-5xl font-light shadow-[inset_0_5px_20px_rgba(0,0,0,0.8)] mb-6 lg:mb-8 border border-white/5">
-                            <div class="absolute top-1/2 left-0 w-full h-[72px] -translate-y-1/2 bg-white/5 pointer-events-none z-10 border-y border-gold/30 backdrop-blur-sm"></div>
+                    <div id="timer-setup-view" class="w-full flex flex-col items-center min-w-0">
+                        <div class="relative w-full h-48 lg:h-64 flex justify-center bg-button-dark rounded-[1.5rem] lg:rounded-[2.5rem] overflow-hidden text-4xl lg:text-5xl font-light shadow-[inset_0_5px_20px_rgba(0,0,0,0.8)] mb-4 lg:mb-8 border border-white/5 min-w-0">
+                            <div class="absolute top-1/2 left-0 w-full h-[60px] lg:h-[72px] -translate-y-1/2 bg-white/5 pointer-events-none z-10 border-y border-gold/30 backdrop-blur-sm"></div>
                             <div class="absolute inset-0 drum-overlay z-20"></div>
                             <div class="w-1/3 flex flex-col items-center relative"><div id="timer-picker-h" class="h-full w-full overflow-y-auto picker-container hide-scrollbar relative z-0"></div></div>
                             <div class="w-1/3 flex flex-col items-center relative"><div id="timer-picker-m" class="h-full w-full overflow-y-auto picker-container hide-scrollbar relative z-0"></div></div>
                             <div class="w-1/3 flex flex-col items-center relative"><div id="timer-picker-s" class="h-full w-full overflow-y-auto picker-container hide-scrollbar relative z-0"></div></div>
                         </div>
                         
-                        <div class="flex gap-2 lg:gap-4 w-full" id="timer-quick-actions">
-                            <button onclick="App.Timer.addMinutes(1)" class="flex-1 py-3 lg:py-4 bg-button-dark border border-white/5 rounded-xl lg:rounded-2xl text-xs lg:text-sm font-bold text-gray-400 hover:text-gold hover:border-gold/50 shadow-lg transition active:scale-95">+1 min</button>
-                            <button onclick="App.Timer.addMinutes(5)" class="flex-1 py-3 lg:py-4 bg-button-dark border border-white/5 rounded-xl lg:rounded-2xl text-xs lg:text-sm font-bold text-gray-400 hover:text-gold hover:border-gold/50 shadow-lg transition active:scale-95">+5 min</button>
-                            <button onclick="App.Timer.addMinutes(10)" class="flex-1 py-3 lg:py-4 bg-button-dark border border-white/5 rounded-xl lg:rounded-2xl text-xs lg:text-sm font-bold text-gray-400 hover:text-gold hover:border-gold/50 shadow-lg transition active:scale-95">+10 min</button>
+                        <div class="flex gap-2 lg:gap-4 w-full min-w-0" id="timer-quick-actions">
+                            <button onclick="App.Timer.addMinutes(1)" class="flex-1 py-3 lg:py-4 bg-button-dark border border-white/5 rounded-xl lg:rounded-2xl text-[10px] lg:text-sm font-bold text-gray-400 hover:text-gold hover:border-gold/50 shadow-lg transition active:scale-95 truncate">+1 min</button>
+                            <button onclick="App.Timer.addMinutes(5)" class="flex-1 py-3 lg:py-4 bg-button-dark border border-white/5 rounded-xl lg:rounded-2xl text-[10px] lg:text-sm font-bold text-gray-400 hover:text-gold hover:border-gold/50 shadow-lg transition active:scale-95 truncate">+5 min</button>
+                            <button onclick="App.Timer.addMinutes(10)" class="flex-1 py-3 lg:py-4 bg-button-dark border border-white/5 rounded-xl lg:rounded-2xl text-[10px] lg:text-sm font-bold text-gray-400 hover:text-gold hover:border-gold/50 shadow-lg transition active:scale-95 truncate">+10 min</button>
                         </div>
                     </div>
 
-                    <div id="timer-countdown-view" class="hidden flex-col items-center justify-center w-full mb-8">
-                        <div class="relative w-64 h-64 lg:w-80 lg:h-80 flex justify-center items-center bg-button-dark rounded-full shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)] border border-white/5">
+                    <div id="timer-countdown-view" class="hidden flex-col items-center justify-center w-full mb-6 lg:mb-8 min-w-0">
+                        <div class="relative w-56 h-56 lg:w-80 lg:h-80 flex justify-center items-center bg-button-dark rounded-full shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)] border border-white/5 flex-shrink-0">
                             <svg class="absolute inset-0 w-full h-full pointer-events-none z-30" viewBox="0 0 100 100">
                                 <circle cx="50" cy="50" r="46" fill="none" stroke="#222" stroke-width="2"></circle>
                                 <circle id="timer-svg-ring" class="progress-ring__circle neon-glow" cx="50" cy="50" r="46" fill="none" stroke="url(#goldGradient)" stroke-width="3" stroke-dasharray="289.02" stroke-dashoffset="0" stroke-linecap="round"></circle>
@@ -314,102 +327,102 @@
                                     </linearGradient>
                                 </defs>
                             </svg>
-                            <div class="text-4xl lg:text-5xl xl:text-6xl font-extralight text-white tabular-nums tracking-wider z-40 drop-shadow-md" id="timer-display">00:00:00</div>
+                            <div class="text-4xl lg:text-6xl font-extralight text-white tabular-nums tracking-wider z-40 drop-shadow-md truncate px-2" id="timer-display">00:00:00</div>
                         </div>
                     </div>
 
-                    <div class="flex gap-2 lg:gap-4 w-full mt-auto pt-8">
-                        <button id="btn-timer-reset" onclick="App.Timer.reset()" class="w-1/3 py-4 lg:py-5 rounded-xl lg:rounded-2xl bg-button-dark border border-white/5 text-gray-400 font-bold text-base lg:text-lg hidden active:scale-95 hover:text-white transition">Zerar</button>
-                        <button id="btn-timer-start" onclick="App.Timer.toggle()" class="flex-1 py-4 lg:py-5 rounded-xl lg:rounded-2xl bg-gold-metallic text-black font-bold text-lg lg:text-xl shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] transition active:scale-95">Iniciar Timer</button>
+                    <div class="flex gap-2 lg:gap-4 w-full mt-auto pt-4 lg:pt-8 min-w-0">
+                        <button id="btn-timer-reset" onclick="App.Timer.reset()" class="w-1/3 py-3 lg:py-5 rounded-xl lg:rounded-2xl bg-button-dark border border-white/5 text-gray-400 font-bold text-sm lg:text-lg hidden active:scale-95 hover:text-white transition truncate">Zerar</button>
+                        <button id="btn-timer-start" onclick="App.Timer.toggle()" class="flex-1 py-3 lg:py-5 rounded-xl lg:rounded-2xl bg-gold-metallic text-black font-bold text-base lg:text-xl shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] transition active:scale-95 truncate">Iniciar Timer</button>
                     </div>
                 </div>
             </section>
 
             <!-- [BLOCO 5] CRONÔMETRO -->
-            <section id="view-cronometro" class="tab-content hidden tab-anim flex-col w-full h-full p-5 lg:p-12 items-center">
+            <section id="view-cronometro" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 items-center">
                 <div class="flex flex-col items-center w-full max-w-lg mx-auto flex-1 min-w-0">
-                    <h2 class="text-3xl lg:text-4xl font-light mb-8 lg:mb-12 self-start w-full text-left text-transparent bg-clip-text bg-gold-metallic">Cronômetro</h2>
-                    <div class="w-64 h-64 lg:w-80 lg:h-80 rounded-full border border-white/5 flex items-center justify-center relative mb-8 lg:mb-12 flex-shrink-0 bg-button-dark shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)]">
+                    <h2 class="text-2xl lg:text-4xl font-light mb-6 lg:mb-10 self-start w-full text-left text-transparent bg-clip-text bg-gold-metallic truncate">Cronômetro</h2>
+                    <div class="w-56 h-56 lg:w-80 lg:h-80 rounded-full border border-white/5 flex items-center justify-center relative mb-6 lg:mb-10 flex-shrink-0 bg-button-dark shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)]">
                         <div class="absolute inset-0 rounded-full border-4 border-gold border-t-transparent animate-spin opacity-80" style="animation-duration: 3s; display: none;" id="stopwatch-ring"></div>
-                        <div class="text-4xl lg:text-6xl font-extralight tabular-nums tracking-wider text-white drop-shadow-md" id="stopwatch-display">00:00,00</div>
+                        <div class="text-4xl lg:text-6xl font-extralight tabular-nums tracking-wider text-white drop-shadow-md truncate px-2" id="stopwatch-display">00:00,00</div>
                     </div>
-                    <div class="flex gap-4 lg:gap-6 w-full justify-center mb-8 lg:mb-10 max-w-sm">
-                        <button id="btn-lap-reset" onclick="App.Stopwatch.lapOrReset()" class="w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-button-dark border border-white/5 font-bold text-base lg:text-lg text-gray-300 hover:text-white transition shadow-lg active:scale-95">Zerar</button>
-                        <button id="btn-start-stop" onclick="App.Stopwatch.toggle()" class="w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-gold-metallic text-black font-bold text-base lg:text-lg shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] transition active:scale-95">Iniciar</button>
+                    <div class="flex gap-4 lg:gap-6 w-full justify-center mb-6 lg:mb-10 max-w-sm min-w-0">
+                        <button id="btn-lap-reset" onclick="App.Stopwatch.lapOrReset()" class="w-16 h-16 lg:w-24 lg:h-24 rounded-full bg-button-dark border border-white/5 font-bold text-sm lg:text-lg text-gray-300 hover:text-white transition shadow-lg active:scale-95 flex-shrink-0">Zerar</button>
+                        <button id="btn-start-stop" onclick="App.Stopwatch.toggle()" class="w-16 h-16 lg:w-24 lg:h-24 rounded-full bg-gold-metallic text-black font-bold text-sm lg:text-lg shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] transition active:scale-95 flex-shrink-0">Iniciar</button>
                     </div>
-                    <div class="w-full flex-1 overflow-y-auto hide-scrollbar max-w-lg pb-24 lg:pb-0 min-w-0"><div id="stopwatch-laps" class="w-full flex flex-col gap-2 lg:gap-3"></div></div>
+                    <div class="w-full flex-1 overflow-y-auto hide-scrollbar max-w-lg pb-24 lg:pb-0 min-w-0"><div id="stopwatch-laps" class="w-full flex flex-col gap-2 min-w-0"></div></div>
                 </div>
             </section>
 
             <!-- [BLOCO 6] CALCULADORA PREMIUM -->
-            <section id="view-calculadora" class="tab-content hidden tab-anim flex-col w-full h-full p-5 lg:p-12">
-                <div class="flex justify-between items-center w-full max-w-md mx-auto mb-6 lg:mb-8 flex-shrink-0">
-                    <h2 class="text-3xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic">Calculadora</h2>
-                    <button onclick="App.Calc.openHistory()" class="text-gray-400 hover:text-gold text-xl lg:text-2xl transition active:scale-95 p-2 bg-white/5 rounded-full border border-white/5"><i class="fa-solid fa-clock-rotate-left"></i></button>
+            <section id="view-calculadora" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10">
+                <div class="flex justify-between items-center w-full max-w-md mx-auto mb-4 lg:mb-8 flex-shrink-0 min-w-0">
+                    <h2 class="text-2xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic truncate pr-2">Calculadora</h2>
+                    <button onclick="App.Calc.openHistory()" class="text-gray-400 hover:text-gold text-lg lg:text-2xl transition active:scale-95 p-2 bg-white/5 rounded-full border border-white/5 flex-shrink-0"><i class="fa-solid fa-clock-rotate-left"></i></button>
                 </div>
                 
-                <div class="w-full flex-1 min-h-0 flex flex-col max-w-md mx-auto pb-24 lg:pb-0 gap-4 lg:gap-6">
+                <div class="w-full flex-1 min-h-0 flex flex-col max-w-md mx-auto pb-24 lg:pb-0 gap-3 lg:gap-6 min-w-0">
                     
-                    <div class="w-full bg-button-dark rounded-[2rem] lg:rounded-[2.5rem] p-6 lg:p-8 flex flex-col justify-end items-end h-32 lg:h-40 shadow-[inset_0_10px_20px_rgba(0,0,0,0.8)] border border-white/5 flex-shrink-0 relative overflow-hidden">
-                        <div id="calc-prev" class="text-gold text-xs lg:text-sm h-5 lg:h-6 font-medium tracking-widest mb-1 lg:mb-2 opacity-80"></div>
+                    <div class="w-full bg-button-dark rounded-[1.5rem] lg:rounded-[2.5rem] p-5 lg:p-8 flex flex-col justify-end items-end h-28 lg:h-40 shadow-[inset_0_10px_20px_rgba(0,0,0,0.8)] border border-white/5 flex-shrink-0 relative overflow-hidden min-w-0">
+                        <div id="calc-prev" class="text-gold text-[10px] lg:text-sm h-4 lg:h-6 font-medium tracking-widest mb-1 opacity-80 truncate w-full text-right"></div>
                         <div class="flex justify-between w-full items-end gap-2 min-w-0">
-                            <button onclick="App.Calc.input('backspace')" class="text-gray-500 hover:text-red-400 text-2xl lg:text-3xl pb-1 lg:pb-2 active:scale-95 transition flex-shrink-0"><i class="fa-solid fa-delete-left"></i></button>
-                            <div id="calc-display" class="text-6xl font-extralight text-white tracking-wider w-full text-right transition-all duration-200 ease-out truncate">0</div>
+                            <button onclick="App.Calc.input('backspace')" class="text-gray-500 hover:text-red-400 text-xl lg:text-3xl pb-1 active:scale-95 transition flex-shrink-0"><i class="fa-solid fa-delete-left"></i></button>
+                            <div id="calc-display" class="text-5xl lg:text-6xl font-extralight text-white tracking-wider w-full text-right transition-all duration-200 ease-out truncate min-w-0">0</div>
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-4 gap-3 lg:gap-4 w-full flex-1 min-h-0">
-                        <button onclick="App.Calc.input('clear')" class="bg-gradient-to-b from-red-900/40 to-red-950/60 border border-red-500/20 text-red-400 rounded-2xl lg:rounded-3xl font-bold text-2xl lg:text-3xl active:scale-95 transition hover:brightness-110 shadow-lg">C</button>
-                        <button onclick="App.Calc.input('+/-')" class="bg-button-dark border border-white/5 text-gray-300 rounded-2xl lg:rounded-3xl font-medium text-xl lg:text-2xl active:scale-95 transition hover:brightness-125 shadow-lg">+/-</button>
-                        <button onclick="App.Calc.input('%')" class="bg-button-dark border border-white/5 text-gray-300 rounded-2xl lg:rounded-3xl font-medium text-xl lg:text-2xl active:scale-95 transition hover:brightness-125 shadow-lg">%</button>
-                        <button onclick="App.Calc.input('/')" class="bg-gold-metallic text-black rounded-2xl lg:rounded-3xl font-bold text-2xl lg:text-3xl active:scale-95 transition shadow-[0_4px_15px_rgba(212,175,55,0.3)] hover:brightness-110">÷</button>
+                    <div class="grid grid-cols-4 gap-2 lg:gap-4 w-full flex-1 min-h-0 min-w-0">
+                        <button onclick="App.Calc.input('clear')" class="bg-gradient-to-b from-red-900/40 to-red-950/60 border border-red-500/20 text-red-400 rounded-xl lg:rounded-3xl font-bold text-xl lg:text-3xl active:scale-95 transition hover:brightness-110 shadow-lg min-w-0">C</button>
+                        <button onclick="App.Calc.input('+/-')" class="bg-button-dark border border-white/5 text-gray-300 rounded-xl lg:rounded-3xl font-medium text-lg lg:text-2xl active:scale-95 transition hover:brightness-125 shadow-lg min-w-0">+/-</button>
+                        <button onclick="App.Calc.input('%')" class="bg-button-dark border border-white/5 text-gray-300 rounded-xl lg:rounded-3xl font-medium text-lg lg:text-2xl active:scale-95 transition hover:brightness-125 shadow-lg min-w-0">%</button>
+                        <button onclick="App.Calc.input('/')" class="bg-gold-metallic text-black rounded-xl lg:rounded-3xl font-bold text-xl lg:text-3xl active:scale-95 transition shadow-[0_4px_15px_rgba(212,175,55,0.3)] hover:brightness-110 min-w-0">÷</button>
                         
-                        <button onclick="App.Calc.input('7')" class="bg-[#181818] border border-white/5 text-white rounded-2xl lg:rounded-3xl text-2xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm">7</button>
-                        <button onclick="App.Calc.input('8')" class="bg-[#181818] border border-white/5 text-white rounded-2xl lg:rounded-3xl text-2xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm">8</button>
-                        <button onclick="App.Calc.input('9')" class="bg-[#181818] border border-white/5 text-white rounded-2xl lg:rounded-3xl text-2xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm">9</button>
-                        <button onclick="App.Calc.input('*')" class="bg-gold-metallic text-black rounded-2xl lg:rounded-3xl font-bold text-2xl lg:text-3xl active:scale-95 transition shadow-[0_4px_15px_rgba(212,175,55,0.3)] hover:brightness-110">×</button>
+                        <button onclick="App.Calc.input('7')" class="bg-[#181818] border border-white/5 text-white rounded-xl lg:rounded-3xl text-xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm min-w-0">7</button>
+                        <button onclick="App.Calc.input('8')" class="bg-[#181818] border border-white/5 text-white rounded-xl lg:rounded-3xl text-xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm min-w-0">8</button>
+                        <button onclick="App.Calc.input('9')" class="bg-[#181818] border border-white/5 text-white rounded-xl lg:rounded-3xl text-xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm min-w-0">9</button>
+                        <button onclick="App.Calc.input('*')" class="bg-gold-metallic text-black rounded-xl lg:rounded-3xl font-bold text-xl lg:text-3xl active:scale-95 transition shadow-[0_4px_15px_rgba(212,175,55,0.3)] hover:brightness-110 min-w-0">×</button>
                         
-                        <button onclick="App.Calc.input('4')" class="bg-[#181818] border border-white/5 text-white rounded-2xl lg:rounded-3xl text-2xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm">4</button>
-                        <button onclick="App.Calc.input('5')" class="bg-[#181818] border border-white/5 text-white rounded-2xl lg:rounded-3xl text-2xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm">5</button>
-                        <button onclick="App.Calc.input('6')" class="bg-[#181818] border border-white/5 text-white rounded-2xl lg:rounded-3xl text-2xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm">6</button>
-                        <button onclick="App.Calc.input('-')" class="bg-gold-metallic text-black rounded-2xl lg:rounded-3xl font-bold text-3xl lg:text-4xl active:scale-95 transition shadow-[0_4px_15px_rgba(212,175,55,0.3)] hover:brightness-110">−</button>
+                        <button onclick="App.Calc.input('4')" class="bg-[#181818] border border-white/5 text-white rounded-xl lg:rounded-3xl text-xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm min-w-0">4</button>
+                        <button onclick="App.Calc.input('5')" class="bg-[#181818] border border-white/5 text-white rounded-xl lg:rounded-3xl text-xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm min-w-0">5</button>
+                        <button onclick="App.Calc.input('6')" class="bg-[#181818] border border-white/5 text-white rounded-xl lg:rounded-3xl text-xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm min-w-0">6</button>
+                        <button onclick="App.Calc.input('-')" class="bg-gold-metallic text-black rounded-xl lg:rounded-3xl font-bold text-2xl lg:text-4xl active:scale-95 transition shadow-[0_4px_15px_rgba(212,175,55,0.3)] hover:brightness-110 min-w-0">−</button>
                         
-                        <button onclick="App.Calc.input('1')" class="bg-[#181818] border border-white/5 text-white rounded-2xl lg:rounded-3xl text-2xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm">1</button>
-                        <button onclick="App.Calc.input('2')" class="bg-[#181818] border border-white/5 text-white rounded-2xl lg:rounded-3xl text-2xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm">2</button>
-                        <button onclick="App.Calc.input('3')" class="bg-[#181818] border border-white/5 text-white rounded-2xl lg:rounded-3xl text-2xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm">3</button>
-                        <button onclick="App.Calc.input('+')" class="bg-gold-metallic text-black rounded-2xl lg:rounded-3xl font-bold text-3xl lg:text-4xl active:scale-95 transition shadow-[0_4px_15px_rgba(212,175,55,0.3)] hover:brightness-110">+</button>
+                        <button onclick="App.Calc.input('1')" class="bg-[#181818] border border-white/5 text-white rounded-xl lg:rounded-3xl text-xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm min-w-0">1</button>
+                        <button onclick="App.Calc.input('2')" class="bg-[#181818] border border-white/5 text-white rounded-xl lg:rounded-3xl text-xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm min-w-0">2</button>
+                        <button onclick="App.Calc.input('3')" class="bg-[#181818] border border-white/5 text-white rounded-xl lg:rounded-3xl text-xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm min-w-0">3</button>
+                        <button onclick="App.Calc.input('+')" class="bg-gold-metallic text-black rounded-xl lg:rounded-3xl font-bold text-2xl lg:text-4xl active:scale-95 transition shadow-[0_4px_15px_rgba(212,175,55,0.3)] hover:brightness-110 min-w-0">+</button>
                         
-                        <button onclick="App.Calc.input('0')" class="col-span-2 bg-[#181818] border border-white/5 text-white rounded-2xl lg:rounded-3xl text-2xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm">0</button>
-                        <button onclick="App.Calc.input('.')" class="bg-[#181818] border border-white/5 text-white rounded-2xl lg:rounded-3xl text-2xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm">.</button>
-                        <button onclick="App.Calc.input('=')" class="bg-gold-metallic text-black rounded-2xl lg:rounded-3xl font-bold text-3xl lg:text-4xl active:scale-95 transition shadow-[0_10px_30px_rgba(212,175,55,0.5)] hover:scale-105 hover:brightness-110">=</button>
+                        <button onclick="App.Calc.input('0')" class="col-span-2 bg-[#181818] border border-white/5 text-white rounded-xl lg:rounded-3xl text-xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm min-w-0">0</button>
+                        <button onclick="App.Calc.input('.')" class="bg-[#181818] border border-white/5 text-white rounded-xl lg:rounded-3xl text-xl lg:text-3xl font-light active:scale-95 transition hover:bg-[#222] shadow-sm min-w-0">.</button>
+                        <button onclick="App.Calc.input('=')" class="bg-gold-metallic text-black rounded-xl lg:rounded-3xl font-bold text-2xl lg:text-4xl active:scale-95 transition shadow-[0_10px_30px_rgba(212,175,55,0.5)] hover:scale-105 hover:brightness-110 min-w-0">=</button>
                     </div>
                 </div>
             </section>
 
-            <!-- [BLOCO 7] TAREFAS (Alinhamento Mobile Refinado) -->
-            <section id="view-tarefas" class="tab-content hidden tab-anim flex-col w-full h-full p-5 lg:p-12 overflow-y-auto hide-scrollbar">
+            <!-- [BLOCO 7] TAREFAS -->
+            <section id="view-tarefas" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar">
                 <div class="flex flex-col w-full max-w-3xl mx-auto flex-1 min-w-0">
-                    <div class="flex justify-between items-center mb-6 lg:mb-8 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">
-                        <h2 class="text-3xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic">Tarefas Diárias</h2>
-                        <button onclick="App.Tasks.clearCompleted()" class="text-gray-400 hover:text-gold text-lg lg:text-xl transition bg-white/5 border border-white/10 p-2 lg:p-3 rounded-xl lg:rounded-2xl shadow-lg active:scale-95"><i class="fa-solid fa-broom"></i></button>
+                    <div class="flex justify-between items-center mb-5 lg:mb-8 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-3 lg:pb-4 z-10 border-b border-transparent lg:border-white/5 min-w-0">
+                        <h2 class="text-2xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic truncate pr-2">Tarefas Diárias</h2>
+                        <button onclick="App.Tasks.clearCompleted()" class="text-gray-400 hover:text-gold text-base lg:text-xl transition bg-white/5 border border-white/10 p-2 lg:p-3 rounded-lg lg:rounded-2xl shadow-lg active:scale-95 flex-shrink-0"><i class="fa-solid fa-broom"></i></button>
                     </div>
-                    <div class="flex gap-2 lg:gap-4 mb-6 lg:mb-8 flex-shrink-0 min-w-0">
-                        <input type="text" id="task-input" placeholder="Nova tarefa..." class="flex-1 input-premium rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-white uppercase font-light text-base lg:text-lg tracking-wide min-w-0" oninput="this.value = this.value.toUpperCase()">
-                        <button onclick="App.Tasks.add()" class="bg-gold-metallic text-black px-5 lg:px-6 rounded-xl lg:rounded-2xl font-bold shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:scale-105 transition active:scale-95 flex-shrink-0"><i class="fa-solid fa-plus text-lg lg:text-2xl"></i></button>
+                    <div class="flex gap-2 lg:gap-4 mb-5 lg:mb-8 flex-shrink-0 min-w-0">
+                        <input type="text" id="task-input" placeholder="Nova tarefa..." class="flex-1 input-premium rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-white uppercase font-light text-sm lg:text-lg tracking-wide min-w-0" oninput="this.value = this.value.toUpperCase()">
+                        <button onclick="App.Tasks.add()" class="bg-gold-metallic text-black px-4 lg:px-6 rounded-xl lg:rounded-2xl font-bold shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:scale-105 transition active:scale-95 flex-shrink-0"><i class="fa-solid fa-plus text-base lg:text-2xl"></i></button>
                     </div>
-                    <div id="task-list" class="space-y-3 lg:space-y-4 flex-1 pb-24 lg:pb-10 min-w-0"></div>
+                    <div id="task-list" class="space-y-2 lg:space-y-4 flex-1 pb-24 lg:pb-10 min-w-0"></div>
                 </div>
             </section>
 
-            <!-- [BLOCO 8] HÁBITOS (Alinhamento Mobile Refinado) -->
-            <section id="view-habitos" class="tab-content hidden tab-anim flex-col w-full h-full p-5 lg:p-12 overflow-y-auto hide-scrollbar">
+            <!-- [BLOCO 8] HÁBITOS -->
+            <section id="view-habitos" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar">
                 <div class="flex flex-col w-full max-w-3xl mx-auto flex-1 min-w-0">
-                    <h2 class="text-3xl lg:text-4xl font-light mb-6 lg:mb-8 text-transparent bg-clip-text bg-gold-metallic w-full text-left sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">Rastreador de Hábitos</h2>
-                    <div class="flex gap-2 lg:gap-4 mb-6 lg:mb-8 flex-shrink-0 min-w-0">
-                        <input type="text" id="habit-input" placeholder="Novo hábito..." class="flex-1 input-premium rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-white uppercase font-light text-base lg:text-lg tracking-wide min-w-0" oninput="this.value = this.value.toUpperCase()">
-                        <button onclick="App.Habits.add()" class="bg-gold-metallic text-black px-5 lg:px-6 rounded-xl lg:rounded-2xl font-bold shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:scale-105 transition active:scale-95 flex-shrink-0"><i class="fa-solid fa-plus text-lg lg:text-2xl"></i></button>
+                    <h2 class="text-2xl lg:text-4xl font-light mb-5 lg:mb-8 text-transparent bg-clip-text bg-gold-metallic w-full text-left sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-3 lg:pb-4 z-10 border-b border-transparent lg:border-white/5 truncate">Rastreador de Hábitos</h2>
+                    <div class="flex gap-2 lg:gap-4 mb-5 lg:mb-8 flex-shrink-0 min-w-0">
+                        <input type="text" id="habit-input" placeholder="Novo hábito..." class="flex-1 input-premium rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-white uppercase font-light text-sm lg:text-lg tracking-wide min-w-0" oninput="this.value = this.value.toUpperCase()">
+                        <button onclick="App.Habits.add()" class="bg-gold-metallic text-black px-4 lg:px-6 rounded-xl lg:rounded-2xl font-bold shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:scale-105 transition active:scale-95 flex-shrink-0"><i class="fa-solid fa-plus text-base lg:text-2xl"></i></button>
                     </div>
-                    <div id="habit-list" class="space-y-3 lg:space-y-4 flex-1 pb-24 lg:pb-10 min-w-0"></div>
+                    <div id="habit-list" class="space-y-2 lg:space-y-4 flex-1 pb-24 lg:pb-10 min-w-0"></div>
                 </div>
             </section>
 
@@ -417,8 +430,8 @@
     </main>
 
     <!-- BARRA MOBILE (Glassmorphism) -->
-    <nav class="w-full bg-black/60 backdrop-blur-xl border-t border-white/10 pb-safe pt-2 fixed bottom-0 z-40 lg:hidden shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
-        <ul class="flex justify-around items-center h-16 pb-2" id="nav-list"></ul>
+    <nav class="w-full bg-black/60 backdrop-blur-xl border-t border-white/10 pb-safe pt-1 fixed bottom-0 z-40 lg:hidden shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+        <ul class="flex justify-around items-center h-14 pb-1" id="nav-list"></ul>
     </nav>
 
     <!-- ========================================== -->
@@ -426,61 +439,61 @@
     <!-- ========================================== -->
     
     <!-- Configurações Premium -->
-    <div id="settings-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[60] opacity-0 transition-opacity duration-300 backdrop-blur-md">
-        <div id="settings-content" class="bg-glass-dark p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] border border-white/10 w-11/12 max-w-md transform scale-95 transition-transform duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.9)]">
-            <h3 class="text-2xl lg:text-3xl font-light text-transparent bg-clip-text bg-gold-metallic mb-6 lg:mb-8">Definições</h3>
-            <div class="space-y-3 lg:space-y-4 mb-6 lg:mb-8">
-                <div class="flex justify-between items-center p-4 lg:p-5 bg-black/30 rounded-xl lg:rounded-2xl border border-white/5 shadow-inner">
-                    <span class="text-white font-light text-base lg:text-lg">Sons de Alerta</span>
-                    <input type="checkbox" id="set-sound" onchange="App.Settings.toggle('sound')" class="accent-gold w-5 h-5 lg:w-6 lg:h-6 cursor-pointer">
+    <div id="settings-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[60] opacity-0 transition-opacity duration-300 backdrop-blur-md px-4">
+        <div id="settings-content" class="bg-glass-dark p-6 lg:p-8 rounded-[1.5rem] lg:rounded-[2.5rem] border border-white/10 w-full max-w-md transform scale-95 transition-transform duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.9)] min-w-0">
+            <h3 class="text-xl lg:text-3xl font-light text-transparent bg-clip-text bg-gold-metallic mb-5 lg:mb-8 truncate">Definições</h3>
+            <div class="space-y-3 lg:space-y-4 mb-5 lg:mb-8 min-w-0">
+                <div class="flex justify-between items-center p-3 lg:p-5 bg-black/30 rounded-xl lg:rounded-2xl border border-white/5 shadow-inner min-w-0">
+                    <span class="text-white font-light text-sm lg:text-lg truncate">Sons de Alerta</span>
+                    <input type="checkbox" id="set-sound" onchange="App.Settings.toggle('sound')" class="accent-gold w-4 h-4 lg:w-6 lg:h-6 cursor-pointer flex-shrink-0">
                 </div>
-                <div class="flex justify-between items-center p-4 lg:p-5 bg-black/30 rounded-xl lg:rounded-2xl border border-white/5 shadow-inner">
-                    <span class="text-white font-light text-base lg:text-lg">Toque</span>
-                    <select id="set-tone" onchange="App.Settings.changeTone(this.value)" class="bg-[#1a1a1a] text-gold font-medium border border-white/10 outline-none rounded-lg lg:rounded-xl p-1.5 lg:p-2 cursor-pointer focus:border-gold text-sm lg:text-base">
+                <div class="flex justify-between items-center p-3 lg:p-5 bg-black/30 rounded-xl lg:rounded-2xl border border-white/5 shadow-inner min-w-0">
+                    <span class="text-white font-light text-sm lg:text-lg truncate">Toque</span>
+                    <select id="set-tone" onchange="App.Settings.changeTone(this.value)" class="bg-[#1a1a1a] text-gold font-medium border border-white/10 outline-none rounded-lg p-1.5 lg:p-2 cursor-pointer focus:border-gold text-xs lg:text-base flex-shrink-0">
                         <option value="classic">Clássico</option>
                         <option value="zen">Zen Chime</option>
                         <option value="digital">Digital Pulse</option>
                     </select>
                 </div>
-                <div class="flex justify-between items-center p-4 lg:p-5 bg-black/30 rounded-xl lg:rounded-2xl border border-white/5 shadow-inner">
-                    <span class="text-white font-light text-base lg:text-lg">Vibração (Haptic)</span>
-                    <input type="checkbox" id="set-haptic" onchange="App.Settings.toggle('haptic')" class="accent-gold w-5 h-5 lg:w-6 lg:h-6 cursor-pointer">
+                <div class="flex justify-between items-center p-3 lg:p-5 bg-black/30 rounded-xl lg:rounded-2xl border border-white/5 shadow-inner min-w-0">
+                    <span class="text-white font-light text-sm lg:text-lg truncate">Vibração (Haptic)</span>
+                    <input type="checkbox" id="set-haptic" onchange="App.Settings.toggle('haptic')" class="accent-gold w-4 h-4 lg:w-6 lg:h-6 cursor-pointer flex-shrink-0">
                 </div>
-                <hr class="border-white/5 my-4 lg:my-6">
-                <button onclick="App.Settings.exportBackup()" class="w-full py-3 lg:py-4 bg-button-dark border border-gold/30 text-gold font-bold tracking-wide rounded-xl lg:rounded-2xl hover:bg-gold/10 hover:border-gold transition shadow-lg active:scale-95 text-sm lg:text-base"><i class="fa-solid fa-download mr-2"></i> Exportar Backup</button>
-                <button onclick="document.getElementById('import-file').click()" class="w-full py-3 lg:py-4 bg-button-dark border border-white/5 text-gray-300 font-bold tracking-wide rounded-xl lg:rounded-2xl hover:text-white transition shadow-lg active:scale-95 text-sm lg:text-base"><i class="fa-solid fa-upload mr-2"></i> Restaurar Backup</button>
+                <hr class="border-white/5 my-4">
+                <button onclick="App.Settings.exportBackup()" class="w-full py-3 lg:py-4 bg-button-dark border border-gold/30 text-gold font-bold tracking-wide rounded-xl lg:rounded-2xl hover:bg-gold/10 hover:border-gold transition shadow-lg active:scale-95 text-xs lg:text-base truncate"><i class="fa-solid fa-download mr-2"></i> Exportar Backup</button>
+                <button onclick="document.getElementById('import-file').click()" class="w-full py-3 lg:py-4 bg-button-dark border border-white/5 text-gray-300 font-bold tracking-wide rounded-xl lg:rounded-2xl hover:text-white transition shadow-lg active:scale-95 text-xs lg:text-base truncate"><i class="fa-solid fa-upload mr-2"></i> Restaurar Backup</button>
                 <input type="file" id="import-file" class="hidden" accept=".json" onchange="App.Settings.importBackup(event)">
             </div>
-            <button onclick="App.Settings.closeModal()" class="w-full py-4 lg:py-5 bg-white/5 border border-white/10 text-white font-bold tracking-widest uppercase rounded-xl lg:rounded-2xl hover:bg-white/10 transition active:scale-95">Fechar</button>
+            <button onclick="App.Settings.closeModal()" class="w-full py-3 lg:py-5 bg-white/5 border border-white/10 text-white font-bold tracking-widest uppercase rounded-xl lg:rounded-2xl hover:bg-white/10 transition active:scale-95 text-sm lg:text-base">Fechar</button>
         </div>
     </div>
 
     <!-- Adicionar/Editar Alarme -->
     <div id="alarm-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[60] opacity-0 transition-opacity duration-300 backdrop-blur-md">
-        <div id="alarm-content" class="bg-glass-dark lg:rounded-[2.5rem] lg:border lg:border-white/10 rounded-t-[2.5rem] w-full lg:max-w-md h-[95vh] lg:h-auto flex flex-col transform translate-y-full lg:translate-y-0 lg:scale-95 transition-all duration-300 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.9)] mt-auto lg:mt-0">
-            <div class="flex justify-between items-center p-5 lg:p-6 bg-black/20 z-40 border-b border-white/5">
-                <button onclick="App.Alarms.closeModal()" class="text-gray-400 p-2 text-xl lg:text-2xl hover:text-white transition bg-white/5 rounded-full w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-                <div class="text-center">
-                    <h3 class="text-lg lg:text-xl font-medium text-white tracking-wide" id="alarm-modal-title">Novo alarme</h3>
-                    <p id="alarm-time-left" class="text-gold text-[10px] lg:text-xs mt-1 uppercase font-bold tracking-widest">Calculando...</p>
+        <div id="alarm-content" class="bg-glass-dark lg:rounded-[2.5rem] lg:border lg:border-white/10 rounded-t-[1.5rem] w-full lg:max-w-md h-[95vh] lg:h-auto flex flex-col transform translate-y-full lg:translate-y-0 lg:scale-95 transition-all duration-300 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.9)] mt-auto lg:mt-0 min-w-0">
+            <div class="flex justify-between items-center p-4 lg:p-6 bg-black/20 z-40 border-b border-white/5 min-w-0">
+                <button onclick="App.Alarms.closeModal()" class="text-gray-400 p-2 text-lg lg:text-2xl hover:text-white transition bg-white/5 rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-xmark"></i></button>
+                <div class="text-center min-w-0 px-2">
+                    <h3 class="text-base lg:text-xl font-medium text-white tracking-wide truncate" id="alarm-modal-title">Novo alarme</h3>
+                    <p id="alarm-time-left" class="text-gold text-[9px] lg:text-xs mt-0.5 uppercase font-bold tracking-widest truncate">Calculando...</p>
                 </div>
-                <button onclick="App.Alarms.save()" class="text-black bg-gold-metallic p-2 text-lg lg:text-xl hover:scale-105 transition w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center shadow-lg"><i class="fa-solid fa-check"></i></button>
+                <button onclick="App.Alarms.save()" class="text-black bg-gold-metallic p-2 text-base lg:text-xl hover:scale-105 transition w-10 h-10 flex items-center justify-center shadow-lg rounded-full flex-shrink-0"><i class="fa-solid fa-check"></i></button>
             </div>
-            <div class="p-6 lg:p-8 flex-1 overflow-y-auto hide-scrollbar flex flex-col gap-6 lg:gap-8 min-w-0">
-                <div class="relative w-full h-48 lg:h-56 flex justify-center bg-[#0a0a0a] rounded-2xl lg:rounded-3xl overflow-hidden text-5xl font-light shadow-[inset_0_10px_20px_rgba(0,0,0,0.8)] border border-white/5">
+            <div class="p-5 lg:p-8 flex-1 overflow-y-auto hide-scrollbar flex flex-col gap-5 lg:gap-8 min-w-0">
+                <div class="relative w-full h-48 flex justify-center bg-[#0a0a0a] rounded-2xl overflow-hidden text-4xl lg:text-5xl font-light shadow-[inset_0_10px_20px_rgba(0,0,0,0.8)] border border-white/5 min-w-0">
                     <div class="absolute top-1/2 left-0 w-full h-[60px] -translate-y-1/2 border-y border-gold/40 bg-white/5 backdrop-blur-sm pointer-events-none z-10"></div>
                     <div class="absolute inset-0 drum-overlay z-20"></div>
                     <div class="w-1/2 flex flex-col items-center relative"><div id="alarm-picker-h" class="h-full w-full overflow-y-auto picker-container hide-scrollbar relative z-0"></div></div>
                     <div class="w-1/2 flex flex-col items-center relative"><div id="alarm-picker-m" class="h-full w-full overflow-y-auto picker-container hide-scrollbar relative z-0"></div></div>
                 </div>
-                <div>
-                    <p class="text-gray-400 text-[10px] lg:text-xs uppercase mb-3 lg:mb-4 px-2 font-bold tracking-[0.2em]">Repetir</p>
-                    <div class="flex justify-between bg-black/30 p-3 lg:p-4 rounded-xl lg:rounded-2xl border border-white/5 shadow-inner" id="alarm-days"></div>
+                <div class="min-w-0">
+                    <p class="text-gray-400 text-[9px] lg:text-xs uppercase mb-2 lg:mb-4 px-2 font-bold tracking-[0.2em] truncate">Repetir</p>
+                    <div class="flex justify-between bg-black/30 p-2 lg:p-4 rounded-xl lg:rounded-2xl border border-white/5 shadow-inner min-w-0" id="alarm-days"></div>
                 </div>
-                <div class="bg-black/30 rounded-xl lg:rounded-2xl p-2 border border-white/5 shadow-inner">
-                    <div class="flex justify-between items-center p-4 lg:p-5 min-w-0">
-                        <span class="text-white font-medium text-base lg:text-lg flex-shrink-0">Nome</span>
-                        <input type="text" id="alarm-label-input" placeholder="EX: ACORDAR" class="bg-transparent text-right text-gold font-bold focus:outline-none w-2/3 placeholder-gray-600 uppercase text-base lg:text-lg tracking-wide min-w-0" oninput="this.value = this.value.toUpperCase()">
+                <div class="bg-black/30 rounded-xl lg:rounded-2xl p-1 lg:p-2 border border-white/5 shadow-inner min-w-0">
+                    <div class="flex justify-between items-center p-3 lg:p-5 min-w-0">
+                        <span class="text-white font-medium text-sm lg:text-lg flex-shrink-0">Nome</span>
+                        <input type="text" id="alarm-label-input" placeholder="EX: ACORDAR" class="bg-transparent text-right text-gold font-bold focus:outline-none w-2/3 placeholder-gray-600 uppercase text-sm lg:text-lg tracking-wide min-w-0 truncate" oninput="this.value = this.value.toUpperCase()">
                     </div>
                 </div>
             </div>
@@ -488,43 +501,43 @@
     </div>
 
     <!-- Editor Genérico -->
-    <div id="edit-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[60] opacity-0 transition-opacity duration-300 backdrop-blur-md">
-        <div id="edit-content" class="bg-glass-dark p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] border border-white/10 w-11/12 max-w-sm transform scale-95 transition-transform duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.9)]">
-            <h3 class="text-xl lg:text-2xl font-light text-transparent bg-clip-text bg-gold-metallic mb-5 lg:mb-6" id="edit-title">Editar</h3>
-            <div class="space-y-4 mb-6 lg:mb-8">
-                <input type="text" id="edit-input" class="w-full input-premium rounded-xl lg:rounded-2xl px-5 lg:px-6 py-4 lg:py-5 text-white uppercase transition text-base lg:text-lg tracking-wide min-w-0" oninput="this.value = this.value.toUpperCase()">
+    <div id="edit-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[60] opacity-0 transition-opacity duration-300 backdrop-blur-md px-4">
+        <div id="edit-content" class="bg-glass-dark p-6 lg:p-8 rounded-[1.5rem] lg:rounded-[2.5rem] border border-white/10 w-full max-w-sm transform scale-95 transition-transform duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.9)] min-w-0">
+            <h3 class="text-xl lg:text-2xl font-light text-transparent bg-clip-text bg-gold-metallic mb-4 lg:mb-6 truncate" id="edit-title">Editar</h3>
+            <div class="space-y-4 mb-5 lg:mb-8 min-w-0">
+                <input type="text" id="edit-input" class="w-full input-premium rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-5 text-white uppercase transition text-sm lg:text-lg tracking-wide min-w-0" oninput="this.value = this.value.toUpperCase()">
             </div>
-            <div class="flex gap-3 lg:gap-4">
-                <button onclick="App.System.closeEdit()" class="flex-1 py-3 lg:py-4 bg-button-dark border border-white/5 text-gray-300 font-bold rounded-xl lg:rounded-2xl hover:text-white transition active:scale-95 shadow-lg text-sm lg:text-base">Cancelar</button>
-                <button onclick="App.System.saveEdit()" class="flex-1 py-3 lg:py-4 bg-gold-metallic text-black font-bold rounded-xl lg:rounded-2xl shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] transition active:scale-95 text-sm lg:text-base">Salvar</button>
+            <div class="flex gap-2 lg:gap-4 min-w-0">
+                <button onclick="App.System.closeEdit()" class="flex-1 py-3 lg:py-4 bg-button-dark border border-white/5 text-gray-300 font-bold rounded-xl lg:rounded-2xl hover:text-white transition active:scale-95 shadow-lg text-xs lg:text-base truncate">Cancelar</button>
+                <button onclick="App.System.saveEdit()" class="flex-1 py-3 lg:py-4 bg-gold-metallic text-black font-bold rounded-xl lg:rounded-2xl shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] transition active:scale-95 text-xs lg:text-base truncate">Salvar</button>
             </div>
         </div>
     </div>
 
     <!-- Alerta de Disparo -->
-    <div id="alert-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[70] opacity-0 transition-opacity duration-300 backdrop-blur-xl">
-        <div id="alert-content" class="bg-glass-dark p-8 lg:p-12 rounded-[2.5rem] lg:rounded-[3rem] border border-gold/40 w-11/12 max-w-md text-center transform scale-95 transition-transform duration-300 shadow-[0_0_80px_rgba(212,175,55,0.3)] relative overflow-hidden">
+    <div id="alert-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[70] opacity-0 transition-opacity duration-300 backdrop-blur-xl px-4">
+        <div id="alert-content" class="bg-glass-dark p-6 lg:p-12 rounded-[2rem] lg:rounded-[3rem] border border-gold/40 w-full max-w-md text-center transform scale-95 transition-transform duration-300 shadow-[0_0_80px_rgba(212,175,55,0.3)] relative overflow-hidden min-w-0">
             <div class="absolute inset-0 bg-gold/5 animate-pulse"></div>
-            <i class="fa-solid fa-bell text-6xl lg:text-7xl text-gold mb-6 lg:mb-8 animate-bounce relative z-10 drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]"></i>
-            <h3 class="text-3xl lg:text-4xl font-light mb-3 lg:mb-4 text-white relative z-10" id="alert-title">Aviso</h3>
-            <p id="alert-msg" class="text-gold text-base lg:text-lg mb-8 lg:mb-10 font-bold tracking-[0.2em] uppercase relative z-10 break-words"></p>
-            <div class="flex flex-col gap-3 lg:gap-4 relative z-10">
-                <button onclick="App.Alarms.snooze()" id="btn-snooze" class="w-full py-3 lg:py-4 bg-black/50 border border-white/10 text-white font-bold rounded-xl lg:rounded-2xl active:scale-95 transition hover:bg-white/10 hidden shadow-lg tracking-wide text-sm lg:text-base">Soneca (10 min)</button>
-                <button onclick="App.System.closeAlert()" class="w-full py-4 lg:py-5 bg-gold-metallic text-black font-bold text-lg lg:text-xl rounded-xl lg:rounded-2xl active:scale-95 transition shadow-[0_0_30px_rgba(212,175,55,0.5)] hover:scale-105 tracking-widest uppercase">Desligar</button>
+            <i class="fa-solid fa-bell text-5xl lg:text-7xl text-gold mb-5 lg:mb-8 animate-bounce relative z-10 drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]"></i>
+            <h3 class="text-2xl lg:text-4xl font-light mb-2 lg:mb-4 text-white relative z-10 truncate" id="alert-title">Aviso</h3>
+            <p id="alert-msg" class="text-gold text-sm lg:text-lg mb-6 lg:mb-10 font-bold tracking-[0.2em] uppercase relative z-10 break-words line-clamp-3"></p>
+            <div class="flex flex-col gap-2 lg:gap-4 relative z-10 min-w-0">
+                <button onclick="App.Alarms.snooze()" id="btn-snooze" class="w-full py-3 lg:py-4 bg-black/50 border border-white/10 text-white font-bold rounded-xl lg:rounded-2xl active:scale-95 transition hover:bg-white/10 hidden shadow-lg tracking-wide text-xs lg:text-base truncate">Soneca (10 min)</button>
+                <button onclick="App.System.closeAlert()" class="w-full py-3 lg:py-5 bg-gold-metallic text-black font-bold text-base lg:text-xl rounded-xl lg:rounded-2xl active:scale-95 transition shadow-[0_0_30px_rgba(212,175,55,0.5)] hover:scale-105 tracking-widest uppercase truncate">Desligar</button>
             </div>
         </div>
     </div>
 
     <!-- Histórico da Calculadora -->
     <div id="calc-history-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[60] opacity-0 transition-opacity duration-300 backdrop-blur-md">
-        <div id="calc-history-content" class="bg-glass-dark rounded-t-3xl lg:rounded-[2.5rem] border-t lg:border border-white/10 w-full lg:max-w-md h-[80vh] lg:h-[70vh] flex flex-col transform translate-y-full lg:translate-y-0 lg:scale-95 transition-all duration-300 overflow-hidden mt-auto lg:mt-0 shadow-[0_20px_50px_rgba(0,0,0,0.9)]">
-            <div class="flex justify-between items-center p-5 lg:p-6 border-b border-white/5 bg-black/20">
-                <h3 class="text-lg lg:text-xl font-medium text-gold tracking-wide">Histórico de Cálculos</h3>
-                <button onclick="App.Calc.closeHistory()" class="text-gray-400 p-2 text-xl lg:text-2xl hover:text-white transition bg-white/5 rounded-full w-9 h-9 lg:w-10 lg:h-10 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+        <div id="calc-history-content" class="bg-glass-dark rounded-t-[1.5rem] lg:rounded-[2.5rem] border-t lg:border border-white/10 w-full lg:max-w-md h-[80vh] lg:h-[70vh] flex flex-col transform translate-y-full lg:translate-y-0 lg:scale-95 transition-all duration-300 overflow-hidden mt-auto lg:mt-0 shadow-[0_20px_50px_rgba(0,0,0,0.9)] min-w-0">
+            <div class="flex justify-between items-center p-4 lg:p-6 border-b border-white/5 bg-black/20 min-w-0">
+                <h3 class="text-base lg:text-xl font-medium text-gold tracking-wide truncate">Histórico de Cálculos</h3>
+                <button onclick="App.Calc.closeHistory()" class="text-gray-400 p-2 text-xl lg:text-2xl hover:text-white transition bg-white/5 rounded-full w-9 h-9 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="flex-1 overflow-y-auto hide-scrollbar p-5 lg:p-6 space-y-3 lg:space-y-4" id="calc-history-list"></div>
-            <div class="p-5 lg:p-6 border-t border-white/5 bg-black/40">
-                <button onclick="App.Calc.clearHistory()" class="w-full py-3 lg:py-4 bg-gradient-to-r from-red-900/40 to-red-950/60 border border-red-500/20 text-red-400 font-bold rounded-xl lg:rounded-2xl active:scale-95 transition hover:brightness-125 shadow-lg tracking-wider text-sm lg:text-base">Limpar Histórico</button>
+            <div class="flex-1 overflow-y-auto hide-scrollbar p-4 lg:p-6 space-y-3 min-w-0" id="calc-history-list"></div>
+            <div class="p-4 lg:p-6 border-t border-white/5 bg-black/40 min-w-0">
+                <button onclick="App.Calc.clearHistory()" class="w-full py-3 lg:py-4 bg-gradient-to-r from-red-900/40 to-red-950/60 border border-red-500/20 text-red-400 font-bold rounded-xl lg:rounded-2xl active:scale-95 transition hover:brightness-125 shadow-lg tracking-wider text-sm lg:text-base truncate">Limpar Histórico</button>
             </div>
         </div>
     </div>
@@ -561,25 +574,25 @@
                 for (let c = 0; c < copies; c++) {
                     for (let i = 0; i <= max; i++) {
                         const v = i.toString().padStart(2, '0');
-                        // Iniciam como opacos e finos, sem transform scale
-                        html += `<div class="picker-item w-full flex items-center justify-center text-gray-600 opacity-25 font-light flex-shrink-0" data-val="${v}">${v}</div>`;
+                        // Inicia pequeno, cinzento e opaco (Sem transform scale nem bold)
+                        html += `<div class="picker-item w-full flex items-center justify-center text-gray-600 opacity-25 font-light text-xl lg:text-2xl flex-shrink-0" data-val="${v}">${v}</div>`;
                     }
                 }
                 html += '<div class="h-[88px] lg:h-[104px] w-full flex-shrink-0"></div>';
                 container.innerHTML = html;
 
-                // Lógica de Nitidez: Apenas altera a opacidade, peso e cor
+                // Lógica de Nitidez: Altera apenas o tamanho da fonte via Tailwind, a cor e a opacidade
                 const applyActive = (idx) => {
                     const prevIdx = container.dataset.activeIdx;
                     if (prevIdx && prevIdx == idx) return;
                     const items = container.querySelectorAll('.picker-item');
                     if (prevIdx !== undefined && items[prevIdx]) {
-                        items[prevIdx].classList.remove('text-gold', 'opacity-100', 'font-bold');
-                        items[prevIdx].classList.add('text-gray-600', 'opacity-25', 'font-light');
+                        items[prevIdx].classList.remove('text-gold', 'opacity-100', 'text-3xl', 'lg:text-4xl', 'font-normal');
+                        items[prevIdx].classList.add('text-gray-600', 'opacity-25', 'text-xl', 'lg:text-2xl', 'font-light');
                     }
                     if (items[idx]) {
-                        items[idx].classList.remove('text-gray-600', 'opacity-25', 'font-light');
-                        items[idx].classList.add('text-gold', 'opacity-100', 'font-bold');
+                        items[idx].classList.remove('text-gray-600', 'opacity-25', 'text-xl', 'lg:text-2xl', 'font-light');
+                        items[idx].classList.add('text-gold', 'opacity-100', 'text-3xl', 'lg:text-4xl', 'font-normal');
                         if (App.Audio.hasInteracted) App.Audio.vibrate(5);
                     }
                     container.dataset.activeIdx = idx;
@@ -742,12 +755,12 @@
                 const nav = document.getElementById('nav-list'); nav.innerHTML = '';
                 App.Router.recent.forEach(id => {
                     const c = (App.State.currentView === id) ? 'text-gold' : 'text-gray-500 hover:text-white';
-                    nav.innerHTML += `<li class="flex-1"><button onclick="App.Router.go('${id}')" class="w-full flex flex-col items-center ${c} py-2 active:scale-95 transition-all"><i class="fa-solid ${App.Router.modules[id].icon} text-2xl mb-1 drop-shadow-md"></i><span class="text-[9px] font-bold tracking-[0.1em] uppercase">${App.Router.modules[id].n}</span></button></li>`;
+                    nav.innerHTML += `<li class="flex-1"><button onclick="App.Router.go('${id}')" class="w-full flex flex-col items-center ${c} py-2 active:scale-95 transition-all"><i class="fa-solid ${App.Router.modules[id].icon} text-xl lg:text-2xl mb-1 drop-shadow-md"></i><span class="text-[8px] lg:text-[9px] font-bold tracking-[0.1em] uppercase">${App.Router.modules[id].n}</span></button></li>`;
                 });
                 const hc = (App.State.currentView === 'hub') ? 'text-gold' : 'text-gray-500 hover:text-white';
-                nav.innerHTML += `<li class="flex-1 border-l border-white/5"><button onclick="App.Router.go('hub')" class="w-full flex flex-col items-center ${hc} py-2 active:scale-95 transition-all"><i class="fa-solid fa-layer-group text-2xl mb-1 drop-shadow-md"></i><span class="text-[9px] font-bold tracking-[0.1em] uppercase">Módulos</span></button></li>`;
+                nav.innerHTML += `<li class="flex-1 border-l border-white/5"><button onclick="App.Router.go('hub')" class="w-full flex flex-col items-center ${hc} py-2 active:scale-95 transition-all"><i class="fa-solid fa-layer-group text-xl lg:text-2xl mb-1 drop-shadow-md"></i><span class="text-[8px] lg:text-[9px] font-bold tracking-[0.1em] uppercase">Módulos</span></button></li>`;
                 
-                document.getElementById('hub-grid').innerHTML = Object.keys(App.Router.modules).map(id => `<div onclick="App.Router.go('${id}')" class="bg-button-dark border border-white/5 rounded-3xl p-6 flex flex-col items-center hover:border-gold/50 cursor-pointer shadow-lg transition-all active:scale-95 group"><i class="fa-solid ${App.Router.modules[id].icon} text-4xl text-gray-500 mb-4 group-hover:text-gold group-hover:scale-110 transition-all drop-shadow-md"></i><span class="text-xs font-bold tracking-widest uppercase text-gray-400 group-hover:text-white">${App.Router.modules[id].n}</span></div>`).join('');
+                document.getElementById('hub-grid').innerHTML = Object.keys(App.Router.modules).map(id => `<div onclick="App.Router.go('${id}')" class="bg-button-dark border border-white/5 rounded-2xl lg:rounded-3xl p-4 lg:p-6 flex flex-col items-center hover:border-gold/50 cursor-pointer shadow-lg transition-all active:scale-95 group min-w-0"><i class="fa-solid ${App.Router.modules[id].icon} text-3xl lg:text-4xl text-gray-500 mb-3 lg:mb-4 group-hover:text-gold group-hover:scale-110 transition-all drop-shadow-md"></i><span class="text-[10px] lg:text-xs font-bold tracking-widest uppercase text-gray-400 group-hover:text-white truncate w-full text-center">${App.Router.modules[id].n}</span></div>`).join('');
             }
         };
 
@@ -808,9 +821,9 @@
                     else { widget.innerText = "Desativado"; }
                 }
 
-                list.innerHTML = App.Alarms.data.map(a => `<div class="bg-button-dark p-4 lg:p-6 rounded-2xl lg:rounded-3xl flex justify-between items-center border ${a.active ? 'border-gold/30 shadow-[0_4px_20px_rgba(212,175,55,0.1)]' : 'border-white/5 opacity-60'} transition-all group cursor-pointer" onclick="App.Alarms.openModal('${a.id}')"><div class="flex-1"><div class="text-4xl lg:text-5xl font-extralight mb-1 ${a.active ? 'text-white' : 'text-gray-500'} tracking-wider">${a.time}</div><div class="${a.active ? 'text-gold' : 'text-gray-600'} text-[10px] lg:text-xs font-bold uppercase truncate tracking-[0.2em]">${a.label || 'Alarme'} ${a.days.length>0 ? '• REPETE' : ''} ${a.snoozeParent ? '💤' : ''}</div></div><div class="flex items-center gap-3 lg:gap-4" onclick="event.stopPropagation()"><button onclick="App.Alarms.delete('${a.id}')" class="text-red-900/50 hover:text-red-500 p-2 lg:p-3 text-xl lg:text-2xl transition"><i class="fa-solid fa-trash"></i></button><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" onchange="App.Alarms.toggle('${a.id}')" class="sr-only peer" ${a.active ? 'checked' : ''}><div class="w-12 h-7 lg:w-14 lg:h-8 bg-black/50 border border-white/10 shadow-inner rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 lg:after:h-7 lg:after:w-7 after:transition-all peer-checked:bg-gold-metallic"></div></label></div></div>`).join('');
+                list.innerHTML = App.Alarms.data.map(a => `<div class="bg-button-dark p-4 lg:p-6 rounded-2xl lg:rounded-3xl flex justify-between items-center border ${a.active ? 'border-gold/30 shadow-[0_4px_20px_rgba(212,175,55,0.1)]' : 'border-white/5 opacity-60'} transition-all group cursor-pointer min-w-0" onclick="App.Alarms.openModal('${a.id}')"><div class="flex-1 min-w-0 pr-2"><div class="text-4xl lg:text-5xl font-extralight mb-1 ${a.active ? 'text-white' : 'text-gray-500'} tracking-wider truncate">${a.time}</div><div class="${a.active ? 'text-gold' : 'text-gray-600'} text-[9px] lg:text-xs font-bold uppercase truncate tracking-[0.2em] w-full">${a.label || 'Alarme'} ${a.days.length>0 ? '• REPETE' : ''} ${a.snoozeParent ? '💤' : ''}</div></div><div class="flex items-center gap-2 lg:gap-4 flex-shrink-0" onclick="event.stopPropagation()"><button onclick="App.Alarms.delete('${a.id}')" class="text-red-900/50 hover:text-red-500 p-2 lg:p-3 text-xl lg:text-2xl transition"><i class="fa-solid fa-trash"></i></button><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" onchange="App.Alarms.toggle('${a.id}')" class="sr-only peer" ${a.active ? 'checked' : ''}><div class="w-12 h-7 lg:w-14 lg:h-8 bg-black/50 border border-white/10 shadow-inner rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 lg:after:h-7 lg:after:w-7 after:transition-all peer-checked:bg-gold-metallic"></div></label></div></div>`).join('');
             },
-            renderDays: () => { document.getElementById('alarm-days').innerHTML = App.Alarms.weekDays.map((d, i) => `<button onclick="App.Alarms.toggleDay(${i})" class="w-8 h-8 lg:w-10 lg:h-10 rounded-full text-xs lg:text-sm font-bold transition-all ${App.Alarms.tempDays.includes(i) ? 'bg-gold-metallic text-black shadow-lg scale-110' : 'text-gray-500 hover:bg-white/10 hover:text-white'}">${d}</button>`).join(''); },
+            renderDays: () => { document.getElementById('alarm-days').innerHTML = App.Alarms.weekDays.map((d, i) => `<button onclick="App.Alarms.toggleDay(${i})" class="w-8 h-8 lg:w-10 lg:h-10 rounded-full text-[10px] lg:text-sm font-bold transition-all ${App.Alarms.tempDays.includes(i) ? 'bg-gold-metallic text-black shadow-lg scale-110' : 'text-gray-500 hover:bg-white/10 hover:text-white'} flex-shrink-0">${d}</button>`).join(''); },
             toggleDay: (i) => { if(App.Alarms.tempDays.includes(i)) App.Alarms.tempDays = App.Alarms.tempDays.filter(d => d !== i); else App.Alarms.tempDays.push(i); App.Alarms.renderDays(); App.Alarms.updateSubtitle(); },
             openModal: (id = null) => {
                 App.State.editId = id; App.Alarms.tempDays = []; let h, m, label = "";
@@ -879,18 +892,18 @@
                     if (App.Timer.totalSeconds === 0) return;
                     App.Timer.running = true; 
                     document.getElementById('timer-setup-view').classList.add('hidden'); document.getElementById('timer-countdown-view').classList.remove('hidden'); document.getElementById('timer-countdown-view').classList.add('flex'); document.getElementById('btn-timer-reset').classList.remove('hidden'); document.getElementById('timer-quick-actions').classList.add('invisible');
-                    btn.textContent = 'Pausar'; btn.className = "flex-1 py-4 lg:py-5 rounded-xl lg:rounded-2xl bg-gradient-to-b from-red-900/80 to-red-950 text-white font-bold text-lg lg:text-xl border border-red-500/30 transition active:scale-95 shadow-lg"; 
+                    btn.textContent = 'Pausar'; btn.className = "flex-1 py-3 lg:py-5 rounded-xl lg:rounded-2xl bg-gradient-to-b from-red-900/80 to-red-950 text-white font-bold text-base lg:text-xl border border-red-500/30 transition active:scale-95 shadow-lg truncate"; 
                     App.Timer.updateDisplay();
                     App.Timer.interval = setInterval(() => { if (App.Timer.totalSeconds > 0) { App.Timer.totalSeconds--; App.Timer.updateDisplay(); } else { App.Timer.reset(); App.System.showAlert("Tempo Esgotado!", "O TIMER FINALIZOU."); } }, 1000);
                 } else { 
                     App.Timer.running = false; clearInterval(App.Timer.interval); 
-                    btn.textContent = 'Retomar'; btn.className = "flex-1 py-4 lg:py-5 rounded-xl lg:rounded-2xl bg-gold-metallic text-black font-bold text-lg lg:text-xl shadow-[0_0_20px_rgba(212,175,55,0.4)] transition active:scale-95 hover:shadow-[0_0_30px_rgba(212,175,55,0.6)]"; 
+                    btn.textContent = 'Retomar'; btn.className = "flex-1 py-3 lg:py-5 rounded-xl lg:rounded-2xl bg-gold-metallic text-black font-bold text-base lg:text-xl shadow-[0_0_20px_rgba(212,175,55,0.4)] transition active:scale-95 hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] truncate"; 
                 }
             },
             reset: () => {
                 App.Timer.running = false; clearInterval(App.Timer.interval); App.Timer.totalSeconds = 0;
                 document.getElementById('timer-setup-view').classList.remove('hidden'); document.getElementById('timer-countdown-view').classList.remove('flex'); document.getElementById('timer-countdown-view').classList.add('hidden'); document.getElementById('btn-timer-reset').classList.add('hidden'); document.getElementById('timer-quick-actions').classList.remove('invisible');
-                document.getElementById('btn-timer-start').textContent = 'Iniciar Timer'; document.getElementById('btn-timer-start').className = "flex-1 py-4 lg:py-5 rounded-xl lg:rounded-2xl bg-gold-metallic text-black font-bold text-lg lg:text-xl shadow-[0_0_20px_rgba(212,175,55,0.4)] transition active:scale-95 hover:shadow-[0_0_30px_rgba(212,175,55,0.6)]"; document.getElementById('timer-svg-ring').style.strokeDashoffset = 0;
+                document.getElementById('btn-timer-start').textContent = 'Iniciar Timer'; document.getElementById('btn-timer-start').className = "flex-1 py-3 lg:py-5 rounded-xl lg:rounded-2xl bg-gold-metallic text-black font-bold text-base lg:text-xl shadow-[0_0_20px_rgba(212,175,55,0.4)] transition active:scale-95 hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] truncate"; document.getElementById('timer-svg-ring').style.strokeDashoffset = 0;
                 App.Timer.updateDisplay();
             }
         };
@@ -905,20 +918,20 @@
                 if (App.State.isDesktop) document.getElementById('widget-stopwatch-time').innerHTML = timeStr; 
             },
             toggle: () => {
-                if (!App.Stopwatch.running) { App.Stopwatch.startTime = new Date().getTime(); App.Stopwatch.interval = setInterval(App.Stopwatch.update, 10); App.Stopwatch.running = true; document.getElementById('btn-start-stop').innerHTML = "Parar"; document.getElementById('btn-start-stop').className = "w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-gradient-to-b from-red-900/80 to-red-950 text-white font-bold text-base lg:text-lg active:scale-95 transition border border-red-500/30 shadow-lg"; document.getElementById('btn-lap-reset').innerHTML = "Volta"; document.getElementById('stopwatch-ring').style.display = "block"; if (App.State.isDesktop) document.getElementById('widget-stopwatch-time').classList.add('text-gold'); } 
-                else { clearInterval(App.Stopwatch.interval); App.Stopwatch.saved = App.Stopwatch.diff; App.Stopwatch.running = false; document.getElementById('btn-start-stop').innerHTML = "Retomar"; document.getElementById('btn-start-stop').className = "w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-gold-metallic text-black font-bold text-base lg:text-lg shadow-[0_0_20px_rgba(212,175,55,0.4)] active:scale-95 transition hover:shadow-[0_0_30px_rgba(212,175,55,0.6)]"; document.getElementById('btn-lap-reset').innerHTML = "Zerar"; document.getElementById('stopwatch-ring').style.display = "none"; if (App.State.isDesktop) document.getElementById('widget-stopwatch-time').classList.remove('text-gold');}
+                if (!App.Stopwatch.running) { App.Stopwatch.startTime = new Date().getTime(); App.Stopwatch.interval = setInterval(App.Stopwatch.update, 10); App.Stopwatch.running = true; document.getElementById('btn-start-stop').innerHTML = "Parar"; document.getElementById('btn-start-stop').className = "w-16 h-16 lg:w-24 lg:h-24 rounded-full bg-gradient-to-b from-red-900/80 to-red-950 text-white font-bold text-sm lg:text-lg active:scale-95 transition border border-red-500/30 shadow-lg flex-shrink-0"; document.getElementById('btn-lap-reset').innerHTML = "Volta"; document.getElementById('stopwatch-ring').style.display = "block"; if (App.State.isDesktop) document.getElementById('widget-stopwatch-time').classList.add('text-gold'); } 
+                else { clearInterval(App.Stopwatch.interval); App.Stopwatch.saved = App.Stopwatch.diff; App.Stopwatch.running = false; document.getElementById('btn-start-stop').innerHTML = "Retomar"; document.getElementById('btn-start-stop').className = "w-16 h-16 lg:w-24 lg:h-24 rounded-full bg-gold-metallic text-black font-bold text-sm lg:text-lg shadow-[0_0_20px_rgba(212,175,55,0.4)] active:scale-95 transition hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] flex-shrink-0"; document.getElementById('btn-lap-reset').innerHTML = "Zerar"; document.getElementById('stopwatch-ring').style.display = "none"; if (App.State.isDesktop) document.getElementById('widget-stopwatch-time').classList.remove('text-gold');}
             },
             lapOrReset: () => {
                 if (App.Stopwatch.running) { const cur = App.Stopwatch.diff; const lapT = cur - App.Stopwatch.lastLap; App.Stopwatch.lastLap = cur; App.Stopwatch.laps.unshift({ num: App.Stopwatch.laps.length + 1, lap: App.Stopwatch.format(lapT), total: App.Stopwatch.format(cur) }); App.Stopwatch.renderLaps(); } 
                 else { App.Stopwatch.saved = App.Stopwatch.diff = App.Stopwatch.lastLap = 0; App.Stopwatch.laps = []; document.getElementById('stopwatch-display').innerHTML = "00:00,00"; document.getElementById('btn-start-stop').innerHTML = "Iniciar"; document.getElementById('btn-lap-reset').innerHTML = "Zerar"; App.Stopwatch.renderLaps(); if (App.State.isDesktop) document.getElementById('widget-stopwatch-time').innerHTML = "00:00,00";}
             },
-            renderLaps: () => { document.getElementById('stopwatch-laps').innerHTML = App.Stopwatch.laps.map(l => `<div class="flex justify-between py-3 lg:py-4 border-b border-white/5 text-sm lg:text-base px-2 lg:px-4"><span class="text-gray-500 font-bold w-8 lg:w-12">${String(l.num).padStart(2,'0')}</span><span class="text-white font-light tracking-wider flex-1 text-center">+ ${l.lap}</span><span class="text-gold font-light tracking-wider w-20 lg:w-24 text-right">${l.total}</span></div>`).join(''); }
+            renderLaps: () => { document.getElementById('stopwatch-laps').innerHTML = App.Stopwatch.laps.map(l => `<div class="flex justify-between py-2 lg:py-4 border-b border-white/5 text-sm lg:text-base px-2 lg:px-4"><span class="text-gray-500 font-bold w-8 lg:w-12">${String(l.num).padStart(2,'0')}</span><span class="text-white font-light tracking-wider flex-1 text-center">+ ${l.lap}</span><span class="text-gold font-light tracking-wider w-20 lg:w-24 text-right">${l.total}</span></div>`).join(''); }
         };
 
         App.Calc = {
             curr: '0', prev: '', op: null, hist: SafeStorage.parse('chronos_calc') || [],
             
-            // Lógica de Redimensionamento Responsivo (Até 12 Dígitos)
+            // Lógica Avançada de Redimensionamento (Até 12 Dígitos + Truncate)
             updateDisplay: () => {
                 const display = document.getElementById('calc-display');
                 const len = (App.Calc.curr || '0').length;
@@ -927,18 +940,18 @@
                 document.getElementById('calc-prev').innerText = App.Calc.prev ? `${App.Calc.prev} ${App.Calc.op==='*'?'×':(App.Calc.op==='/'?'÷':App.Calc.op)}` : '';
                 if(App.State.isDesktop) document.getElementById('widget-calc-status').innerText = App.Calc.curr || '0';
                 
-                // Remove as classes de tamanho prévias
-                display.classList.remove('text-6xl', 'text-5xl', 'text-4xl', 'text-3xl');
+                // Limpa as classes anteriores de tamanho
+                display.classList.remove('text-6xl', 'text-5xl', 'text-4xl', 'text-3xl', 'text-2xl', 'lg:text-6xl', 'lg:text-5xl', 'lg:text-4xl', 'lg:text-3xl');
                 
-                // Reduz proporcionalmente ao número de dígitos
+                // Redução dinâmica baseada no comprimento
                 if(len > 12) {
-                    display.classList.add('text-3xl');
+                    display.classList.add('text-2xl', 'lg:text-3xl'); // Vai truncar a partir daqui via CSS
                 } else if(len > 9) {
-                    display.classList.add('text-4xl');
+                    display.classList.add('text-3xl', 'lg:text-4xl');
                 } else if(len > 7) {
-                    display.classList.add('text-5xl');
+                    display.classList.add('text-4xl', 'lg:text-5xl');
                 } else {
-                    display.classList.add('text-6xl');
+                    display.classList.add('text-5xl', 'lg:text-6xl');
                 }
             },
 
@@ -962,7 +975,7 @@
                 
                 App.Calc.updateDisplay();
             },
-            openHistory: () => { const list = document.getElementById('calc-history-list'); list.innerHTML = App.Calc.hist.length === 0 ? '<p class="text-center mt-10 text-gray-500 tracking-wide">Histórico Vazio</p>' : App.Calc.hist.map(i => `<div class="bg-black/30 p-4 lg:p-5 rounded-xl lg:rounded-2xl border border-white/5 flex justify-between items-center shadow-inner"><span class="text-gray-400 font-light text-xs lg:text-sm tracking-widest">${i.eq} =</span><span class="text-gold text-xl lg:text-2xl font-light">${i.res}</span></div>`).join(''); document.getElementById('calc-history-modal').classList.replace('hidden', 'flex'); setTimeout(() => { document.getElementById('calc-history-modal').classList.remove('opacity-0'); document.getElementById('calc-history-content').classList.remove('translate-y-full'); if (App.State.isDesktop) document.getElementById('calc-history-content').classList.replace('scale-95', 'scale-100'); }, 10); },
+            openHistory: () => { const list = document.getElementById('calc-history-list'); list.innerHTML = App.Calc.hist.length === 0 ? '<p class="text-center mt-10 text-gray-500 tracking-wide">Histórico Vazio</p>' : App.Calc.hist.map(i => `<div class="bg-black/30 p-3 lg:p-5 rounded-xl lg:rounded-2xl border border-white/5 flex justify-between items-center shadow-inner min-w-0"><span class="text-gray-400 font-light text-[10px] lg:text-sm tracking-widest truncate pr-2">${i.eq} =</span><span class="text-gold text-lg lg:text-2xl font-light flex-shrink-0">${i.res}</span></div>`).join(''); document.getElementById('calc-history-modal').classList.replace('hidden', 'flex'); setTimeout(() => { document.getElementById('calc-history-modal').classList.remove('opacity-0'); document.getElementById('calc-history-content').classList.remove('translate-y-full'); if (App.State.isDesktop) document.getElementById('calc-history-content').classList.replace('scale-95', 'scale-100'); }, 10); },
             closeHistory: () => { document.getElementById('calc-history-content').classList.add('translate-y-full'); if (App.State.isDesktop) document.getElementById('calc-history-content').classList.replace('scale-100', 'scale-95'); setTimeout(() => { document.getElementById('calc-history-modal').classList.add('opacity-0'); setTimeout(() => document.getElementById('calc-history-modal').classList.replace('flex', 'hidden'), 300); }, 10); },
             clearHistory: () => { App.Calc.hist = []; SafeStorage.remove('chronos_calc'); App.Calc.closeHistory(); }
         };
@@ -975,7 +988,7 @@
                 if(App.State.isDesktop) document.getElementById('widget-tasks-status').innerText = `${p} pendente${p!==1?'s':''}`;
                 
                 if(App.Tasks.data.length===0){ list.innerHTML = '<p class="text-center mt-10 text-sm text-gray-500 tracking-wide">Nenhuma tarefa adicionada.</p>'; return; }
-                list.innerHTML = App.Tasks.data.map((t, i) => `<div class="bg-button-dark p-4 lg:p-5 rounded-xl lg:rounded-2xl flex justify-between items-center border ${t.done?'border-white/5 opacity-50 shadow-none':'border-gold/20 shadow-[0_4px_15px_rgba(212,175,55,0.05)]'} transition-all hover:border-gold/50 group"><div class="flex items-center gap-4 lg:gap-5 overflow-hidden cursor-pointer flex-1 min-w-0" onclick="App.Tasks.toggle(${i})"><div class="w-7 h-7 lg:w-8 lg:h-8 rounded-full border border-white/20 flex-shrink-0 ${t.done?'bg-gold-metallic border-gold text-black shadow-[inset_0_2px_5px_rgba(0,0,0,0.3)]':'bg-[#0a0a0a] text-transparent shadow-inner'} flex items-center justify-center transition-all"><i class="fa-solid fa-check text-xs lg:text-sm"></i></div><span class="text-white truncate uppercase tracking-[0.1em] text-base lg:text-lg font-light ${t.done?'line-through text-gray-500':''} min-w-0">${t.text}</span></div><div class="flex gap-1 lg:gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"><button onclick="App.System.openEdit('Editar Tarefa', '${t.text}', (v)=>{App.Tasks.data[${i}].text=v; App.Tasks.save();})" class="text-gold p-2 lg:p-3 hover:scale-110 transition"><i class="fa-solid fa-pen"></i></button><button onclick="App.Tasks.delete(${i})" class="text-red-900 hover:text-red-500 p-2 lg:p-3 transition"><i class="fa-solid fa-trash"></i></button></div></div>`).join(''); 
+                list.innerHTML = App.Tasks.data.map((t, i) => `<div class="bg-button-dark p-3 lg:p-5 rounded-xl lg:rounded-2xl flex justify-between items-center border ${t.done?'border-white/5 opacity-50 shadow-none':'border-gold/20 shadow-[0_4px_15px_rgba(212,175,55,0.05)]'} transition-all hover:border-gold/50 group min-w-0"><div class="flex items-center gap-3 lg:gap-5 overflow-hidden cursor-pointer flex-1 min-w-0" onclick="App.Tasks.toggle(${i})"><div class="w-6 h-6 lg:w-8 lg:h-8 rounded-full border border-white/20 flex-shrink-0 ${t.done?'bg-gold-metallic border-gold text-black shadow-[inset_0_2px_5px_rgba(0,0,0,0.3)]':'bg-[#0a0a0a] text-transparent shadow-inner'} flex items-center justify-center transition-all"><i class="fa-solid fa-check text-[10px] lg:text-sm"></i></div><span class="text-white truncate uppercase tracking-[0.1em] text-sm lg:text-lg font-light ${t.done?'line-through text-gray-500':''} min-w-0">${t.text}</span></div><div class="flex gap-1 lg:gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex-shrink-0"><button onclick="App.System.openEdit('Editar Tarefa', '${t.text}', (v)=>{App.Tasks.data[${i}].text=v; App.Tasks.save();})" class="text-gold p-2 lg:p-3 hover:scale-110 transition"><i class="fa-solid fa-pen"></i></button><button onclick="App.Tasks.delete(${i})" class="text-red-900 hover:text-red-500 p-2 lg:p-3 transition"><i class="fa-solid fa-trash"></i></button></div></div>`).join(''); 
                 
                 if (App.State.currentView === 'calendario') App.Calendar.render();
             },
@@ -1011,7 +1024,7 @@
                 const today = new Date().toISOString().split('T')[0];
                 list.innerHTML = App.Habits.data.map((h, i) => { 
                     const done = h.hist.includes(today); const stk = App.Habits.getStreak(h.hist);
-                    return `<div class="bg-button-dark p-4 lg:p-6 rounded-xl lg:rounded-[1.5rem] border ${done?'border-gold/20 shadow-[0_4px_15px_rgba(212,175,55,0.05)]':'border-white/5'} transition-all hover:border-gold/40 flex flex-col group min-w-0"><div class="flex justify-between items-center w-full min-w-0"><div class="flex flex-col flex-1 pr-3 lg:pr-4 min-w-0"><span class="text-white font-light truncate mb-1 lg:mb-2 uppercase tracking-[0.1em] text-base lg:text-xl min-w-0">${h.name}</span><div class="text-[10px] lg:text-xs font-bold tracking-widest uppercase ${stk>0?'text-gold':'text-gray-600'}"><i class="fa-solid fa-fire mr-1"></i> ${stk} dias</div></div><div class="flex items-center gap-1 lg:gap-2 flex-shrink-0"><button onclick="App.System.openEdit('Editar Hábito', '${h.name}', (v)=>{App.Habits.data[${i}].name=v; App.Habits.save();})" class="text-gold p-2 lg:p-3 hover:scale-110 transition hidden lg:block opacity-0 group-hover:opacity-100"><i class="fa-solid fa-pen"></i></button><button onclick="App.Habits.toggle(${i})" class="w-10 h-10 lg:w-14 lg:h-14 rounded-full border border-white/20 flex-shrink-0 transition-all flex items-center justify-center ${done?'bg-gold-metallic text-black shadow-[0_0_15px_rgba(212,175,55,0.4)] border-transparent':'bg-[#0a0a0a] text-transparent hover:border-gold shadow-inner'}"><i class="fa-solid fa-check text-lg lg:text-xl"></i></button><button onclick="App.Habits.delete(${i})" class="text-gray-700 hover:text-red-500 p-2 lg:p-3 transition opacity-100 lg:opacity-0 lg:group-hover:opacity-100"><i class="fa-solid fa-trash"></i></button></div></div></div>`; 
+                    return `<div class="bg-button-dark p-3 lg:p-6 rounded-xl lg:rounded-[1.5rem] border ${done?'border-gold/20 shadow-[0_4px_15px_rgba(212,175,55,0.05)]':'border-white/5'} transition-all hover:border-gold/40 flex flex-col group min-w-0"><div class="flex justify-between items-center w-full min-w-0"><div class="flex flex-col flex-1 pr-2 lg:pr-4 min-w-0"><span class="text-white font-light truncate mb-1 lg:mb-2 uppercase tracking-[0.1em] text-sm lg:text-xl min-w-0">${h.name}</span><div class="text-[9px] lg:text-xs font-bold tracking-widest uppercase ${stk>0?'text-gold':'text-gray-600'} truncate"><i class="fa-solid fa-fire mr-1"></i> ${stk} dias</div></div><div class="flex items-center gap-1 lg:gap-2 flex-shrink-0"><button onclick="App.System.openEdit('Editar Hábito', '${h.name}', (v)=>{App.Habits.data[${i}].name=v; App.Habits.save();})" class="text-gold p-2 lg:p-3 hover:scale-110 transition hidden lg:block opacity-0 group-hover:opacity-100"><i class="fa-solid fa-pen"></i></button><button onclick="App.Habits.toggle(${i})" class="w-8 h-8 lg:w-14 lg:h-14 rounded-full border border-white/20 flex-shrink-0 transition-all flex items-center justify-center ${done?'bg-gold-metallic text-black shadow-[0_0_15px_rgba(212,175,55,0.4)] border-transparent':'bg-[#0a0a0a] text-transparent hover:border-gold shadow-inner'}"><i class="fa-solid fa-check text-xs lg:text-xl"></i></button><button onclick="App.Habits.delete(${i})" class="text-gray-700 hover:text-red-500 p-2 lg:p-3 transition opacity-100 lg:opacity-0 lg:group-hover:opacity-100"><i class="fa-solid fa-trash"></i></button></div></div></div>`; 
                 }).join(''); 
                 
                 if (App.State.currentView === 'calendario') App.Calendar.render();
@@ -1101,9 +1114,9 @@
                     
                     stripHtml += `
                         <div onclick="App.Reminders.selectDay(${d.getFullYear()}, ${d.getMonth()}, ${d.getDate()})" 
-                             class="flex flex-col items-center justify-center w-10 h-14 lg:w-12 lg:h-16 rounded-[1rem] cursor-pointer transition-all flex-shrink-0 ${bg}">
-                            <span class="text-[8px] lg:text-[9px] font-bold tracking-widest">${dayLetters[i]}</span>
-                            <span class="text-base lg:text-lg font-light mt-1">${d.getDate()}</span>
+                             class="flex flex-col items-center justify-center w-9 h-12 lg:w-12 lg:h-16 rounded-[0.75rem] lg:rounded-[1rem] cursor-pointer transition-all flex-shrink-0 ${bg}">
+                            <span class="text-[7px] lg:text-[9px] font-bold tracking-widest">${dayLetters[i]}</span>
+                            <span class="text-sm lg:text-lg font-light mt-1">${d.getDate()}</span>
                             ${hasReminders && !isSelected ? '<div class="w-1 h-1 lg:w-1.5 lg:h-1.5 bg-blue-500 rounded-full mt-1 shadow-[0_0_5px_rgba(59,130,246,0.8)]"></div>' : '<div class="w-1 h-1 lg:w-1.5 lg:h-1.5 mt-1"></div>'}
                         </div>
                     `;
@@ -1139,7 +1152,7 @@
                                 <div class="w-5 h-5 lg:w-6 lg:h-6 rounded-full border border-white/20 flex-shrink-0 ${r.done?'bg-blue-500 border-blue-500 text-white shadow-[inset_0_2px_5px_rgba(0,0,0,0.3)]':'bg-black text-transparent shadow-inner'} flex items-center justify-center transition-all"><i class="fa-solid fa-check text-[10px] lg:text-xs"></i></div>
                                 <div class="flex flex-col min-w-0">
                                     <span class="text-white truncate uppercase tracking-[0.1em] font-light text-sm lg:text-base ${r.done?'line-through text-gray-500':''} min-w-0">${r.text}</span>
-                                    ${r.tag ? `<span class="text-[9px] lg:text-[10px] uppercase font-bold tracking-widest mt-0.5 lg:mt-1 ${tagColors[r.tag].split(' ')[0]}">${tagNames[r.tag]}</span>` : ''}
+                                    ${r.tag ? `<span class="text-[8px] lg:text-[10px] uppercase font-bold tracking-widest mt-0.5 lg:mt-1 ${tagColors[r.tag].split(' ')[0]} truncate w-full">${tagNames[r.tag]}</span>` : ''}
                                 </div>
                             </div>
                             <button onclick="App.Reminders.delete('${r.id}')" class="text-gray-600 hover:text-red-500 p-2 transition flex-shrink-0"><i class="fa-solid fa-trash"></i></button>
@@ -1188,24 +1201,24 @@
                 let html = '';
                 
                 if (tasksDone.length === 0 && habitsDone.length === 0 && remindersDone.length === 0) {
-                    html = '<div class="text-gray-500 text-sm italic h-full flex items-center justify-center">Nenhum registo neste dia.</div>';
+                    html = '<div class="text-gray-500 text-xs lg:text-sm italic h-full flex items-center justify-center">Nenhum registo neste dia.</div>';
                 } else {
                     if(habitsDone.length > 0) {
-                        html += `<div class="mb-3 lg:mb-4"><h4 class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 lg:mb-2">Hábitos</h4>`;
-                        habitsDone.forEach(h => html += `<div class="flex items-center gap-2 mb-1 text-xs lg:text-sm font-light"><div class="w-1.5 h-1.5 rounded-full bg-gold"></div>${h.name}</div>`);
+                        html += `<div class="mb-3 lg:mb-4 min-w-0"><h4 class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 lg:mb-2 truncate">Hábitos</h4>`;
+                        habitsDone.forEach(h => html += `<div class="flex items-center gap-2 mb-1 text-xs lg:text-sm font-light min-w-0"><div class="w-1.5 h-1.5 rounded-full bg-gold flex-shrink-0"></div><span class="truncate w-full">${h.name}</span></div>`);
                         html += `</div>`;
                     }
                     if(tasksDone.length > 0) {
-                        html += `<div class="mb-3 lg:mb-4"><h4 class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 lg:mb-2">Tarefas</h4>`;
-                        tasksDone.forEach(t => html += `<div class="flex items-center gap-2 mb-1 text-xs lg:text-sm font-light"><div class="w-1.5 h-1.5 rounded-full bg-white"></div>${t.text}</div>`);
+                        html += `<div class="mb-3 lg:mb-4 min-w-0"><h4 class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 lg:mb-2 truncate">Tarefas</h4>`;
+                        tasksDone.forEach(t => html += `<div class="flex items-center gap-2 mb-1 text-xs lg:text-sm font-light min-w-0"><div class="w-1.5 h-1.5 rounded-full bg-white flex-shrink-0"></div><span class="truncate w-full">${t.text}</span></div>`);
                         html += `</div>`;
                     }
                     if(remindersDone.length > 0) {
                         const tagColors = { 'pessoal': 'bg-gold', 'trabalho': 'bg-blue-400', 'aniversario': 'bg-purple-400', 'urgente': 'bg-red-400' };
-                        html += `<div class="mb-3 lg:mb-4"><h4 class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 lg:mb-2">Lembretes</h4>`;
+                        html += `<div class="mb-3 lg:mb-4 min-w-0"><h4 class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 lg:mb-2 truncate">Lembretes</h4>`;
                         remindersDone.forEach(r => {
                             const tColor = r.tag ? tagColors[r.tag] : 'bg-blue-500';
-                            html += `<div class="flex items-center gap-2 mb-1 text-xs lg:text-sm font-light"><div class="w-1.5 h-1.5 rounded-full ${tColor}"></div>${r.text}</div>`;
+                            html += `<div class="flex items-center gap-2 mb-1 text-xs lg:text-sm font-light min-w-0"><div class="w-1.5 h-1.5 rounded-full ${tColor} flex-shrink-0"></div><span class="truncate w-full">${r.text}</span></div>`;
                         });
                         html += `</div>`;
                     }
@@ -1248,7 +1261,7 @@
                     
                     if (hasTask) monthlyTasks++;
                     
-                    let classes = "relative aspect-square flex flex-col items-center justify-center rounded-[1rem] lg:rounded-2xl text-sm lg:text-lg font-light transition-all cursor-pointer ";
+                    let classes = "relative aspect-square flex flex-col items-center justify-center rounded-xl lg:rounded-2xl text-sm lg:text-lg font-light transition-all cursor-pointer ";
                     
                     if(isToday) {
                         classes += "bg-gold-metallic text-black shadow-[0_5px_15px_rgba(212,175,55,0.4)] font-bold scale-110 z-10";
@@ -1256,7 +1269,7 @@
                         classes += "bg-[#181818] border border-white/5 text-gray-300 hover:border-gold/50 hover:text-gold shadow-[inset_0_2px_5px_rgba(0,0,0,0.5)] hover:scale-105 active:scale-95";
                     }
                     
-                    let dots = '<div class="absolute bottom-1 lg:bottom-1.5 flex gap-1">';
+                    let dots = '<div class="absolute bottom-1 lg:bottom-1.5 flex gap-0.5 lg:gap-1">';
                     if (hasTask) dots += `<div class="heatmap-dot w-1 h-1 lg:w-1.5 lg:h-1.5 bg-white text-white/50"></div>`;
                     if (hasHabit) dots += `<div class="heatmap-dot w-1 h-1 lg:w-1.5 lg:h-1.5 bg-gold text-gold/50"></div>`;
                     if (hasReminder) dots += `<div class="heatmap-dot w-1 h-1 lg:w-1.5 lg:h-1.5 bg-blue-500 text-blue-500/50"></div>`;
