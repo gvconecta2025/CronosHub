@@ -62,16 +62,13 @@
             .drum-overlay { background: linear-gradient(to bottom, #121212 0%, transparent 35%, transparent 65%, #121212 100%); }
         }
         
-        /* SOLUÇÃO DEFINITIVA DE NITIDEZ E LIGATURAS NOS PICKERS */
+        /* SOLUÇÃO DEFINITIVA DE NITIDEZ NOS PICKERS (Sem GPU translation) */
         .picker-container { scroll-snap-type: y mandatory; overscroll-behavior-y: contain; }
         .picker-item { 
             scroll-snap-align: center; 
             scroll-snap-stop: always; 
             height: 48px; 
-            transition: all 0.15s ease-out; 
-            will-change: transform, opacity, color, font-size;
-            transform: translateZ(0); 
-            backface-visibility: hidden;
+            transition: color 0.2s ease, opacity 0.2s ease, font-size 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -159,13 +156,13 @@
             <button onclick="App.Router.closeDesktop(event, true)" class="hidden lg:flex absolute top-6 right-6 w-12 h-12 bg-white/5 border border-white/10 rounded-full items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/20 hover:border-red-500/50 transition-all z-50"><i class="fa-solid fa-xmark"></i></button>
 
             <!-- HUB MOBILE -->
-            <section id="view-hub" class="tab-content hidden flex-col w-full h-full p-5 lg:p-10 lg:hidden overflow-y-auto hide-scrollbar">
+            <section id="view-hub" class="tab-content hidden flex-col w-full h-full p-5 lg:p-10 lg:hidden overflow-y-auto hide-scrollbar pb-24">
                 <h2 class="text-3xl lg:text-4xl font-light mb-8 text-white">Módulos <span class="text-transparent bg-clip-text bg-gold-metallic font-medium">Premium</span></h2>
                 <div class="grid grid-cols-2 gap-4" id="hub-grid"></div>
             </section>
 
             <!-- CALENDÁRIO PREMIUM -->
-            <section id="view-calendario" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar relative">
+            <section id="view-calendario" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar relative pb-24 lg:pb-10">
                 <div class="flex justify-between items-center w-full max-w-5xl mx-auto mb-6 lg:mb-8 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5">
                     <div>
                         <h2 class="text-2xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic">O Meu Mês</h2>
@@ -177,7 +174,7 @@
                     </div>
                 </div>
                 
-                <div class="flex-1 flex flex-col xl:flex-row w-full max-w-5xl mx-auto gap-6 lg:gap-8 pb-24 lg:pb-0 min-h-0">
+                <div class="flex-1 flex flex-col xl:flex-row w-full max-w-5xl mx-auto gap-6 lg:gap-8 min-h-0">
                     <div class="flex-1 flex flex-col bg-black/30 border border-white/10 rounded-[1.5rem] lg:rounded-[2.5rem] p-4 lg:p-8 shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)] min-h-0">
                         <div class="grid grid-cols-7 gap-1 lg:gap-2 mb-4 text-center text-[9px] lg:text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500 flex-shrink-0">
                             <div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div>
@@ -204,7 +201,7 @@
             </section>
 
             <!-- LEMBRETES -->
-            <section id="view-lembretes" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar relative">
+            <section id="view-lembretes" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar relative pb-24 lg:pb-10">
                 <div class="flex flex-col mb-6 lg:mb-8 w-full max-w-3xl mx-auto sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 lg:pb-6 z-10 border-b border-transparent lg:border-white/5 gap-4 lg:gap-6 min-w-0">
                     <div class="flex justify-between items-center w-full min-w-0">
                         <div class="min-w-0 flex-1 pr-2">
@@ -241,12 +238,12 @@
                 
                 <div class="flex-1 flex flex-col w-full max-w-3xl mx-auto min-h-0 min-w-0">
                     <h3 class="text-white text-base lg:text-xl font-light mb-3 lg:mb-4 flex items-center gap-2 lg:gap-3 flex-shrink-0"><i class="fa-regular fa-calendar text-blue-400"></i> <span id="reminders-list-title">Para Hoje</span></h3>
-                    <div id="reminders-list" class="space-y-2 lg:space-y-3 overflow-y-auto hide-scrollbar flex-1 pb-24 lg:pb-10 min-w-0"></div>
+                    <div id="reminders-list" class="space-y-2 lg:space-y-3 overflow-y-auto hide-scrollbar flex-1 min-w-0"></div>
                 </div>
             </section>
 
             <!-- DESPERTADOR -->
-            <section id="view-alarme" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar relative">
+            <section id="view-alarme" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar relative pb-24 lg:pb-10">
                 <div class="flex flex-col w-full max-w-3xl mx-auto flex-1 min-w-0">
                     <div class="flex justify-between items-end mb-6 lg:mb-10 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-4 z-10 border-b border-transparent lg:border-white/5 min-w-0">
                         <div class="min-w-0 pr-2">
@@ -257,12 +254,13 @@
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     </div>
-                    <div id="alarm-list" class="space-y-3 lg:space-y-5 flex-1 pb-24 lg:pb-10 min-w-0"></div>
+                    <div id="alarm-list" class="space-y-3 lg:space-y-5 flex-1 min-w-0"></div>
                 </div>
             </section>
 
             <!-- TEMPORIZADOR -->
-            <section id="view-timer" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 items-center justify-center relative">
+            <!-- pb-24 adicionado aqui para evitar que o botão fique atrás da nav -->
+            <section id="view-timer" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 items-center justify-center relative pb-24 lg:pb-10">
                 <h2 class="text-2xl lg:text-4xl font-light mb-6 lg:mb-8 text-transparent bg-clip-text bg-gold-metallic w-full text-left lg:absolute lg:top-10 lg:left-10 max-w-lg lg:max-w-none mx-auto lg:mx-0 truncate">Temporizador</h2>
                 <div class="flex-1 flex flex-col w-full h-full items-center justify-center relative mt-2 lg:mt-0 max-w-lg mx-auto min-w-0">
                     <div id="timer-setup-view" class="w-full flex flex-col items-center min-w-0">
@@ -297,7 +295,7 @@
                         </div>
                     </div>
 
-                    <div class="flex gap-2 lg:gap-4 w-full mt-auto pt-4 lg:pt-8 min-w-0">
+                    <div class="flex gap-2 lg:gap-4 w-full mt-auto pt-4 lg:pt-8 min-w-0 flex-shrink-0">
                         <button id="btn-timer-reset" onclick="App.Timer.reset()" class="w-1/3 py-3 lg:py-5 rounded-xl lg:rounded-2xl bg-button-dark border border-white/5 text-gray-400 font-bold text-sm lg:text-lg hidden active:scale-95 hover:text-white transition truncate">Zerar</button>
                         <button id="btn-timer-start" onclick="App.Timer.toggle()" class="flex-1 py-3 lg:py-5 rounded-xl lg:rounded-2xl bg-gold-metallic text-black font-bold text-base lg:text-xl shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] transition active:scale-95 truncate">Iniciar Timer</button>
                     </div>
@@ -305,29 +303,29 @@
             </section>
 
             <!-- CRONÔMETRO -->
-            <section id="view-cronometro" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 items-center">
+            <section id="view-cronometro" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 items-center pb-24 lg:pb-10">
                 <div class="flex flex-col items-center w-full max-w-lg mx-auto flex-1 min-w-0">
                     <h2 class="text-2xl lg:text-4xl font-light mb-6 lg:mb-10 self-start w-full text-left text-transparent bg-clip-text bg-gold-metallic truncate">Cronômetro</h2>
                     <div class="w-56 h-56 lg:w-80 lg:h-80 rounded-full border border-white/5 flex items-center justify-center relative mb-6 lg:mb-10 flex-shrink-0 bg-button-dark shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)]">
                         <div class="absolute inset-0 rounded-full border-4 border-gold border-t-transparent animate-spin opacity-80" style="animation-duration: 3s; display: none;" id="stopwatch-ring"></div>
                         <div class="text-4xl lg:text-6xl font-extralight tabular-nums tracking-wider text-white drop-shadow-md truncate px-2" id="stopwatch-display">00:00,00</div>
                     </div>
-                    <div class="flex gap-4 lg:gap-6 w-full justify-center mb-6 lg:mb-10 max-w-sm min-w-0">
+                    <div class="flex gap-4 lg:gap-6 w-full justify-center mb-6 lg:mb-10 max-w-sm min-w-0 flex-shrink-0">
                         <button id="btn-lap-reset" onclick="App.Stopwatch.lapOrReset()" class="w-16 h-16 lg:w-24 lg:h-24 rounded-full bg-button-dark border border-white/5 font-bold text-sm lg:text-lg text-gray-300 hover:text-white transition shadow-lg active:scale-95 flex-shrink-0">Zerar</button>
                         <button id="btn-start-stop" onclick="App.Stopwatch.toggle()" class="w-16 h-16 lg:w-24 lg:h-24 rounded-full bg-gold-metallic text-black font-bold text-sm lg:text-lg shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] transition active:scale-95 flex-shrink-0">Iniciar</button>
                     </div>
-                    <div class="w-full flex-1 overflow-y-auto hide-scrollbar max-w-lg pb-24 lg:pb-0 min-w-0"><div id="stopwatch-laps" class="w-full flex flex-col gap-2 min-w-0"></div></div>
+                    <div class="w-full flex-1 overflow-y-auto hide-scrollbar max-w-lg min-w-0"><div id="stopwatch-laps" class="w-full flex flex-col gap-2 min-w-0"></div></div>
                 </div>
             </section>
 
             <!-- CALCULADORA PREMIUM -->
-            <section id="view-calculadora" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10">
+            <section id="view-calculadora" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 pb-24 lg:pb-10">
                 <div class="flex justify-between items-center w-full max-w-md mx-auto mb-4 lg:mb-8 flex-shrink-0 min-w-0">
                     <h2 class="text-2xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic truncate pr-2">Calculadora</h2>
                     <button onclick="App.Calc.openHistory()" class="text-gray-400 hover:text-gold text-lg lg:text-2xl transition active:scale-95 p-2 bg-white/5 rounded-full border border-white/5 flex-shrink-0"><i class="fa-solid fa-clock-rotate-left"></i></button>
                 </div>
                 
-                <div class="w-full flex-1 min-h-0 flex flex-col max-w-md mx-auto pb-24 lg:pb-0 gap-3 lg:gap-6 min-w-0">
+                <div class="w-full flex-1 min-h-0 flex flex-col max-w-md mx-auto gap-3 lg:gap-6 min-w-0">
                     <div class="w-full bg-button-dark rounded-[1.5rem] lg:rounded-[2.5rem] p-5 lg:p-8 flex flex-col justify-end items-end h-28 lg:h-40 shadow-[inset_0_10px_20px_rgba(0,0,0,0.8)] border border-white/5 flex-shrink-0 relative overflow-hidden min-w-0">
                         <div id="calc-prev" class="text-gold text-[10px] lg:text-sm h-4 lg:h-6 font-medium tracking-widest mb-1 opacity-80 truncate w-full text-right"></div>
                         <div class="flex justify-between w-full items-end gap-2 min-w-0">
@@ -365,7 +363,7 @@
             </section>
 
             <!-- TAREFAS -->
-            <section id="view-tarefas" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar">
+            <section id="view-tarefas" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar pb-24 lg:pb-10">
                 <div class="flex flex-col w-full max-w-3xl mx-auto flex-1 min-w-0">
                     <div class="flex justify-between items-center mb-5 lg:mb-8 sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-3 lg:pb-4 z-10 border-b border-transparent lg:border-white/5 min-w-0">
                         <h2 class="text-2xl lg:text-4xl font-light text-transparent bg-clip-text bg-gold-metallic truncate pr-2">Tarefas Diárias</h2>
@@ -375,19 +373,19 @@
                         <input type="text" id="task-input" placeholder="Nova tarefa..." class="flex-1 input-premium rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-white uppercase font-light text-sm lg:text-lg tracking-wide min-w-0" oninput="this.value = this.value.toUpperCase()">
                         <button onclick="App.Tasks.add()" class="bg-gold-metallic text-black px-4 lg:px-6 rounded-xl lg:rounded-2xl font-bold shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:scale-105 transition active:scale-95 flex-shrink-0"><i class="fa-solid fa-plus text-base lg:text-2xl"></i></button>
                     </div>
-                    <div id="task-list" class="space-y-2 lg:space-y-4 flex-1 pb-24 lg:pb-10 min-w-0"></div>
+                    <div id="task-list" class="space-y-2 lg:space-y-4 flex-1 min-w-0"></div>
                 </div>
             </section>
 
             <!-- HÁBITOS -->
-            <section id="view-habitos" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar">
+            <section id="view-habitos" class="tab-content hidden tab-anim flex-col w-full h-full p-4 lg:p-10 overflow-y-auto hide-scrollbar pb-24 lg:pb-10">
                 <div class="flex flex-col w-full max-w-3xl mx-auto flex-1 min-w-0">
                     <h2 class="text-2xl lg:text-4xl font-light mb-5 lg:mb-8 text-transparent bg-clip-text bg-gold-metallic w-full text-left sticky top-0 bg-darkBg lg:bg-transparent lg:backdrop-blur-md pt-2 pb-3 lg:pb-4 z-10 border-b border-transparent lg:border-white/5 truncate">Rastreador de Hábitos</h2>
                     <div class="flex gap-2 lg:gap-4 mb-5 lg:mb-8 flex-shrink-0 min-w-0">
                         <input type="text" id="habit-input" placeholder="Novo hábito..." class="flex-1 input-premium rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-white uppercase font-light text-sm lg:text-lg tracking-wide min-w-0" oninput="this.value = this.value.toUpperCase()">
                         <button onclick="App.Habits.add()" class="bg-gold-metallic text-black px-4 lg:px-6 rounded-xl lg:rounded-2xl font-bold shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:scale-105 transition active:scale-95 flex-shrink-0"><i class="fa-solid fa-plus text-base lg:text-2xl"></i></button>
                     </div>
-                    <div id="habit-list" class="space-y-2 lg:space-y-4 flex-1 pb-24 lg:pb-10 min-w-0"></div>
+                    <div id="habit-list" class="space-y-2 lg:space-y-4 flex-1 min-w-0"></div>
                 </div>
             </section>
 
@@ -533,7 +531,7 @@
                 for (let c = 0; c < copies; c++) {
                     for (let i = 0; i <= max; i++) {
                         const v = i.toString().padStart(2, '0');
-                        html += `<div class="picker-item w-full flex items-center justify-center text-gray-600 opacity-25 font-light text-xl lg:text-2xl flex-shrink-0" data-val="${v}">${v}</div>`;
+                        html += `<div class="picker-item w-full flex items-center justify-center text-gray-600 opacity-25 font-extralight text-2xl lg:text-3xl flex-shrink-0" data-val="${v}">${v}</div>`;
                     }
                 }
                 html += '<div class="h-[88px] lg:h-[104px] w-full flex-shrink-0"></div>';
@@ -544,12 +542,12 @@
                     if (prevIdx && prevIdx == idx) return;
                     const items = container.querySelectorAll('.picker-item');
                     if (prevIdx !== undefined && items[prevIdx]) {
-                        items[prevIdx].classList.remove('text-gold', 'opacity-100', 'text-3xl', 'lg:text-4xl', 'font-medium');
-                        items[prevIdx].classList.add('text-gray-600', 'opacity-25', 'text-xl', 'lg:text-2xl', 'font-light');
+                        items[prevIdx].classList.remove('text-gold', 'opacity-100', 'text-4xl', 'lg:text-5xl');
+                        items[prevIdx].classList.add('text-gray-600', 'opacity-25', 'text-2xl', 'lg:text-3xl');
                     }
                     if (items[idx]) {
-                        items[idx].classList.remove('text-gray-600', 'opacity-25', 'text-xl', 'lg:text-2xl', 'font-light');
-                        items[idx].classList.add('text-gold', 'opacity-100', 'text-3xl', 'lg:text-4xl', 'font-medium');
+                        items[idx].classList.remove('text-gray-600', 'opacity-25', 'text-2xl', 'lg:text-3xl');
+                        items[idx].classList.add('text-gold', 'opacity-100', 'text-4xl', 'lg:text-5xl');
                         if (App.Audio.hasInteracted) App.Audio.vibrate(5);
                     }
                     container.dataset.activeIdx = idx;
@@ -1226,7 +1224,7 @@
                     
                     if (hasTask) monthlyTasks++;
                     
-                    let classes = "relative aspect-square flex flex-col items-center justify-center rounded-xl lg:rounded-2xl text-sm lg:text-lg font-light transition-all cursor-pointer ";
+                    let classes = "relative aspect-square flex flex-col items-center justify-center rounded-[0.75rem] lg:rounded-2xl text-sm lg:text-lg font-light transition-all cursor-pointer ";
                     
                     if(isToday) {
                         classes += "bg-gold-metallic text-black shadow-[0_5px_15px_rgba(212,175,55,0.4)] font-bold scale-110 z-10";
